@@ -1,0 +1,36 @@
+{
+  "name": "NationConfig",
+  "type": "object",
+  "properties": {
+    "announcement": {
+      "type": "string",
+      "description": "National announcement, one paragraph per line"
+    },
+    "theme": {
+      "type": "string",
+      "description": "Active national colour theme"
+    }
+  },
+  "required": [
+    "announcement",
+    "theme"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

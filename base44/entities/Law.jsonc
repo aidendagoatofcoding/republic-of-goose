@@ -1,0 +1,40 @@
+{
+  "name": "Law",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Short name of the law, e.g. Bread Protection Act"
+    },
+    "description": {
+      "type": "string",
+      "description": "Full text of the law as published in the constitution"
+    },
+    "position": {
+      "type": "number",
+      "description": "Order the law appears in the constitution"
+    }
+  },
+  "required": [
+    "title",
+    "description"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

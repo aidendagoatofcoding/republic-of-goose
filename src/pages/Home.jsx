@@ -1,13 +1,9 @@
 import HeroBlock from '@/components/HeroBlock';
 import Panel from '@/components/Panel';
+import useNation from '@/hooks/useNation';
+
 const HERO_IMAGE =
   'https://media.base44.com/images/public/6ae766fbcbe3be5aae821aa7/4a1ba81b9_generated_36adb353.png';
-
-// Placeholder national records — replaced by the shared nation database.
-const SAMPLE_ANNOUNCEMENT = [
-  'The Republic of Goose officially recognizes HONKISH as its national language.',
-  'All citizens are encouraged to learn the alphabet, respect the national laws, and protect bread supplies.',
-];
 
 const STATS = [
   { value: '🪿', label: 'Goose', note: 'National Animal' },
@@ -17,6 +13,8 @@ const STATS = [
 ];
 
 export default function Home() {
+  const { announcement } = useNation();
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <HeroBlock
@@ -57,7 +55,7 @@ export default function Home() {
           </div>
           <h3 className="mt-4 font-display text-2xl font-bold">📢 Official Announcement</h3>
           <div className="mt-4 space-y-3 border-l border-primary/40 pl-4">
-            {SAMPLE_ANNOUNCEMENT.map((line, index) => (
+            {announcement.map((line, index) => (
               <p key={index} className="text-[16px] leading-relaxed text-foreground/80">
                 {line}
               </p>

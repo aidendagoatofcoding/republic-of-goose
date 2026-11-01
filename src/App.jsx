@@ -8,6 +8,13 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import GooseShell from '@/components/GooseShell';
 import Home from '@/pages/Home';
+import Country from '@/pages/Country';
+import Translator from '@/pages/Translator';
+import Alphabet from '@/pages/Alphabet';
+import Dictionary from '@/pages/Dictionary';
+import Laws from '@/pages/Laws';
+import Grammar from '@/pages/Grammar';
+import Admin from '@/pages/Admin';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -38,6 +45,13 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route element={<GooseShell />}>
         <Route path="/" element={<Home />} />
+        <Route path="/country" element={<Country />} />
+        <Route path="/translator" element={<Translator />} />
+        <Route path="/alphabet" element={<Alphabet />} />
+        <Route path="/dictionary" element={<Dictionary />} />
+        <Route path="/laws" element={<Laws />} />
+        <Route path="/grammar" element={<Grammar />} />
+        <Route path="/admin" element={<Admin />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
