@@ -8,6 +8,7 @@ import {
   PenLine,
   Lock,
   BadgeCheck,
+  MessageSquare,
 } from 'lucide-react';
 
 export const NAV_GROUPS = [
@@ -24,6 +25,12 @@ export const NAV_GROUPS = [
       { path: '/translator', label: 'Translator', title: 'HONKISH Translator', icon: Languages },
       { path: '/alphabet', label: 'Alphabet', title: 'HONKISH Alphabet', icon: Type },
       { path: '/dictionary', label: 'Dictionary', title: 'National Dictionary', icon: BookOpen },
+    ],
+  },
+  {
+    label: 'Community',
+    items: [
+      { path: '/chat', label: 'Goose Chat', title: 'The Honk Hall', icon: MessageSquare },
     ],
   },
   {

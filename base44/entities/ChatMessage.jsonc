@@ -1,0 +1,32 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "author_name": {
+      "type": "string",
+      "description": "Display name of the goose posting the message"
+    },
+    "body": {
+      "type": "string",
+      "description": "Message text"
+    }
+  },
+  "required": [
+    "author_name",
+    "body"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
