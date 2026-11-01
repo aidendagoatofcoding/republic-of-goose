@@ -124,9 +124,13 @@ export default function Admin() {
         </button>
       </div>
 
-      <AnnouncementEditor value={nation.announcement} run={run} />
+      <AnnouncementEditor
+        key={nation.announcement.join('\n')}
+        value={nation.announcement}
+        run={run}
+      />
       <LawManager laws={nation.laws} run={run} />
-      <ThemePicker theme={nation.theme} run={run} />
+      <ThemePicker key={nation.theme} theme={nation.theme} run={run} />
     </div>
   );
 }
