@@ -51,7 +51,7 @@ export default function CitizenshipForm() {
     setBusy(true);
     setError('');
     try {
-      const record = await base44.entities.Citizen.create({
+      const response = await base44.functions.invoke('registerCitizen', {
         full_name: name.slice(0, 120),
         goose_name: gooseName.trim().slice(0, 60),
         district,
@@ -59,23 +59,19 @@ export default function CitizenshipForm() {
         email: email.trim().slice(0, 160),
         oath_accepted: true,
       });
-      setGranted(record);
+      const data = response?.data || {};
+      if (!data.citizen) {
+        setError(
+          data.error || 'The registry office could not process that application. Please try again.'
+        );
+        return;
+      }
+      setGranted(data.citizen);
     } catch (err) {
       setError('The registry office could not process that application. Please try again.');
     } finally {
       setBusy(false);
     }
-  };
-
-  const reset = () => {
-    setGranted(null);
-    setFullName('');
-    setGooseName('');
-    setEmail('');
-    setOath(false);
-    setError('');
-    setDistrict(DISTRICTS[0]);
-    setLevel(LEVELS[1]);
   };
 
   if (granted) {
@@ -112,12 +108,9 @@ export default function CitizenshipForm() {
           suspicious behaviour to the nearest goose.
         </p>
 
-        <button
-          onClick={reset}
-          className="mt-6 rounded-sm border border-border px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
-        >
-          Register another citizen
-        </button>
+        <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          One citizen is admitted per network address
+        </p>
       </section>
     );
   }

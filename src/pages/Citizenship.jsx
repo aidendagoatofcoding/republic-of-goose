@@ -6,6 +6,7 @@ const REQUIREMENTS = [
   'Declare a district of residence',
   'Accept the Citizen’s Oath in full',
   'Never disturb the bread reserves',
+  'One citizen per network address',
 ];
 
 export default function Citizenship() {

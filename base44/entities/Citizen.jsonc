@@ -25,6 +25,10 @@
     "oath_accepted": {
       "type": "boolean",
       "description": "Whether the Citizen's Oath was accepted at registration"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "Network address the registration came from, used to admit one citizen per address"
     }
   },
   "required": [
@@ -33,7 +37,11 @@
     "honkish_level"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "read": {
       "user_condition": {
         "role": "admin"
