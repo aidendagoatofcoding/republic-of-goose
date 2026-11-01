@@ -1,0 +1,53 @@
+{
+  "name": "Citizen",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Citizen's full name as entered on the register"
+    },
+    "goose_name": {
+      "type": "string",
+      "description": "Chosen national Goose name"
+    },
+    "district": {
+      "type": "string",
+      "description": "District of residence inside the Republic"
+    },
+    "honkish_level": {
+      "type": "string",
+      "description": "Self-declared HONKISH proficiency"
+    },
+    "email": {
+      "type": "string",
+      "description": "Optional contact address for official correspondence"
+    },
+    "oath_accepted": {
+      "type": "boolean",
+      "description": "Whether the Citizen's Oath was accepted at registration"
+    }
+  },
+  "required": [
+    "full_name",
+    "district",
+    "honkish_level"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

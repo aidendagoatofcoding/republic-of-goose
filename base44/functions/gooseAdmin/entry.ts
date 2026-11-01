@@ -87,6 +87,19 @@ export default async function (req) {
       return Response.json({ ok: true });
     }
 
+    if (action === 'listCitizens') {
+      const page = await admin.entities.Citizen.list({ sort: '-created_date', limit: 300 });
+      return Response.json({ ok: true, citizens: page?.items ?? [] });
+    }
+
+    if (action === 'deleteCitizen') {
+      if (!body.id) {
+        return Response.json({ error: 'Citizen id required.' }, { status: 400 });
+      }
+      await admin.entities.Citizen.delete(body.id);
+      return Response.json({ ok: true });
+    }
+
     return Response.json({ error: 'Unknown action.' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

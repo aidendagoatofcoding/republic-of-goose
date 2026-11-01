@@ -7,6 +7,7 @@ import {
   Scale,
   PenLine,
   Lock,
+  BadgeCheck,
 } from 'lucide-react';
 
 export const NAV_GROUPS = [
@@ -28,6 +29,7 @@ export const NAV_GROUPS = [
   {
     label: 'Government',
     items: [
+      { path: '/citizenship', label: 'Citizenship', title: 'Citizenship Office', icon: BadgeCheck },
       { path: '/laws', label: 'National Laws', title: 'National Laws', icon: Scale },
       { path: '/grammar', label: 'Grammar Rules', title: 'HONKISH Grammar', icon: PenLine },
     ],

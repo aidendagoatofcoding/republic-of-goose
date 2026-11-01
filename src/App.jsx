@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import GooseShell from '@/components/GooseShell';
 import Home from '@/pages/Home';
 import Country from '@/pages/Country';
+import Citizenship from '@/pages/Citizenship';
 import Translator from '@/pages/Translator';
 import Alphabet from '@/pages/Alphabet';
 import Dictionary from '@/pages/Dictionary';
@@ -46,6 +47,7 @@ const AuthenticatedApp = () => {
       <Route element={<GooseShell />}>
         <Route path="/" element={<Home />} />
         <Route path="/country" element={<Country />} />
+        <Route path="/citizenship" element={<Citizenship />} />
         <Route path="/translator" element={<Translator />} />
         <Route path="/alphabet" element={<Alphabet />} />
         <Route path="/dictionary" element={<Dictionary />} />
