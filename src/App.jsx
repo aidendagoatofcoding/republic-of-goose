@@ -6,6 +6,8 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import GooseShell from '@/components/GooseShell';
+import Home from '@/pages/Home';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -34,7 +36,9 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<GooseShell />}>
+        <Route path="/" element={<Home />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
