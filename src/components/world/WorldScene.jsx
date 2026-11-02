@@ -23,22 +23,34 @@ function anchorFor(resident, index) {
   return { x, y };
 }
 
-export default function WorldScene({ residents, onMove }) {
+export default function WorldScene({ residents, onMove, placing, onPlace, onCancelPlace }) {
   const boxRef = useRef(null);
   const [drag, setDrag] = useState(null);
+  const [ghost, setGhost] = useState(null);
+
+  const toPercent = (event) => {
+    const rect = boxRef.current.getBoundingClientRect();
+    return {
+      x: clamp(((event.clientX - rect.left) / rect.width) * 100),
+      y: clamp(((event.clientY - rect.top) / rect.height) * 100),
+    };
+  };
 
   const startDrag = (event, spot) => {
+    if (placing) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     setDrag({ item_id: spot.item_id, x: spot.x, y: spot.y });
   };
 
-  const moveDrag = (event) => {
+  const handlePointerMove = (event) => {
+    if (placing) {
+      setGhost(toPercent(event));
+      return;
+    }
     if (!drag || !boxRef.current) return;
-    const rect = boxRef.current.getBoundingClientRect();
-    const x = clamp(((event.clientX - rect.left) / rect.width) * 100);
-    const y = clamp(((event.clientY - rect.top) / rect.height) * 100);
-    setDrag((current) => (current ? { ...current, x, y } : current));
+    const next = toPercent(event);
+    setDrag((current) => (current ? { ...current, ...next } : current));
   };
 
   const endDrag = () => {
@@ -47,13 +59,22 @@ export default function WorldScene({ residents, onMove }) {
     setDrag(null);
   };
 
+  const handleClick = (event) => {
+    if (!placing) return;
+    const spot = toPercent(event);
+    onPlace(spot.x, spot.y);
+  };
+
   return (
     <div
       ref={boxRef}
-      onPointerMove={moveDrag}
+      onPointerMove={handlePointerMove}
       onPointerUp={endDrag}
       onPointerLeave={endDrag}
-      className="relative aspect-[4/3] w-full touch-none overflow-hidden rounded-md border border-border/80 bg-secondary/40 md:aspect-[16/10]"
+      onClick={handleClick}
+      className={`relative aspect-[4/3] w-full touch-none overflow-hidden rounded-md border border-border/80 bg-secondary/40 md:aspect-[16/10] ${
+        placing ? 'cursor-crosshair ring-1 ring-primary/50' : ''
+      }`}
     >
       <div
         className="absolute inset-0 bg-gradient-to-b from-primary/10 via-secondary/40 to-secondary/80"
@@ -77,6 +98,34 @@ export default function WorldScene({ residents, onMove }) {
         🌿
       </span>
 
+      {placing && (
+        <div className="absolute left-2 top-2 z-40 flex items-center gap-2 rounded-sm border border-primary/50 bg-card/95 px-2.5 py-1.5">
+          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
+            Tap the meadow to place {placing.name}
+          </span>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onCancelPlace();
+            }}
+            className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {placing && ghost && (
+        <span
+          aria-hidden="true"
+          style={{ left: `${ghost.x}%`, top: `${ghost.y}%` }}
+          className="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-1/2 text-4xl opacity-60"
+        >
+          {placing.emoji}
+        </span>
+      )}
+
       {residents.length === 0 && (
         <p className="absolute inset-0 flex items-center justify-center px-6 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           The Commons are empty. Be the first to build here.
@@ -94,8 +143,9 @@ export default function WorldScene({ residents, onMove }) {
               <SpeciesAvatar
                 species={resident.species}
                 src={resident.avatar_url}
+                worn={resident.worn}
                 size="sm"
-                className="mx-auto ring-1 ring-primary/40"
+                className={`mx-auto ${resident.is_me ? 'ring-1 ring-primary' : 'ring-1 ring-primary/40'}`}
               />
               <p className="mt-1 max-w-[110px] truncate font-mono text-[9px] uppercase tracking-[0.12em] text-foreground/85">
                 {resident.is_me ? 'You' : resident.name}
@@ -116,7 +166,9 @@ export default function WorldScene({ residents, onMove }) {
                   }
                   style={{ left: `${x}%`, top: `${y}%` }}
                   className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 select-none text-center leading-none ${
-                    resident.is_me ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'
+                    resident.is_me && !placing
+                      ? 'cursor-grab active:cursor-grabbing'
+                      : 'pointer-events-none'
                   }`}
                 >
                   <span className="block text-4xl drop-shadow" aria-hidden="true">

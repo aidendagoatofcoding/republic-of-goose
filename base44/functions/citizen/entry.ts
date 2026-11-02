@@ -140,8 +140,15 @@ export default async function (req) {
           })
           .filter(Boolean);
 
+      const wornOf = (entry) =>
+        (Array.isArray(entry.decorations) ? entry.decorations : [])
+          .map((id) => itemsById.get(id))
+          .filter(Boolean)
+          .map((item) => item.emoji || '📦');
+
       const residents = residentsRaw.map((entry) => ({
         key: entry.id,
+        worn: wornOf(entry),
         name: entry.goose_name || entry.full_name || entry.username || 'Anonymous honker',
         username: entry.username || '',
         species: entry.species || 'goose',
@@ -251,7 +258,13 @@ export default async function (req) {
     const holdings = await loadHoldings(admin, code);
 
     if (action === 'profile') {
-      return Response.json({ citizen: publicCitizen(citizen, holdings) });
+      const shelf = await admin.entities.ShopItem.list({ limit: 200 });
+      const itemsById = new Map((shelf?.items ?? []).map((item) => [item.id, item]));
+      const worn = (Array.isArray(citizen.decorations) ? citizen.decorations : [])
+        .map((id) => itemsById.get(id))
+        .filter(Boolean)
+        .map((item) => item.emoji || '📦');
+      return Response.json({ citizen: { ...publicCitizen(citizen, holdings), worn } });
     }
 
     if (action === 'setAvatar') {

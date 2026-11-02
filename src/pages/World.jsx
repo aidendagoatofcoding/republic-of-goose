@@ -11,6 +11,7 @@ export default function World() {
   const { citizen, signedIn, run } = useCitizen();
   const [world, setWorld] = useState(null);
   const [error, setError] = useState('');
+  const [placing, setPlacing] = useState(null);
   const code = citizen?.passport_code || '';
 
   const load = useCallback(async () => {
@@ -36,6 +37,13 @@ export default function World() {
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const place = async (x, y) => {
+    if (!placing) return;
+    const item = placing;
+    setPlacing(null);
+    await move(item.item_id, x, y);
   };
 
   return (
@@ -92,11 +100,22 @@ export default function World() {
             <p className="font-mono text-[11px] text-muted-foreground">Walking out to the meadow...</p>
           </Panel>
         ) : (
-          <WorldScene residents={world.residents} onMove={move} />
+          <WorldScene
+            residents={world.residents}
+            onMove={move}
+            placing={placing}
+            onPlace={place}
+            onCancelPlace={() => setPlacing(null)}
+          />
         )}
 
         {signedIn && world?.mine && (
-          <CommonsPalette items={world.mine.items} onPlace={(item) => move(item.item_id, 50, 74)} />
+          <CommonsPalette
+            items={world.mine.items}
+            placingId={placing?.item_id || ''}
+            onPlace={setPlacing}
+            onCancel={() => setPlacing(null)}
+          />
         )}
       </div>
     </div>

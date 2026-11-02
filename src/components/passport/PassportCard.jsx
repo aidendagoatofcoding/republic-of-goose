@@ -51,7 +51,12 @@ export default function PassportCard({ citizen }) {
       <section className="rounded-md border border-primary/40 bg-card p-6 md:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <SpeciesAvatar species={citizen.species} src={citizen.avatar_url} size="lg" />
+            <SpeciesAvatar
+              species={citizen.species}
+              src={citizen.avatar_url}
+              worn={citizen.worn}
+              size="lg"
+            />
             <div>
               <CitizenBadge species={citizen.species} />
               <h2 className="display-title mt-2 text-3xl">
