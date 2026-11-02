@@ -11,16 +11,13 @@ export default function PongLobby({
   const others = people.filter((person) => person.seat !== seat);
 
   return (
-    <section className="rounded-md border border-border/80 bg-card p-5">
-      <span className="meta-label">Champion Isle</span>
-      <h3 className="display-title mt-2 text-xl">Pond Pong</h3>
-      <p className="mt-2 text-[14px] leading-relaxed text-foreground/70">
-        The island's opening sport. Two paddles, one pond, first to five takes the ribbon. Both
-        citizens need the Commons open.
+    <div>
+      <p className="font-mono text-[9px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
+        Both citizens need the Commons open.
       </p>
 
       {incoming && (
-        <div className="mt-3 rounded-sm border border-primary/50 bg-primary/5 p-3">
+        <div className="mt-2 rounded-sm border border-primary/50 bg-primary/5 p-2.5">
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
             {incoming.name} challenges you
           </p>
@@ -44,21 +41,21 @@ export default function PongLobby({
       )}
 
       {notice && (
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="mt-2 font-mono text-[9px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
           {notice}
         </p>
       )}
 
       {active ? (
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
-          Match in progress against {active.opponentName}
+        <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
+          Match against {active.opponentName}
         </p>
       ) : others.length === 0 ? (
-        <p className="mt-3 font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
+        <p className="mt-2 font-mono text-[9px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
           No other citizen is in the meadow right now.
         </p>
       ) : (
-        <ul className="mt-3 space-y-1.5">
+        <ul className="mt-2 space-y-1">
           {others.map((person) => (
             <li key={person.seat} className="flex items-center justify-between gap-2">
               <span className="truncate font-mono text-[11px] text-foreground/85">
@@ -75,6 +72,6 @@ export default function PongLobby({
           ))}
         </ul>
       )}
-    </section>
+    </div>
   );
 }

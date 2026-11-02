@@ -4,8 +4,10 @@ import MeadowGround from '@/components/world/MeadowGround';
 import Walker from '@/components/world/Walker';
 import WorldBubble from '@/components/world/WorldBubble';
 import NeighbourDialog from '@/components/world/NeighbourDialog';
-import PongLobby from '@/components/world/PongLobby';
+import ChampionIsle from '@/components/world/ChampionIsle';
 import PongTable from '@/components/world/PongTable';
+import SprintGame from '@/components/world/SprintGame';
+import BreadToss from '@/components/world/BreadToss';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 
@@ -61,6 +63,7 @@ export default function WorldScene({
   });
   const pong = usePong({ seat, send: sendRoom });
   pongHandler.current = pong.handlePong;
+  const [sport, setSport] = useState('');
   const myKey = seat ? `seat:${seat}` : 'me';
 
   const [offerTarget, setOfferTarget] = useState(null);
@@ -521,17 +524,13 @@ export default function WorldScene({
       </div>
 
       <div className="absolute bottom-10 left-2 z-40 max-h-[54%] w-[216px] max-w-[calc(100%-1rem)] overflow-y-auto sm:w-[248px]">
-        <PongLobby
-          people={people}
-          seat={seat}
-          incoming={pong.incoming}
-          notice={pong.notice}
-          active={pong.game}
-          onChallenge={pong.challenge}
-          onAccept={pong.accept}
-          onDecline={pong.decline}
-        />
+        <ChampionIsle people={people} seat={seat} pong={pong} onPlay={setSport} />
       </div>
+
+      {sport === 'sprint' && (
+        <SprintGame species={profile?.species} onClose={() => setSport('')} />
+      )}
+      {sport === 'toss' && <BreadToss onClose={() => setSport('')} />}
 
       <NeighbourDialog
         target={offerTarget}

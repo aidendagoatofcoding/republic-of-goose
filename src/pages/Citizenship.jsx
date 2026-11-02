@@ -1,5 +1,7 @@
 import Panel from '@/components/Panel';
 import CitizenshipForm from '@/components/citizenship/CitizenshipForm';
+import CitizenStatus from '@/components/citizenship/CitizenStatus';
+import { useCitizen } from '@/hooks/useCitizen';
 
 const REQUIREMENTS = [
   'Be able to produce at least one convincing honk',
@@ -10,6 +12,18 @@ const REQUIREMENTS = [
 ];
 
 export default function Citizenship() {
+  const { citizen, signedIn, loading } = useCitizen();
+
+  if (loading) {
+    return (
+      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        Checking the national register...
+      </p>
+    );
+  }
+
+  if (signedIn) return <CitizenStatus citizen={citizen} />;
+
   return (
     <div className="mx-auto max-w-5xl space-y-4">
       <Panel>
