@@ -3,6 +3,15 @@ import { Actor } from 'base44:runtime/actors';
 const MAX_USERS = 24;
 const SAVE_INTERVAL_MS = 2500;
 
+const PONG_TYPES = new Set([
+  'pong_invite',
+  'pong_accept',
+  'pong_decline',
+  'pong_state',
+  'pong_paddle',
+  'pong_end',
+]);
+
 export default class Commons extends Actor {
   users = new Map();
   nextSeat = 1;
@@ -74,6 +83,31 @@ export default class Commons extends Actor {
       const target = Number(msg.target);
       if (!Number.isFinite(target)) return;
       this.broadcast({ type: 'honk', from: user.seat, target, name: user.name });
+      return;
+    }
+
+    if (PONG_TYPES.has(msg.type)) {
+      const num = (key) => {
+        const value = Number(msg[key]);
+        return Number.isFinite(value) ? value : 0;
+      };
+      const relay = {
+        type: msg.type,
+        from: user.seat,
+        name: user.name,
+        to: num('to'),
+      };
+      if (msg.type === 'pong_state') {
+        relay.ballX = num('ballX');
+        relay.ballY = num('ballY');
+        relay.hostY = num('hostY');
+        relay.guestY = num('guestY');
+        relay.scoreHost = num('scoreHost');
+        relay.scoreGuest = num('scoreGuest');
+      }
+      if (msg.type === 'pong_paddle') relay.y = num('y');
+      if (msg.type === 'pong_end') relay.winnerSeat = num('winnerSeat');
+      this.broadcast(relay);
     }
   }
 

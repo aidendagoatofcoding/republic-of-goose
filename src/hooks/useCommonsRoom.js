@@ -5,17 +5,19 @@ const ROOM = 'honk-commons';
 const CONN_KEY = 'honk-commons-conn';
 const SEND_INTERVAL_MS = 140;
 
-export default function useCommonsRoom({ profile, onHonk }) {
+export default function useCommonsRoom({ profile, onHonk, onPong }) {
   const [people, setPeople] = useState([]);
   const [seat, setSeat] = useState(null);
   const [connected, setConnected] = useState(false);
   const roomRef = useRef(null);
   const profileRef = useRef(profile);
   const honkRef = useRef(onHonk);
+  const pongRef = useRef(onPong);
   const lastSent = useRef(0);
 
   profileRef.current = profile;
   honkRef.current = onHonk;
+  pongRef.current = onPong;
 
   useEffect(() => {
     const factory = base44.actors?.Commons;

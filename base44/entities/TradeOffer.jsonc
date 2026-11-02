@@ -1,0 +1,74 @@
+{
+  "name": "TradeOffer",
+  "type": "object",
+  "properties": {
+    "from_key": {
+      "type": "string",
+      "description": "Citizen record id of the buyer making the offer"
+    },
+    "from_name": {
+      "type": "string",
+      "description": "Name of the buyer shown to the seller"
+    },
+    "to_key": {
+      "type": "string",
+      "description": "Citizen record id of the seller who owns the item"
+    },
+    "to_name": {
+      "type": "string",
+      "description": "Name of the seller shown to the buyer"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "Shop catalogue id of the home, vehicle or pet being offered for"
+    },
+    "item_name": {
+      "type": "string",
+      "description": "Item name as it appears in the Commons"
+    },
+    "item_emoji": {
+      "type": "string",
+      "description": "Emoji of the item being traded"
+    },
+    "item_category": {
+      "type": "string",
+      "description": "Whether the item is a home, vehicle or pet"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Bread offered for the item"
+    },
+    "status": {
+      "type": "string",
+      "description": "pending until answered, then accepted, declined or withdrawn"
+    }
+  },
+  "required": [
+    "from_key",
+    "to_key",
+    "item_id",
+    "amount"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

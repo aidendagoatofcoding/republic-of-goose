@@ -5,6 +5,7 @@ import Panel from '@/components/Panel';
 import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import StockRow from '@/components/market/StockRow';
+import StockProfile from '@/components/market/StockProfile';
 
 export default function Market() {
   const { citizen, signedIn, run } = useCitizen();
@@ -13,6 +14,7 @@ export default function Market() {
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
+  const [profileSymbol, setProfileSymbol] = useState('');
 
   const loadMarket = async () => {
     try {
@@ -54,6 +56,9 @@ export default function Market() {
   const holdings = citizen?.holdings ?? [];
   const sharesOf = (symbol) =>
     holdings.find((holding) => holding.symbol === symbol)?.shares ?? 0;
+  const avgOf = (symbol) =>
+    holdings.find((holding) => holding.symbol === symbol)?.avg_price ?? 0;
+  const profiled = market?.stocks.find((stock) => stock.symbol === profileSymbol) ?? null;
 
   return (
     <div className="mx-auto max-w-6xl space-y-4">
@@ -120,10 +125,24 @@ export default function Market() {
               onTrade={trade}
               busy={busy}
               signedIn={signedIn}
+              onProfile={setProfileSymbol}
             />
           ))}
         </div>
       )}
+
+      <StockProfile
+        stock={profiled}
+        open={Boolean(profiled)}
+        onClose={() => setProfileSymbol('')}
+        shares={profiled ? sharesOf(profiled.symbol) : 0}
+        avgPrice={profiled ? avgOf(profiled.symbol) : 0}
+        qty={profiled ? qty[profiled.symbol] ?? 1 : 1}
+        onQty={setQuantity}
+        onTrade={trade}
+        busy={busy}
+        signedIn={signedIn}
+      />
     </div>
   );
 }

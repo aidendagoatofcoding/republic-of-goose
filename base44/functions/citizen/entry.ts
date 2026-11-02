@@ -51,6 +51,40 @@ function publicLoan(loan, earned) {
   };
 }
 
+function publicOffer(offer) {
+  return {
+    id: offer.id,
+    from_key: offer.from_key || '',
+    from_name: offer.from_name || 'A citizen',
+    to_key: offer.to_key || '',
+    to_name: offer.to_name || 'A citizen',
+    item_id: offer.item_id,
+    item_name: offer.item_name || 'Item',
+    item_emoji: offer.item_emoji || '📦',
+    item_category: offer.item_category || 'home',
+    amount: Math.round(offer.amount ?? 0),
+    status: offer.status || 'pending',
+    created_date: offer.created_date,
+  };
+}
+
+async function loadOffers(admin, citizenId) {
+  const [incoming, outgoing] = await Promise.all([
+    admin.entities.TradeOffer.filter(
+      { to_key: citizenId, status: 'pending' },
+      { limit: 40, sort: '-created_date' }
+    ),
+    admin.entities.TradeOffer.filter(
+      { from_key: citizenId, status: 'pending' },
+      { limit: 40, sort: '-created_date' }
+    ),
+  ]);
+  return {
+    incoming: (incoming?.items ?? []).map(publicOffer),
+    outgoing: (outgoing?.items ?? []).map(publicOffer),
+  };
+}
+
 async function loadLoan(admin, code) {
   const page = await admin.entities.Loan.filter(
     { passport_code: code, status: 'active' },
@@ -450,6 +484,178 @@ export default async function (req) {
       ];
       const updated = await admin.entities.Citizen.update(citizen.id, { world_spots: next });
       return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'offers') {
+      return Response.json({ offers: await loadOffers(admin, citizen.id) });
+    }
+
+    if (action === 'makeOffer') {
+      const itemId = String(body.item_id ?? '').trim();
+      const toKey = String(body.to_key ?? '').trim();
+      const amount = Math.floor(Number(body.amount));
+
+      if (!itemId || !toKey) {
+        return Response.json({ error: 'That item is no longer in the Commons.' }, { status: 400 });
+      }
+      if (toKey === citizen.id) {
+        return Response.json({ error: 'That already belongs to you.' }, { status: 400 });
+      }
+      if (!Number.isFinite(amount) || amount < 1) {
+        return Response.json({ error: 'Offer at least 1 bread.' }, { status: 400 });
+      }
+      const bread = Math.round(citizen.bread ?? 0);
+      if (amount > bread) {
+        return Response.json({ error: `You only hold ${bread} bread in hand.` }, { status: 400 });
+      }
+
+      const seller = await admin.entities.Citizen
+        .get(toKey)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!seller) {
+        return Response.json({ error: 'That citizen has left the register.' }, { status: 404 });
+      }
+
+      const sellerItems = Array.isArray(seller.possessions) ? seller.possessions : [];
+      if (!sellerItems.includes(itemId)) {
+        return Response.json({ error: 'That item is no longer in their meadow.' }, { status: 400 });
+      }
+      const myItems = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+      if (myItems.includes(itemId)) {
+        return Response.json({ error: 'You already own one of those.' }, { status: 400 });
+      }
+
+      const item = await admin.entities.ShopItem
+        .get(itemId)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!item) {
+        return Response.json({ error: 'That item is no longer sold.' }, { status: 404 });
+      }
+
+      const payload = {
+        from_key: citizen.id,
+        from_name: citizen.goose_name || citizen.full_name || 'A citizen',
+        to_key: seller.id,
+        to_name: seller.goose_name || seller.full_name || 'A citizen',
+        item_id: itemId,
+        item_name: item.name,
+        item_emoji: item.emoji || '📦',
+        item_category: item.category || 'home',
+        amount,
+        status: 'pending',
+      };
+
+      const existing = await admin.entities.TradeOffer.filter(
+        { from_key: citizen.id, to_key: seller.id, item_id: itemId, status: 'pending' },
+        { limit: 1 }
+      );
+      const previous = existing?.items?.[0];
+      if (previous) {
+        await admin.entities.TradeOffer.update(previous.id, payload);
+      } else {
+        await admin.entities.TradeOffer.create(payload);
+      }
+
+      return Response.json({ offers: await loadOffers(admin, citizen.id) });
+    }
+
+    if (action === 'withdrawOffer') {
+      const offerId = String(body.offer_id ?? '');
+      const offer = await admin.entities.TradeOffer
+        .get(offerId)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!offer || offer.from_key !== citizen.id) {
+        return Response.json({ error: 'That offer is not yours.' }, { status: 404 });
+      }
+      if (offer.status === 'pending') {
+        await admin.entities.TradeOffer.update(offer.id, { status: 'withdrawn' });
+      }
+      return Response.json({ offers: await loadOffers(admin, citizen.id) });
+    }
+
+    if (action === 'replyOffer') {
+      const offerId = String(body.offer_id ?? '');
+      const accept = body.accept === true;
+      const offer = await admin.entities.TradeOffer
+        .get(offerId)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+
+      if (!offer || offer.to_key !== citizen.id) {
+        return Response.json({ error: 'That offer is not yours to answer.' }, { status: 404 });
+      }
+      if (offer.status !== 'pending') {
+        return Response.json({ error: 'That offer was already settled.' }, { status: 400 });
+      }
+
+      if (!accept) {
+        await admin.entities.TradeOffer.update(offer.id, { status: 'declined' });
+        return Response.json({ offers: await loadOffers(admin, citizen.id) });
+      }
+
+      const itemId = offer.item_id;
+      const amount = Math.round(offer.amount ?? 0);
+      const sellerItems = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+      if (!sellerItems.includes(itemId)) {
+        await admin.entities.TradeOffer.update(offer.id, { status: 'expired' });
+        return Response.json(
+          { error: 'You no longer own that item, so the offer is void.' },
+          { status: 400 }
+        );
+      }
+
+      const buyer = await admin.entities.Citizen
+        .get(offer.from_key)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!buyer) {
+        await admin.entities.TradeOffer.update(offer.id, { status: 'expired' });
+        return Response.json({ error: 'That buyer has left the register.' }, { status: 400 });
+      }
+
+      const buyerItems = Array.isArray(buyer.possessions) ? buyer.possessions : [];
+      if (buyerItems.includes(itemId)) {
+        return Response.json({ error: 'They already own one of those.' }, { status: 400 });
+      }
+      const buyerBread = Math.round(buyer.bread ?? 0);
+      if (buyerBread < amount) {
+        return Response.json(
+          { error: `They no longer hold the ${amount} bread they offered.` },
+          { status: 400 }
+        );
+      }
+      if (buyerItems.length >= MAX_POSSESSIONS) {
+        return Response.json({ error: 'Their meadow is already full.' }, { status: 400 });
+      }
+
+      const sellerSpots = (Array.isArray(citizen.world_spots) ? citizen.world_spots : []).filter(
+        (spot) => spot.item_id !== itemId
+      );
+      const updatedSeller = await admin.entities.Citizen.update(citizen.id, {
+        bread: Math.round(citizen.bread ?? 0) + amount,
+        possessions: sellerItems.filter((id) => id !== itemId),
+        world_spots: sellerSpots,
+      });
+
+      const buyerSpots = Array.isArray(buyer.world_spots) ? buyer.world_spots : [];
+      await admin.entities.Citizen.update(buyer.id, {
+        bread: buyerBread - amount,
+        possessions: [...buyerItems, itemId],
+        world_spots: [
+          ...buyerSpots,
+          {
+            item_id: itemId,
+            x: clampSpot(24 + (buyerSpots.length % 4) * 18, 2, 98),
+            y: clampSpot(52 + (Math.floor(buyerSpots.length / 4) % 3) * 15, 6, 94),
+          },
+        ],
+      });
+
+      await admin.entities.TradeOffer.update(offer.id, { status: 'accepted' });
+
+      return Response.json({
+        citizen: publicCitizen(updatedSeller, holdings),
+        offers: await loadOffers(admin, citizen.id),
+        sold: amount,
+      });
     }
 
     if (action === 'loan') {

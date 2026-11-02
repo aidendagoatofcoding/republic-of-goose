@@ -2,6 +2,51 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 const MASTER_PASSPHRASE = 'HONK2026';
 const ALLOWED_THEMES = ['forest', 'ocean', 'sunset', 'royal'];
+const MAX_SUBJECT = 140;
+const MAX_BODY = 4000;
+const MAX_RECIPIENTS = 40;
+
+function validEmail(value) {
+  return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+}
+
+function escapeHtml(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    (char) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]
+  );
+}
+
+function greeting(citizen) {
+  return `Dear ${citizen.goose_name || citizen.full_name || 'citizen'},`;
+}
+
+function newsletterHtml(citizen, subject, message) {
+  const paragraphs = message
+    .split(/\n{2,}/)
+    .map(
+      (paragraph) =>
+        `<p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#E8F0E6;">${escapeHtml(
+          paragraph
+        ).replace(/\n/g, '<br/>')}</p>`
+    )
+    .join('');
+
+  return `<div style="background:#0A0F0D;padding:28px 16px;font-family:Georgia,serif;">
+  <div style="max-width:560px;margin:0 auto;background:#111A15;border:1px solid #26332A;border-radius:6px;overflow:hidden;">
+    <div style="border-bottom:1px solid #26332A;padding:18px 24px;">
+      <p style="margin:0;font-family:Courier,monospace;font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:#D4AF37;">Republic of Goose · National Post</p>
+      <h1 style="margin:10px 0 0;font-size:24px;line-height:1.2;color:#F4F8F2;">${escapeHtml(subject)}</h1>
+    </div>
+    <div style="padding:22px 24px;">
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#E8F0E6;">${escapeHtml(greeting(citizen))}</p>
+      ${paragraphs}
+      <p style="margin:24px 0 0;font-family:Courier,monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8FA394;">— The Assembly of the Republic of Goose</p>
+    </div>
+  </div>
+</div>`;
+}
 
 async function readConfig(admin) {
   const page = await admin.entities.NationConfig.list({ sort: '-created_date', limit: 1 });
@@ -98,6 +143,49 @@ export default async function (req) {
       }
       await admin.entities.Citizen.delete(body.id);
       return Response.json({ ok: true });
+    }
+
+    if (action === 'newsletterAudience') {
+      const page = await admin.entities.Citizen.list({ limit: 500 });
+      const citizens = page?.items ?? [];
+      const withEmail = citizens.filter((citizen) => validEmail(citizen.email)).length;
+      return Response.json({ ok: true, total: citizens.length, withEmail });
+    }
+
+    if (action === 'sendNewsletter') {
+      const subject = String(body.subject ?? '').trim().slice(0, MAX_SUBJECT);
+      const message = String(body.message ?? '').trim().slice(0, MAX_BODY);
+      if (!subject || !message) {
+        return Response.json(
+          { error: 'Write both a subject and a message before sending.' },
+          { status: 400 }
+        );
+      }
+
+      const page = await admin.entities.Citizen.list({ limit: 500, sort: '-created_date' });
+      const recipients = (page?.items ?? [])
+        .filter((citizen) => validEmail(citizen.email))
+        .slice(0, MAX_RECIPIENTS);
+
+      let sent = 0;
+      let failed = 0;
+      for (const citizen of recipients) {
+        try {
+          await admin.integrations.Core.SendEmail({
+            to: citizen.email,
+            from_name: 'Republic of Goose',
+            subject,
+            html: newsletterHtml(citizen, subject, message),
+            text: `${greeting(citizen)}\n\n${message}\n\n— The Assembly of the Republic of Goose`,
+            category: 'transactional',
+          });
+          sent += 1;
+        } catch (error) {
+          failed += 1;
+        }
+      }
+
+      return Response.json({ ok: true, sent, failed, total: recipients.length });
     }
 
     return Response.json({ error: 'Unknown action.' }, { status: 400 });

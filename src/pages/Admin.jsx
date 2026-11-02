@@ -7,6 +7,7 @@ import AnnouncementEditor from '@/components/admin/AnnouncementEditor';
 import LawManager from '@/components/admin/LawManager';
 import ThemePicker from '@/components/admin/ThemePicker';
 import CitizenRegistry from '@/components/admin/CitizenRegistry';
+import NewsletterComposer from '@/components/admin/NewsletterComposer';
 
 export default function Admin() {
   const nation = useNation();
@@ -132,6 +133,7 @@ export default function Admin() {
       />
       <LawManager laws={nation.laws} run={run} />
       <CitizenRegistry run={run} />
+      <NewsletterComposer run={run} />
       <ThemePicker key={nation.theme} theme={nation.theme} run={run} />
     </div>
   );

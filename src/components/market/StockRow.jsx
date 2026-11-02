@@ -2,7 +2,16 @@ import Sparkline from './Sparkline';
 
 const formatPct = (value) => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
 
-export default function StockRow({ stock, shares, qty, onQty, onTrade, busy, signedIn }) {
+export default function StockRow({
+  stock,
+  shares,
+  qty,
+  onQty,
+  onTrade,
+  busy,
+  signedIn,
+  onProfile,
+}) {
   const positive = stock.change >= 0;
   const value = shares * stock.price;
 
@@ -10,12 +19,22 @@ export default function StockRow({ stock, shares, qty, onQty, onTrade, busy, sig
     <div className="grid gap-3 px-4 py-4 md:grid-cols-[1.6fr_1fr_1fr_auto] md:items-center">
       <div className="flex items-center gap-3">
         <Sparkline points={stock.history} positive={positive} />
-        <div>
-          <p className="font-mono text-[12px] font-bold tracking-[0.08em] text-foreground">
+        <button
+          type="button"
+          onClick={() => onProfile(stock.symbol)}
+          className="group text-left"
+          aria-label={`Read the ${stock.symbol} company profile`}
+        >
+          <p className="font-mono text-[12px] font-bold tracking-[0.08em] text-foreground group-hover:text-primary">
             {stock.symbol}
           </p>
-          <p className="text-[13px] text-muted-foreground">{stock.name}</p>
-        </div>
+          <p className="text-[13px] text-muted-foreground group-hover:text-foreground/80">
+            {stock.name}
+            <span className="ml-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-primary/80">
+              profile
+            </span>
+          </p>
+        </button>
       </div>
 
       <div>
