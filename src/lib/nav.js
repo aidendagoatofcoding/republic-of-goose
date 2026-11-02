@@ -4,7 +4,6 @@ import {
   Languages,
   Type,
   BookOpen,
-  PenLine,
   Lock,
   MessageSquare,
   Newspaper,
@@ -46,12 +45,6 @@ export const NAV_GROUPS = [
     ],
   },
   {
-    label: 'Government',
-    items: [
-      { path: '/grammar', label: 'Grammar Rules', title: 'HONKISH Grammar', icon: PenLine },
-    ],
-  },
-  {
     label: 'Administration',
     items: [
       { path: '/admin', label: 'Master Goose Admin', title: 'Master Goose Admin', icon: Lock },
@@ -68,6 +61,7 @@ const HIDDEN_TITLES = {
   '/games': 'Goose Games',
   '/citizenship': 'Citizenship Office',
   '/laws': 'National Laws',
+  '/grammar': 'HONKISH Grammar',
 };
 
 export const PAGE_TITLES = {

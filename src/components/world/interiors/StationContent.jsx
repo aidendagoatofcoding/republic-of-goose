@@ -11,6 +11,7 @@ import News from '@/pages/News';
 import ShopShelf from '@/components/shop/ShopShelf';
 import KitchenStation from '@/components/world/interiors/KitchenStation';
 import Citizenship from '@/pages/Citizenship';
+import Grammar from '@/pages/Grammar';
 
 const ShopCatalogue = () => <ShopShelf category="all" />;
 
@@ -26,6 +27,7 @@ const CONTENT = {
   herald: News,
   bakery: Games,
   registry: Citizenship,
+  grammar: Grammar,
 };
 
 export default function StationContent({ station, place, onEnterPlace, onExit, onPlay }) {

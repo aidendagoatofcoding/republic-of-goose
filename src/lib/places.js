@@ -168,6 +168,24 @@ const ROOMS = {
       { emoji: '🦢', x: 56, y: 80, size: 30, name: 'Head baker', serves: 'counter' },
     ],
   },
+  library: {
+    name: 'The Library of Honkgress',
+    sign: 'LIBRARY OF HONKGRESS',
+    honkish: 'HONKK HOOONKK HONK',
+    blurb: 'Every article of the national grammar, shelved, stamped and guarded.',
+    accent: '#c8c8b0',
+    props: [
+      { type: 'chandelier', x: 50, y: 13 },
+      { type: 'shelf', x: 16, y: 50 },
+      { type: 'shelf', x: 50, y: 44 },
+      { type: 'shelf', x: 84, y: 50 },
+      { type: 'counter', x: 50, y: 72, label: 'GRAMMAR SHELVES' },
+    ],
+    actors: [
+      { emoji: '🦉', x: 50, y: 62, size: 32, name: 'Librarian', serves: 'stacks' },
+      { emoji: '🐢', x: 24, y: 80, size: 26, delay: '1.2s' },
+    ],
+  },
   registry: {
     name: "The Citizens' Registry",
     sign: 'CITIZENS REGISTRY',

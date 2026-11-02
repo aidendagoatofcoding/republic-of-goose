@@ -76,6 +76,9 @@ export const STATIONS = {
   registry: [
     { id: 'register', name: 'The register', x: 50, y: 80, content: 'registry' },
   ],
+  library: [
+    { id: 'stacks', name: 'The grammar shelves', x: 50, y: 80, content: 'grammar' },
+  ],
   forest: [
     { id: 'glade', name: 'The quiet glade', x: 50, y: 84, content: 'forest' },
   ],
