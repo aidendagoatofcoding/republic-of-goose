@@ -168,6 +168,7 @@ export default async function (req) {
               name: item.name,
               emoji: item.emoji || '📦',
               category: item.category || 'decoration',
+              price: Math.round(item.price ?? 0),
               x: clampSpot(spot.x, 2, 98),
               y: clampSpot(spot.y, 6, 94),
             };

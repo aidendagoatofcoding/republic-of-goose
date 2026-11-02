@@ -3,7 +3,11 @@ import HouseSprite from '@/components/world/HouseSprite';
 import MeadowGround from '@/components/world/MeadowGround';
 import Walker from '@/components/world/Walker';
 import WorldBubble from '@/components/world/WorldBubble';
+import NeighbourDialog from '@/components/world/NeighbourDialog';
+import PongLobby from '@/components/world/PongLobby';
+import PongTable from '@/components/world/PongTable';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
+import usePong from '@/hooks/usePong';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
 
@@ -11,7 +15,16 @@ const NPC_LINES = ['HONK!', 'Lovely day.', 'Any bread?', 'Mind the pond.', 'HONK
 const KNOCKS = ['Come in!', 'Who honks there?', 'Door is open.', 'Wipe your webbed feet.'];
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
-export default function WorldScene({ residents, onMove, placing, onPlace, onCancelPlace, profile }) {
+export default function WorldScene({
+  residents,
+  onMove,
+  placing,
+  onPlace,
+  onCancelPlace,
+  profile,
+  run,
+  onOffersChanged,
+}) {
   const boxRef = useRef(null);
   const [drag, setDrag] = useState(null);
   const [ghost, setGhost] = useState(null);
@@ -40,8 +53,20 @@ export default function WorldScene({ residents, onMove, placing, onPlace, onCanc
     [say]
   );
 
-  const { people, seat, connected, move, honk } = useCommonsRoom({ profile, onHonk: handleHonk });
+  const pongHandler = useRef(null);
+  const { people, seat, connected, move, honk, send: sendRoom } = useCommonsRoom({
+    profile,
+    onHonk: handleHonk,
+    onPong: (msg) => pongHandler.current?.(msg),
+  });
+  const pong = usePong({ seat, send: sendRoom });
+  pongHandler.current = pong.handlePong;
   const myKey = seat ? `seat:${seat}` : 'me';
+
+  const [offerTarget, setOfferTarget] = useState(null);
+  const [offerAmount, setOfferAmount] = useState('');
+  const [offerBusy, setOfferBusy] = useState(false);
+  const [offerError, setOfferError] = useState('');
 
   const send = useCallback(
     (next) => {
@@ -207,6 +232,49 @@ export default function WorldScene({ residents, onMove, placing, onPlace, onCanc
     }
   };
 
+  const openOffer = (resident, spot) => {
+    if (!seat || !run) return;
+    setOfferError('');
+    setOfferAmount(String(Math.max(1, Math.round(spot.price ?? 20))));
+    setOfferTarget({
+      owner_key: resident.key,
+      owner_name: resident.name,
+      item_id: spot.item_id,
+      item_name: spot.name,
+      emoji: spot.emoji,
+      item_category: spot.category,
+      price: spot.price ?? 0,
+    });
+  };
+
+  const sendOffer = async () => {
+    if (!offerTarget || !run) return;
+    setOfferBusy(true);
+    setOfferError('');
+    try {
+      const data = await run({
+        action: 'makeOffer',
+        to_key: offerTarget.owner_key,
+        item_id: offerTarget.item_id,
+        amount: Number(offerAmount),
+      });
+      if (data?.offers) onOffersChanged?.(data.offers);
+      say(offerTarget.owner_key, 'Offer sent!');
+      setOfferTarget(null);
+    } catch (err) {
+      setOfferError(err.message);
+    } finally {
+      setOfferBusy(false);
+    }
+  };
+
+  const knockTarget = () => {
+    if (!offerTarget) return;
+    const resident = residents.find((entry) => entry.key === offerTarget.owner_key);
+    if (resident) knock(resident, { item_id: offerTarget.item_id });
+    setOfferTarget(null);
+  };
+
   const honkAt = (targetSeat) => {
     say(myKey, 'HONK!');
     if (targetSeat) say(`seat:${targetSeat}`, 'HONK!');
@@ -216,7 +284,8 @@ export default function WorldScene({ residents, onMove, placing, onPlace, onCanc
   const live = people.filter((person) => person.seat !== seat);
 
   return (
-    <div
+    <div className="space-y-3">
+      <div
       ref={boxRef}
       onPointerMove={handlePointerMove}
       onPointerUp={endDrag}
@@ -301,7 +370,8 @@ export default function WorldScene({ residents, onMove, placing, onPlace, onCanc
                     draggedRef.current = false;
                     return;
                   }
-                  knock(resident, spot);
+                  if (resident.is_me) return;
+                  openOffer(resident, spot);
                 }}
                 style={{ left: `${x}%`, top: `${y}%` }}
                 className={`absolute z-10 -translate-x-1/2 -translate-y-[88%] ${
@@ -337,7 +407,11 @@ export default function WorldScene({ residents, onMove, placing, onPlace, onCanc
                 onPointerDown={resident.is_me ? (event) => startDrag(event, spot) : undefined}
                 onClick={(event) => {
                   event.stopPropagation();
-                  if (draggedRef.current) draggedRef.current = false;
+                  if (draggedRef.current) {
+                    draggedRef.current = false;
+                    return;
+                  }
+                  if (!resident.is_me) openOffer(resident, spot);
                 }}
                 style={{
                   left: `${x}%`,
@@ -435,7 +509,8 @@ export default function WorldScene({ residents, onMove, placing, onPlace, onCanc
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-wrap items-end justify-between gap-2 p-2">
         <p className="rounded-sm border border-border/70 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
-          Tap the meadow to walk · arrow keys to move · tap a neighbour to honk · tap a house to knock
+          Tap the meadow to walk · tap a neighbour to honk · tap their home, pet or cart to offer
+          bread
         </p>
         {connected && (
           <span className="rounded-sm border border-primary/40 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em] text-primary">
@@ -443,6 +518,41 @@ export default function WorldScene({ residents, onMove, placing, onPlace, onCanc
           </span>
         )}
       </div>
+      </div>
+
+      <PongLobby
+        people={people}
+        seat={seat}
+        incoming={pong.incoming}
+        notice={pong.notice}
+        active={pong.game}
+        onChallenge={pong.challenge}
+        onAccept={pong.accept}
+        onDecline={pong.decline}
+      />
+
+      <NeighbourDialog
+        target={offerTarget}
+        amount={offerAmount}
+        onAmount={setOfferAmount}
+        onSend={sendOffer}
+        onClose={() => setOfferTarget(null)}
+        onKnock={knockTarget}
+        busy={offerBusy}
+        error={offerError}
+        note=""
+      />
+
+      {pong.game && (
+        <PongTable
+          table={pong.table}
+          role={pong.game.role}
+          opponentName={pong.game.opponentName}
+          result={pong.result}
+          onMove={pong.setPaddle}
+          onQuit={pong.quit}
+        />
+      )}
     </div>
   );
 }

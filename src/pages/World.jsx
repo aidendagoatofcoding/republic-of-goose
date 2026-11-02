@@ -6,12 +6,16 @@ import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import WorldScene from '@/components/world/WorldScene';
 import CommonsPalette from '@/components/world/CommonsPalette';
+import TradePanel from '@/components/world/TradePanel';
 
 export default function World() {
   const { citizen, signedIn, run } = useCitizen();
   const [world, setWorld] = useState(null);
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(null);
+  const [offers, setOffers] = useState({ incoming: [], outgoing: [] });
+  const [offerBusy, setOfferBusy] = useState('');
+  const [offerError, setOfferError] = useState('');
   const code = citizen?.passport_code || '';
 
   const load = useCallback(async () => {
@@ -27,6 +31,53 @@ export default function World() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const loadOffers = useCallback(async () => {
+    if (!signedIn) {
+      setOffers({ incoming: [], outgoing: [] });
+      return;
+    }
+    try {
+      const data = await run({ action: 'offers' });
+      setOffers(data.offers || { incoming: [], outgoing: [] });
+    } catch (err) {
+      setOffers({ incoming: [], outgoing: [] });
+    }
+  }, [signedIn, run]);
+
+  useEffect(() => {
+    loadOffers();
+    if (!signedIn) return undefined;
+    const timer = setInterval(loadOffers, 20000);
+    return () => clearInterval(timer);
+  }, [loadOffers, signedIn]);
+
+  const replyOffer = async (offer, accept) => {
+    setOfferBusy(offer.id);
+    setOfferError('');
+    try {
+      const data = await run({ action: 'replyOffer', offer_id: offer.id, accept });
+      setOffers(data.offers || { incoming: [], outgoing: [] });
+      await load();
+    } catch (err) {
+      setOfferError(err.message);
+    } finally {
+      setOfferBusy('');
+    }
+  };
+
+  const withdrawOffer = async (offer) => {
+    setOfferBusy(offer.id);
+    setOfferError('');
+    try {
+      const data = await run({ action: 'withdrawOffer', offer_id: offer.id });
+      setOffers(data.offers || { incoming: [], outgoing: [] });
+    } catch (err) {
+      setOfferError(err.message);
+    } finally {
+      setOfferBusy('');
+    }
+  };
 
   const move = async (itemId, x, y) => {
     if (!signedIn) return;
@@ -106,6 +157,8 @@ export default function World() {
             placing={placing}
             onPlace={place}
             onCancelPlace={() => setPlacing(null)}
+            run={run}
+            onOffersChanged={setOffers}
             profile={{
               name: citizen?.goose_name || citizen?.full_name || 'You',
               species: citizen?.species || 'goose',
@@ -114,14 +167,26 @@ export default function World() {
           />
         )}
 
-        {signedIn && world?.mine && (
-          <CommonsPalette
-            items={world.mine.items}
-            placingId={placing?.item_id || ''}
-            onPlace={setPlacing}
-            onCancel={() => setPlacing(null)}
-          />
-        )}
+        <div className="space-y-4">
+          {signedIn && world?.mine && (
+            <CommonsPalette
+              items={world.mine.items}
+              placingId={placing?.item_id || ''}
+              onPlace={setPlacing}
+              onCancel={() => setPlacing(null)}
+            />
+          )}
+          {signedIn && (
+            <TradePanel
+              offers={offers}
+              busyId={offerBusy}
+              error={offerError}
+              onReply={replyOffer}
+              onWithdraw={withdrawOffer}
+              onRefresh={loadOffers}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

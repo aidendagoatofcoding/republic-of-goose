@@ -50,6 +50,8 @@ export default function useCommonsRoom({ profile, onHonk, onPong }) {
         setPeople(Array.isArray(msg.people) ? msg.people : []);
       } else if (msg.type === 'honk') {
         honkRef.current?.(msg);
+      } else if (typeof msg.type === 'string' && msg.type.startsWith('pong_')) {
+        pongRef.current?.(msg);
       }
     });
 
@@ -91,5 +93,11 @@ export default function useCommonsRoom({ profile, onHonk, onPong }) {
     room.send({ type: 'honk', target: Number(target) || 0 });
   }, []);
 
-  return { people, seat, connected, move, honk };
+  const send = useCallback((payload) => {
+    const room = roomRef.current;
+    if (!room || typeof room.send !== 'function') return;
+    room.send(payload);
+  }, []);
+
+  return { people, seat, connected, move, honk, send };
 }
