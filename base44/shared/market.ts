@@ -13,6 +13,11 @@ export const MARKET = [
   { symbol: 'DUCK', name: 'Duck Defence Systems', base: 34, vol: 0.14 },
   { symbol: 'MIGR', name: 'Migration Airways', base: 158, vol: 0.06 },
   { symbol: 'NEST', name: 'Nest & Twig Co.', base: 72, vol: 0.09 },
+  { symbol: 'MOSS', name: 'Moss & Marsh Fertiliser', base: 58, vol: 0.07 },
+  { symbol: 'GULL', name: 'Gull Shipping Lines', base: 96, vol: 0.09 },
+  { symbol: 'SYLP', name: 'Sylph Pharmaceuticals', base: 142, vol: 0.06 },
+  { symbol: 'REED', name: 'Reed & Rush Paper', base: 43, vol: 0.12 },
+  { symbol: 'COMB', name: 'Comb Capital', base: 176, vol: 0.05 },
 ];
 
 function hashString(value) {

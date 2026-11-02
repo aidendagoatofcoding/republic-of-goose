@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { DoorOpen } from 'lucide-react';
 import InteriorRoom from '@/components/world/interiors/InteriorRoom';
 import Walker from '@/components/world/Walker';
-import BankCounterPanel from '@/components/bank/BankCounterPanel';
+import BankCounter from '@/components/bank/BankCounter';
+import HouseRules from '@/components/bank/HouseRules';
+import BankPanel from '@/components/bank/BankPanel';
+import { useCitizen } from '@/hooks/useCitizen';
 import { PLACES } from '@/lib/places';
 
 const STATIONS = {
@@ -26,20 +29,24 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const SPEED = 165;
 const REACH = 190;
 
-export default function BankRoom({ signedIn, citizen, loan, error, busy, onTake, onRepay }) {
+export default function BankRoom() {
+  const { citizen, signedIn } = useCitizen();
   const roomRef = useRef(null);
   const keysRef = useRef(new Set());
   const [me, setMe] = useState({ x: 44, y: 86, face: 1 });
   const meRef = useRef(me);
   const [desk, setDesk] = useState('');
 
-  const distanceTo = useCallback((station) => {
-    const box = roomRef.current;
-    if (!box) return null;
-    const dx = ((me.x - station.x) / 100) * box.offsetWidth;
-    const dy = ((me.y - station.y) / 100) * box.offsetHeight;
-    return Math.hypot(dx, dy);
-  }, [me.x, me.y]);
+  const distanceTo = useCallback(
+    (station) => {
+      const box = roomRef.current;
+      if (!box) return null;
+      const dx = ((me.x - station.x) / 100) * box.offsetWidth;
+      const dy = ((me.y - station.y) / 100) * box.offsetHeight;
+      return Math.hypot(dx, dy);
+    },
+    [me.x, me.y]
+  );
 
   useEffect(() => {
     let frame = 0;
@@ -217,17 +224,24 @@ export default function BankRoom({ signedIn, citizen, loan, error, busy, onTake,
         )}
 
         {desk && (
-          <BankCounterPanel
-            desk={desk}
+          <BankPanel
+            title={desk === 'vault' ? 'At the vault' : 'At the loans desk'}
             onClose={() => setDesk('')}
-            signedIn={signedIn}
-            citizen={citizen}
-            loan={loan}
-            error={error}
-            busy={busy}
-            onTake={onTake}
-            onRepay={onRepay}
-          />
+          >
+            {desk === 'vault' ? (
+              <div className="space-y-3">
+                <span className="meta-label">House rules</span>
+                <HouseRules />
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                  {signedIn
+                    ? `Reserves held here · your balance ${citizen?.bread ?? 0} bread`
+                    : 'The vault stays locked for visitors'}
+                </p>
+              </div>
+            ) : (
+              <BankCounter />
+            )}
+          </BankPanel>
         )}
       </div>
     </div>

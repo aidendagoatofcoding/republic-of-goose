@@ -120,6 +120,91 @@ export const STOCK_PROFILES = {
       'Earnings track e-shop home sales',
     ],
   },
+  MOSS: {
+    sector: 'Agriculture',
+    founded: 1889,
+    hq: 'Wheat Reserve',
+    ceo: 'Hedda Peat',
+    employees: 2300,
+    dividend: '3.1%',
+    risk: 'Low',
+    sharesOutstanding: 1400000,
+    summary:
+      'Moss & Marsh Fertiliser keeps the wheat reserve growing four times a year. The Republic does not ask where the moss comes from, only that the bread keeps rising.',
+    highlights: [
+      'Supplies every granary in the national bread chain',
+      'Holds the exclusive reed-bed harvesting charter',
+      'Weather in the marsh is the only real risk',
+    ],
+  },
+  GULL: {
+    sector: 'Logistics',
+    founded: 1861,
+    hq: 'The Shallows',
+    ceo: 'Captain Skua',
+    employees: 6100,
+    dividend: '2.7%',
+    risk: 'Medium',
+    sharesOutstanding: 1700000,
+    summary:
+      'Gull Shipping Lines moves crates from the pond docks to every district pier. Loud, rude, and famously impossible to lose a parcel to.',
+    highlights: [
+      'Operates 120 barges on the national waterways',
+      'Contracted to deliver the national mail sack',
+      'Prices move with the herring catch',
+    ],
+  },
+  SYLP: {
+    sector: 'Healthcare',
+    founded: 1974,
+    hq: 'Nobody Is Quite Sure',
+    ceo: 'Dr Wren Ashgrove',
+    employees: 1500,
+    dividend: '0.4%',
+    risk: 'High',
+    sharesOutstanding: 800000,
+    summary:
+      'Sylph Pharmaceuticals treats everything from molting to winter melancholy. One approved tonic lifts the share price; one leak of the lab notes sinks it.',
+    highlights: [
+      'Patent holder for the Winter Plumage Tonic',
+      'Two trial approvals pending before the Assembly',
+      'Research spending exceeds revenue on purpose',
+    ],
+  },
+  REED: {
+    sector: 'Materials',
+    founded: 1922,
+    hq: 'The Shallows',
+    ceo: 'Otto Quill',
+    employees: 2900,
+    dividend: '1.4%',
+    risk: 'High',
+    sharesOutstanding: 950000,
+    summary:
+      'Reed & Rush Paper supplies the Herald, the Assembly and every citizen who insists on writing letters by beak. Paper demand is steady; the price is not.',
+    highlights: [
+      'Sole paper supplier to the Honk Herald',
+      'Pulp costs tied to the marsh water level',
+      'Recently branched into ceremonial parchment',
+    ],
+  },
+  COMB: {
+    sector: 'Financials',
+    founded: 1799,
+    hq: 'Old Bank',
+    ceo: 'Bartholomew Vane',
+    employees: 1200,
+    dividend: '4.2%',
+    risk: 'Low',
+    sharesOutstanding: 2100000,
+    summary:
+      'Comb Capital holds the ledgers of half the Republic and lends to the other half. Dull, ancient and quietly the largest balance sheet in the Commons.',
+    highlights: [
+      'Custodian of the National Bank reserve ledger',
+      'Holds debt in four other listed houses',
+      'Has never missed a dividend in two centuries',
+    ],
+  },
 };
 
 export function profileFor(symbol) {
