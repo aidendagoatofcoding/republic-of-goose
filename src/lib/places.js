@@ -1,5 +1,5 @@
 // Interiors of the Republic. Every civic building in the Commons opens into one of these rooms.
-export const PLACES = {
+const ROOMS = {
   capital: {
     name: 'The Capital of Honkton',
     sign: 'CAPITAL OF HONKTON',
@@ -176,6 +176,11 @@ export const PLACES = {
     actors: [{ emoji: '🐿️', x: 62, y: 74, size: 26 }],
   },
 };
+
+// Every room carries its own key as `id` so its counters, keepers and stations can be found.
+export const PLACES = Object.fromEntries(
+  Object.entries(ROOMS).map(([id, room]) => [id, { id, ...room }])
+);
 
 export const PLACE_LIST = Object.values(PLACES);
 export const placeFor = (id) => PLACES[id] || null;
