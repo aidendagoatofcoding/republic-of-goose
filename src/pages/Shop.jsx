@@ -9,6 +9,7 @@ import ShopCard from '@/components/shop/ShopCard';
 const SECTIONS = [
   { key: 'decoration', title: 'Decorations', blurb: 'Worn on your animal in the Hall of Honks.' },
   { key: 'home', title: 'Homes', blurb: 'A roof of your own in the Honk Commons.' },
+  { key: 'furniture', title: 'Furniture', blurb: 'Beds, chairs and shelves for the home you own.' },
   { key: 'vehicle', title: 'Vehicles', blurb: 'Cross the Republic without walking.' },
   { key: 'pet', title: 'Pets', blurb: 'Small companions that live on your plot.' },
 ];
@@ -53,6 +54,9 @@ export default function Shop() {
     ...(citizen?.decorations ?? []),
     ...(citizen?.possessions ?? []),
   ]);
+
+  const homeIds = (items ?? []).filter((item) => item.category === 'home').map((item) => item.id);
+  const ownsHome = homeIds.some((id) => ownedIds.has(id));
 
   const groups = SECTIONS.map((section) => ({
     ...section,
@@ -116,7 +120,7 @@ export default function Shop() {
             <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
               <h3 className="display-title text-xl">{group.title}</h3>
               <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
-                {group.blurb}
+                {group.key === 'furniture' && !ownsHome ? 'Buy a home before you furnish it' : group.blurb}
               </p>
             </div>
             <div className="grid gap-px border border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-3">
@@ -128,6 +132,7 @@ export default function Shop() {
                   canBuy={signedIn}
                   busy={buying === item.id}
                   affordable={(citizen?.bread ?? 0) >= item.price}
+                  locked={group.key === 'furniture' && !ownsHome}
                   onBuy={() => buy(item)}
                 />
               ))}

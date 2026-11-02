@@ -4,6 +4,7 @@ const LABELS = {
   home: 'Home',
   vehicle: 'Vehicle',
   pet: 'Pet',
+  furniture: 'Furniture',
   decoration: 'Decoration',
 };
 
@@ -15,7 +16,7 @@ export default function CommonsPalette({ items, placingId, onPlace, onCancel }) 
 
       {items.length === 0 ? (
         <p className="mt-3 text-[14.5px] leading-relaxed text-foreground/70">
-          No homes, vehicles or pets yet.{' '}
+          No homes, furniture, vehicles or pets yet.{' '}
           <Link to="/shop" className="text-primary underline-offset-4 hover:underline">
             Visit the E-Shop
           </Link>{' '}

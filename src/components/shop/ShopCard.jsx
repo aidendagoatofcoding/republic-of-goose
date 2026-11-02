@@ -3,9 +3,18 @@ const LABELS = {
   home: 'Home',
   vehicle: 'Vehicle',
   pet: 'Pet',
+  furniture: 'Furniture',
 };
 
-export default function ShopCard({ item, owned, canBuy, busy, affordable, onBuy }) {
+export default function ShopCard({
+  item,
+  owned,
+  canBuy,
+  busy,
+  affordable,
+  locked = false,
+  onBuy,
+}) {
   const category = item.category || 'decoration';
 
   return (
@@ -27,20 +36,22 @@ export default function ShopCard({ item, owned, canBuy, busy, affordable, onBuy 
 
       <button
         onClick={onBuy}
-        disabled={owned || busy || !canBuy}
+        disabled={owned || busy || !canBuy || locked}
         className="mt-5 rounded-sm border border-border px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors enabled:hover:border-primary/60 enabled:hover:text-primary disabled:opacity-50"
       >
         {owned
           ? category === 'decoration'
             ? 'Worn with pride'
             : 'In the Commons'
-          : busy
-            ? 'Paying...'
-            : !canBuy
-              ? 'Sign in to buy'
-              : affordable
-                ? 'Buy for bread'
-                : 'Not enough bread'}
+          : locked
+            ? 'Buy a home first'
+            : busy
+              ? 'Paying...'
+              : !canBuy
+                ? 'Sign in to buy'
+                : affordable
+                  ? 'Buy for bread'
+                  : 'Not enough bread'}
       </button>
     </article>
   );

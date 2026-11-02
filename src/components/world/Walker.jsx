@@ -1,10 +1,9 @@
-import SpeciesAvatar from '@/components/SpeciesAvatar';
+import AnimalSprite from '@/components/world/AnimalSprite';
 import WorldBubble from '@/components/world/WorldBubble';
 
 export default function Walker({
   label,
   species,
-  avatar,
   worn,
   x,
   y,
@@ -35,12 +34,14 @@ export default function Walker({
         aria-hidden="true"
       >
         <span className="meadow-bob block">
-          <SpeciesAvatar
+          <AnimalSprite
             species={species}
-            src={avatar}
             worn={worn}
-            size="md"
-            className={isMe ? 'ring-1 ring-primary' : 'ring-1 ring-primary/40'}
+            className={
+              isMe
+                ? 'drop-shadow-[0_6px_8px_rgba(0,0,0,0.5)]'
+                : 'drop-shadow-[0_4px_6px_rgba(0,0,0,0.35)] opacity-95'
+            }
           />
         </span>
       </span>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import HouseSprite from '@/components/world/HouseSprite';
 import MeadowGround from '@/components/world/MeadowGround';
 import Places from '@/components/world/Places';
@@ -17,7 +18,7 @@ import Realms from '@/components/world/Realms';
 import SportVenue from '@/components/world/SportVenue';
 import Areas from '@/components/world/areas/Areas';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
-import { areaAt } from '@/lib/commonsAreas';
+import { AREAS, areaAt } from '@/lib/commonsAreas';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 
@@ -57,6 +58,10 @@ export default function WorldScene({
   const keysRef = useRef(new Set());
   const placedRef = useRef('');
   const lastPublishRef = useRef(0);
+  const centeredRef = useRef(false);
+  const snappedRef = useRef(false);
+  const enterRef = useRef(null);
+  const navigate = useNavigate();
 
   const say = useCallback((key, text) => {
     setBubbles((current) => ({ ...current, [key]: { text, at: Date.now() } }));
@@ -102,25 +107,50 @@ export default function WorldScene({
   useEffect(() => {
     const onResize = () => setViewTick((value) => value + 1);
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    const box = boxRef.current;
+    const observer =
+      box && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(onResize) : null;
+    if (box && observer) observer.observe(box);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      observer?.disconnect();
+    };
   }, []);
 
   useEffect(() => {
     const box = boxRef.current;
     const view = box?.parentElement;
     if (!box || !view) return;
-    const worldWidth = box.offsetWidth || view.clientWidth;
+    const worldWidth = box.offsetWidth;
     const viewWidth = view.clientWidth;
-    if (!viewWidth) return;
+    if (!worldWidth || !viewWidth) return;
     const playerPx = (me.x / 100) * worldWidth;
     const margin = Math.min(viewWidth * 0.34, 260);
+    const limit = Math.max(0, worldWidth - viewWidth);
     setCamera((current) => {
-      let next = current;
+      let next = centeredRef.current ? current : playerPx - viewWidth / 2;
+      centeredRef.current = true;
       if (playerPx - next < margin) next = playerPx - margin;
-      if (playerPx - next > viewWidth - margin) next = viewWidth - margin;
-      return Math.max(0, Math.min(Math.max(0, worldWidth - viewWidth), next));
+      if (playerPx - next > viewWidth - margin) next = playerPx - viewWidth + margin;
+      return Math.max(0, Math.min(limit, next));
     });
   }, [me.x, viewTick]);
+
+  useEffect(() => {
+    if (snappedRef.current || !mine) return;
+    snappedRef.current = true;
+    const home = mine.spots.find((spot) => spot.category === 'home');
+    if (!home) return;
+    const spot = {
+      x: clamp(home.x + 4, 6, 94),
+      y: clamp(home.y + 9, 18, 92),
+      face: 1,
+    };
+    meRef.current = spot;
+    centeredRef.current = false;
+    setMe(spot);
+    move(spot.x, spot.y, spot.face);
+  }, [mine, move]);
 
   useEffect(() => {
     let frame = 0;
@@ -192,6 +222,21 @@ export default function WorldScene({
       window.removeEventListener('blur', clearKeys);
     };
   }, []);
+
+  useEffect(() => {
+    const onEnter = (event) => {
+      if (event.key !== 'Enter') return;
+      const tag = event.target?.tagName;
+      if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tag)) return;
+      const target = enterRef.current;
+      if (!target) return;
+      event.preventDefault();
+      if (target.kind === 'sport') setSport(target.id);
+      else navigate(target.to);
+    };
+    window.addEventListener('keydown', onEnter);
+    return () => window.removeEventListener('keydown', onEnter);
+  }, [navigate]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -331,6 +376,19 @@ export default function WorldScene({
     const distance = distanceTo(venue, me);
     return distance !== null && distance <= REACH_PX;
   });
+
+  const nearBuilding = AREAS.flatMap((area) => area.buildings).find((building) => {
+    const distance = distanceTo(building, me);
+    return distance !== null && distance <= REACH_PX;
+  });
+
+  const enterTarget = nearVenue
+    ? { kind: 'sport', id: nearVenue.id, name: nearVenue.name }
+    : nearBuilding
+      ? { kind: 'building', to: nearBuilding.to, name: nearBuilding.name }
+      : null;
+
+  enterRef.current = sport || placing ? null : enterTarget;
 
   const activeArea = areaAt(me);
 
@@ -529,6 +587,12 @@ export default function WorldScene({
       {activeArea && (
         <div className="pointer-events-none absolute left-1/2 top-3 z-40 -translate-x-1/2 rounded-sm border border-primary/40 bg-card/85 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.24em] text-primary">
           {activeArea.name}
+        </div>
+      )}
+
+      {enterTarget && !sport && !placing && (
+        <div className="pointer-events-none absolute bottom-14 left-1/2 z-40 -translate-x-1/2 whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary shadow-lg">
+          ⏎ Enter {enterTarget.name}
         </div>
       )}
 

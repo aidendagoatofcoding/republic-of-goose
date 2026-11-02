@@ -24,10 +24,11 @@
         "decoration",
         "home",
         "vehicle",
-        "pet"
+        "pet",
+        "furniture"
       ],
       "default": "decoration",
-      "description": "Kind of purchase: a worn decoration, a home, a vehicle or a pet"
+      "description": "Kind of purchase: a worn decoration, a home, a vehicle, a pet or furniture for a home"
     }
   },
   "required": [

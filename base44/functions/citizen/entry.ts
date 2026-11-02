@@ -516,6 +516,20 @@ export default async function (req) {
       }
 
       const category = item.category || 'decoration';
+
+      if (category === 'furniture') {
+        const current = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+        const shelf = await admin.entities.ShopItem.list({ limit: 200 });
+        const shelfById = new Map((shelf?.items ?? []).map((row) => [row.id, row]));
+        const hasHome = current.some((id) => (shelfById.get(id)?.category || '') === 'home');
+        if (!hasHome) {
+          return Response.json(
+            { error: 'Buy a home in the Commons before you furnish it.' },
+            { status: 400 }
+          );
+        }
+      }
+
       const worn = Array.isArray(citizen.decorations) ? citizen.decorations : [];
       const owned = Array.isArray(citizen.possessions) ? citizen.possessions : [];
       const collection = category === 'decoration' ? worn : owned;
