@@ -39,14 +39,15 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
 
   const open = stations.find((station) => station.id === openId) || null;
 
-  // Talking to whoever is standing in the room opens the counter they serve.
-  const talkTo = useCallback(
-    (actor) => {
-      const nearest = stations
-        .map((station) => ({ station, gap: Math.hypot(station.x - actor.x, station.y - actor.y) }))
-        .sort((a, b) => a.gap - b.gap)[0];
-      if (nearest) setOpenId(nearest.station.id);
-    },
+  // Every person standing in the room serves the counter nearest them.
+  const keeperStation = useCallback(
+    (actor) =>
+      stations.find((station) => station.id === actor.serves) ||
+      [...stations].sort(
+        (a, b) =>
+          Math.hypot(a.x - actor.x, a.y - actor.y) - Math.hypot(b.x - actor.x, b.y - actor.y)
+      )[0] ||
+      null,
     [stations]
   );
 
@@ -70,7 +71,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
   return (
     <div className="relative h-full w-full overflow-hidden">
       <div ref={roomRef} className="absolute inset-0">
-        <InteriorRoom place={place} onTalk={talkTo} />
+        <InteriorRoom place={place} />
       </div>
 
       <div className="absolute left-3 top-3 z-30 max-w-[62%] sm:left-5 sm:top-5">
@@ -119,6 +120,42 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
             }`}
           >
             {station.name}
+          </button>
+        );
+      })}
+
+      {(place.actors || []).map((actor, index) => {
+        const keeper = keeperStation(actor);
+        return (
+          <button
+            key={`keeper-${index}`}
+            type="button"
+            onClick={() => keeper && setOpenId(keeper.id)}
+            aria-label={`Talk to ${actor.name || keeper?.name || 'the keeper'}`}
+            style={{ left: `${actor.x}%`, top: `${actor.y}%` }}
+            className="group absolute z-30 -translate-x-1/2 -translate-y-1/2 rounded-md px-3 pb-1 pt-1 text-center transition-colors hover:bg-[#f2c96b]/15 focus-visible:bg-[#f2c96b]/15"
+          >
+            <span
+              className="meadow-bob block"
+              style={{
+                fontSize: `${actor.size || 30}px`,
+                animationDelay: actor.delay || `${index * 0.4}s`,
+                filter: 'drop-shadow(0 8px 8px rgba(0,0,0,0.6))',
+              }}
+              aria-hidden="true"
+            >
+              {actor.emoji}
+            </span>
+            <span
+              className="mt-1 block whitespace-nowrap rounded-sm border px-1.5 py-0.5 font-mono text-[7px] uppercase tracking-[0.14em] transition-colors"
+              style={{
+                borderColor: 'rgba(242,201,107,0.45)',
+                background: 'rgba(10,15,11,0.85)',
+                color: '#f2c96b',
+              }}
+            >
+              Talk · {actor.name || keeper?.name || 'keeper'}
+            </span>
           </button>
         );
       })}

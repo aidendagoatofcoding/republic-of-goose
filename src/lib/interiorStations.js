@@ -20,6 +20,7 @@ export const STATIONS = {
     { id: 'goods', name: 'Goods counter', x: 50, y: 84, content: 'guild' },
   ],
   shop: [
+    { id: 'till', name: 'The till', x: 50, y: 80, content: 'shop-all' },
     { id: 'decorations', name: 'Decorations', x: 12, y: 84, content: 'shop-decoration' },
     { id: 'homes', name: 'Homes', x: 30, y: 86, content: 'shop-home' },
     { id: 'furniture', name: 'Furniture', x: 50, y: 82, content: 'shop-furniture' },

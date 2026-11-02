@@ -33,8 +33,8 @@ export const PLACES = {
       { type: 'coins', x: 62, y: 82 },
     ],
     actors: [
-      { emoji: '🦉', x: 32, y: 58, size: 30 },
-      { emoji: '🐢', x: 16, y: 76, size: 26, delay: '1.2s' },
+      { emoji: '🦉', x: 32, y: 58, size: 32, name: 'Banker', serves: 'loans' },
+      { emoji: '🐢', x: 16, y: 76, size: 28, delay: '1.2s', name: 'Vault clerk', serves: 'vault' },
     ],
   },
   parliament: {
@@ -117,9 +117,9 @@ export const PLACES = {
       { type: 'sacks', x: 88, y: 86 },
     ],
     actors: [
-      { emoji: '🦉', x: 50, y: 64, size: 30 },
-      { emoji: '🦊', x: 24, y: 76, size: 28, delay: '0.8s' },
-      { emoji: '🐿️', x: 78, y: 74, size: 26, delay: '1.4s' },
+      { emoji: '🦉', x: 50, y: 64, size: 32, name: 'Shopkeeper', serves: 'till' },
+      { emoji: '🦊', x: 24, y: 76, size: 28, delay: '0.8s', name: 'Clerk', serves: 'decorations' },
+      { emoji: '🐿️', x: 78, y: 74, size: 26, delay: '1.4s', name: 'Stockkeeper', serves: 'pets' },
     ],
   },
   granary: {

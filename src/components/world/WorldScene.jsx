@@ -15,6 +15,7 @@ import ArcheryGame from '@/components/world/ArcheryGame';
 import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
 import Roads from '@/components/world/Roads';
+import NeighbourHouses from '@/components/world/NeighbourHouses';
 import { nearestRoad, pointOnRoad, spotOnRoadNear } from '@/lib/roads';
 import SportVenue from '@/components/world/SportVenue';
 import Areas from '@/components/world/areas/Areas';
@@ -444,6 +445,8 @@ export default function WorldScene({
       <Places />
 
       <Areas activeId={activeArea?.id || ''} />
+
+      <NeighbourHouses />
 
       <Realms onEnter={setRealm} activeId={nearPortal?.id || ''} />
 
