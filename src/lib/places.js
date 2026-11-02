@@ -101,6 +101,27 @@ export const PLACES = {
     ],
     actors: [{ emoji: '🦉', x: 50, y: 62, size: 32 }],
   },
+  shop: {
+    name: 'The National E-Shop',
+    sign: 'THE NATIONAL E-SHOP',
+    honkish: 'HONK HOOONKK HOOONKK',
+    blurb: 'Shelves to the rafters, every price in bread.',
+    accent: '#e0b98a',
+    props: [
+      { type: 'chandelier', x: 50, y: 13 },
+      { type: 'shelf', x: 16, y: 50 },
+      { type: 'shelf', x: 50, y: 46 },
+      { type: 'shelf', x: 84, y: 50 },
+      { type: 'counter', x: 50, y: 72, label: 'THE TILL' },
+      { type: 'coins', x: 12, y: 88 },
+      { type: 'sacks', x: 88, y: 86 },
+    ],
+    actors: [
+      { emoji: '🦉', x: 50, y: 64, size: 30 },
+      { emoji: '🦊', x: 24, y: 76, size: 28, delay: '0.8s' },
+      { emoji: '🐿️', x: 78, y: 74, size: 26, delay: '1.4s' },
+    ],
+  },
   granary: {
     name: 'The Granary',
     sign: 'THE GRANARY',

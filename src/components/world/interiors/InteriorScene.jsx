@@ -121,7 +121,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
           y={pos.y}
           face={pos.face}
           isMe
-          speed="0.12s"
+          speed="0s"
         />
       </div>
 

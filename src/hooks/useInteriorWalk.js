@@ -12,7 +12,7 @@ const KEYS = {
 };
 
 const SPEED = 170;
-const DEFAULT_BOUNDS = { x: [6, 94], y: [64, 92] };
+const DEFAULT_BOUNDS = { x: [6, 94], y: [68, 92] };
 const STEP = 4;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -71,12 +71,13 @@ export default function useInteriorWalk({
 
   useEffect(() => {
     const onDown = (event) => {
+      if (pausedRef.current) return;
       const tag = event.target?.tagName;
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
       const direction = KEYS[event.key?.toLowerCase()];
       if (!direction) return;
       event.preventDefault();
-      keysRef.current.add(direction);
+      if (!event.repeat) keysRef.current.add(direction);
     };
     const onUp = (event) => {
       const direction = KEYS[event.key?.toLowerCase()];

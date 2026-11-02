@@ -7,7 +7,9 @@ import Jobs from '@/pages/Jobs';
 import Laws from '@/pages/Laws';
 import Market from '@/pages/Market';
 import News from '@/pages/News';
-import Shop from '@/pages/Shop';
+import ShopShelf from '@/components/shop/ShopShelf';
+
+const ShopCatalogue = () => <ShopShelf category="all" />;
 
 const CONTENT = {
   'bank-loans': BankCounter,
@@ -15,7 +17,7 @@ const CONTENT = {
   parliament: Laws,
   government: Country,
   exchange: Market,
-  guild: Shop,
+  guild: ShopCatalogue,
   granary: Jobs,
   herald: News,
   bakery: Games,
@@ -24,6 +26,9 @@ const CONTENT = {
 export default function StationContent({ station, place, onEnterPlace, onExit }) {
   if (station.content === 'capital') {
     return <CapitalDoors onEnter={onEnterPlace} onExit={onExit} />;
+  }
+  if (station.content.startsWith('shop-')) {
+    return <ShopShelf category={station.content.slice(5)} />;
   }
   const Piece = CONTENT[station.content];
   if (!Piece) {

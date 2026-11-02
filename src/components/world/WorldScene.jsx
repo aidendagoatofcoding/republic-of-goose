@@ -46,6 +46,7 @@ export default function WorldScene({
 }) {
   const boxRef = useRef(null);
   const [camera, setCamera] = useState(0);
+  const [camY, setCamY] = useState(0);
   const [viewTick, setViewTick] = useState(0);
   const [bubbles, setBubbles] = useState({});
   const [wander, setWander] = useState({});
@@ -141,6 +142,22 @@ export default function WorldScene({
   }, [me.x, viewTick]);
 
   useEffect(() => {
+    const box = boxRef.current;
+    const view = box?.parentElement;
+    if (!box || !view) return;
+    const worldHeight = box.offsetHeight;
+    const viewHeight = view.clientHeight;
+    if (!worldHeight || !viewHeight) return;
+    const playerPy = (me.y / 100) * worldHeight;
+    const margin = Math.min(viewHeight * 0.3, 200);
+    const limit = Math.max(0, worldHeight - viewHeight);
+    let next = playerPy - viewHeight / 2;
+    if (playerPy - next < margin) next = playerPy - margin;
+    if (playerPy - next > viewHeight - margin) next = playerPy - viewHeight + margin;
+    setCamY(Math.max(0, Math.min(limit, next)));
+  }, [me.y, viewTick]);
+
+  useEffect(() => {
     if (snappedRef.current || !mine) return;
     snappedRef.current = true;
     const home = mine.spots.find((spot) => spot.category === 'home');
@@ -178,7 +195,7 @@ export default function WorldScene({
       const current = meRef.current;
       const next = {
         x: clamp(current.x + ((nx * MOVE_SPEED * dt) / width) * 100, 2, 98),
-        y: clamp(current.y + ((ny * MOVE_SPEED * dt) / height) * 100, 14, 96),
+        y: clamp(current.y + ((ny * MOVE_SPEED * dt) / height) * 100, 2, 98),
         face: nx < -0.05 ? -1 : nx > 0.05 ? 1 : current.face,
       };
       meRef.current = next;
@@ -413,8 +430,11 @@ export default function WorldScene({
     <div className="relative h-full w-full">
       <div
       ref={boxRef}
-      style={{ transform: `translateX(${-camera}px)`, transition: 'transform 260ms ease-out' }}
-      className="absolute inset-y-0 left-0 h-full w-[420%] min-w-[3200px] overflow-hidden bg-secondary/40"
+      style={{
+        transform: `translate(${-camera}px, ${-camY}px)`,
+        transition: 'transform 260ms ease-out',
+      }}
+      className="absolute left-0 top-0 h-[140%] w-[420%] min-w-[3200px] overflow-hidden bg-secondary/40"
     >
       <MeadowGround />
 

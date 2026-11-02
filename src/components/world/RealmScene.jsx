@@ -108,7 +108,7 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
             y={pos.y}
             face={pos.face}
             isMe
-            speed="0.12s"
+            speed="0s"
           />
         </div>
       </div>
