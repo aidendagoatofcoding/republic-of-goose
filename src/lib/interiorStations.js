@@ -73,6 +73,9 @@ export const STATIONS = {
     },
     { id: 'counter', name: 'Bread counter', x: 44, y: 92, content: 'bakery' },
   ],
+  registry: [
+    { id: 'register', name: 'The register', x: 50, y: 80, content: 'registry' },
+  ],
   forest: [
     { id: 'glade', name: 'The quiet glade', x: 50, y: 84, content: 'forest' },
   ],

@@ -168,6 +168,25 @@ const ROOMS = {
       { emoji: '🦢', x: 56, y: 80, size: 30, name: 'Head baker', serves: 'counter' },
     ],
   },
+  registry: {
+    name: "The Citizens' Registry",
+    sign: 'CITIZENS REGISTRY',
+    honkish: 'HONKK HONK HOOONKK',
+    blurb: 'Ledgers of every name ever entered in the Republic, kept in good order.',
+    accent: '#c8b48a',
+    props: [
+      { type: 'banner', x: 18, y: 28 },
+      { type: 'banner', x: 82, y: 28 },
+      { type: 'shelf', x: 20, y: 54 },
+      { type: 'shelf', x: 80, y: 54 },
+      { type: 'map', x: 66, y: 40 },
+      { type: 'counter', x: 50, y: 72, label: 'THE REGISTER' },
+    ],
+    actors: [
+      { emoji: '🦉', x: 50, y: 62, size: 32, name: 'Registrar', serves: 'register' },
+      { emoji: '🐢', x: 30, y: 80, size: 26, delay: '1.1s' },
+    ],
+  },
   forest: {
     name: 'The Deep Forest',
     sign: 'THE DEEP FOREST',

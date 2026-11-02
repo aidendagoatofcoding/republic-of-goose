@@ -1,11 +1,19 @@
 import { REALMS } from '@/lib/realms';
 
-// The plazas of the Honk Commons. Each one holds the portal to its own city scene.
-export const AREAS = REALMS.map((realm) => ({
-  id: realm.id,
-  name: realm.plazaName,
-  ...realm.plaza,
-}));
+// The plazas of the Honk Commons. Each realm portal stands in its own plaza, and the
+// Government Plaza houses the civic offices of the Republic apart from the portals.
+const CIVIC_AREAS = [
+  { id: 'government', name: 'Government Plaza', x: 50, y: 77, rx: 6, ry: 4 },
+];
+
+export const AREAS = [
+  ...REALMS.map((realm) => ({
+    id: realm.id,
+    name: realm.plazaName,
+    ...realm.plaza,
+  })),
+  ...CIVIC_AREAS,
+];
 
 export const AREA_BY_ID = Object.fromEntries(AREAS.map((area) => [area.id, area]));
 

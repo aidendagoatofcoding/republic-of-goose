@@ -48,8 +48,11 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const REACH_PX = 190;
 const MOVE_SPEED = 165;
 
-// The National Bakery stands on the meadow next to the spawn point, so the goose games are a short walk away.
-const BAKERY = { id: 'bakery', name: 'The National Bakery', variant: 'cottage', x: 51, y: 60, place: 'bakery' };
+// The National Bakery stands among the stalls of the Market Square, the Citizens' Registry on the Government Plaza.
+const CIVIC_BUILDINGS = [
+  { id: 'bakery', name: 'The National Bakery', variant: 'cottage', x: 72, y: 67, place: 'bakery' },
+  { id: 'registry', name: "Citizens' Registry", variant: 'temple', x: 50, y: 76, place: 'registry' },
+];
 
 export default function WorldScene({
   residents,
@@ -416,8 +419,10 @@ export default function WorldScene({
     [run, onBoards]
   );
 
-  const bakeryDistance = distanceTo(BAKERY, me);
-  const nearBakery = bakeryDistance !== null && bakeryDistance <= REACH_PX;
+  const nearCivic = CIVIC_BUILDINGS.find((building) => {
+    const distance = distanceTo(building, me);
+    return distance !== null && distance <= REACH_PX;
+  });
 
   const nearVenue = VENUES.find((venue) => {
     const distance = distanceTo(venue, me);
@@ -440,8 +445,8 @@ export default function WorldScene({
     .filter((entry) => entry.distance !== null && entry.distance <= REACH_PX)
     .sort((a, b) => a.distance - b.distance)[0];
 
-  const enterTarget = nearBakery
-    ? { kind: 'place', id: 'bakery', place: 'bakery', name: `Enter ${BAKERY.name}` }
+  const enterTarget = nearCivic
+    ? { kind: 'place', id: nearCivic.id, place: nearCivic.place, name: `Enter ${nearCivic.name}` }
     : nearVenue
     ? { kind: 'sport', id: nearVenue.id, name: `Enter the ${nearVenue.name}` }
     : nearPortal
@@ -496,7 +501,14 @@ export default function WorldScene({
 
       <Realms onEnter={setRealm} activeId={nearPortal?.id || ''} />
 
-      <CivicBuilding building={BAKERY} reachable={nearBakery} onEnter={setInside} />
+      {CIVIC_BUILDINGS.map((building) => (
+        <CivicBuilding
+          key={building.id}
+          building={building}
+          reachable={nearCivic?.id === building.id}
+          onEnter={setInside}
+        />
+      ))}
 
       {VENUES.map((venue) => {
         const distance = distanceTo(venue, me);

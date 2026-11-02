@@ -10,6 +10,7 @@ import Market from '@/pages/Market';
 import News from '@/pages/News';
 import ShopShelf from '@/components/shop/ShopShelf';
 import KitchenStation from '@/components/world/interiors/KitchenStation';
+import Citizenship from '@/pages/Citizenship';
 
 const ShopCatalogue = () => <ShopShelf category="all" />;
 
@@ -24,6 +25,7 @@ const CONTENT = {
   'job-board': JobBoard,
   herald: News,
   bakery: Games,
+  registry: Citizenship,
 };
 
 export default function StationContent({ station, place, onEnterPlace, onExit, onPlay }) {
