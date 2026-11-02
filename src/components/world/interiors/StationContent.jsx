@@ -9,6 +9,7 @@ import Laws from '@/pages/Laws';
 import Market from '@/pages/Market';
 import News from '@/pages/News';
 import ShopShelf from '@/components/shop/ShopShelf';
+import KitchenStation from '@/components/world/interiors/KitchenStation';
 
 const ShopCatalogue = () => <ShopShelf category="all" />;
 
@@ -25,9 +26,12 @@ const CONTENT = {
   bakery: Games,
 };
 
-export default function StationContent({ station, place, onEnterPlace, onExit }) {
+export default function StationContent({ station, place, onEnterPlace, onExit, onPlay }) {
   if (station.content === 'capital') {
     return <CapitalDoors onEnter={onEnterPlace} onExit={onExit} />;
+  }
+  if (station.content === 'kitchen') {
+    return <KitchenStation station={station} onPlay={onPlay} />;
   }
   if (station.content.startsWith('shop-')) {
     return <ShopShelf category={station.content.slice(5)} />;

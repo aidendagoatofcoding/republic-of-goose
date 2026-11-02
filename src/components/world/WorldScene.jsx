@@ -788,6 +788,7 @@ export default function WorldScene({
           place={placeFor(inside)}
           onEnterPlace={setInside}
           onExit={() => setInside('')}
+          onPlay={setSport}
         />
       )}
     </div>

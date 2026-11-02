@@ -156,11 +156,17 @@ const ROOMS = {
     blurb: 'Ovens that never quite cool down.',
     accent: '#f2b96b',
     props: [
-      { type: 'oven', x: 74, y: 52 },
-      { type: 'counter', x: 32, y: 72, label: 'FRESH BREAD' },
-      { type: 'sacks', x: 16, y: 84 },
+      { type: 'oven', x: 24, y: 46 },
+      { type: 'oven', x: 78, y: 46 },
+      { type: 'counter', x: 50, y: 64, label: 'KNEADING TABLE' },
+      { type: 'shelf', x: 13, y: 62 },
+      { type: 'shelf', x: 80, y: 76 },
+      { type: 'sacks', x: 22, y: 88 },
+      { type: 'counter', x: 44, y: 84, label: 'FRESH BREAD' },
     ],
-    actors: [{ emoji: '🦢', x: 52, y: 66, size: 30 }],
+    actors: [
+      { emoji: '🦢', x: 56, y: 80, size: 30, name: 'Head baker', serves: 'counter' },
+    ],
   },
   forest: {
     name: 'The Deep Forest',

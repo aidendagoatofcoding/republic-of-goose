@@ -9,8 +9,8 @@ export const REALMS = [
     honkish: 'HONK HONK HONK',
     blurb: 'Marble steps, four ministries, and the long echo of official honking.',
     accent: '#f2c96b',
-    portal: { x: 30, y: 74 },
-    plaza: { x: 30, y: 81, rx: 13, ry: 11 },
+    portal: { x: 42, y: 70 },
+    plaza: { x: 42, y: 76, rx: 11, ry: 9 },
     scenery: [
       { emoji: '🌳', x: 6, y: 62, size: 36 },
       { emoji: '🌳', x: 94, y: 62, size: 34 },
@@ -43,8 +43,8 @@ export const REALMS = [
     honkish: 'HONKK HONKK HOOONKK',
     blurb: 'Shares shouted across the square, shops haggling under striped canvas.',
     accent: '#8fdca0',
-    portal: { x: 74, y: 66 },
-    plaza: { x: 74, y: 70, rx: 10, ry: 10 },
+    portal: { x: 63, y: 71 },
+    plaza: { x: 63, y: 75, rx: 9, ry: 8 },
     scenery: [
       { emoji: '🎪', x: 10, y: 62, size: 30 },
       { emoji: '🎪', x: 90, y: 62, size: 30 },

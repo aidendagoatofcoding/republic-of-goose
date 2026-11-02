@@ -1,11 +1,16 @@
 import InteriorScene from '@/components/world/interiors/InteriorScene';
 
-export default function PlaceInterior({ place, onEnterPlace, onExit }) {
+export default function PlaceInterior({ place, onEnterPlace, onExit, onPlay }) {
   if (!place) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-[#070b08]">
-      <InteriorScene place={place} onEnterPlace={onEnterPlace} onExit={onExit} />
+      <InteriorScene
+        place={place}
+        onEnterPlace={onEnterPlace}
+        onExit={onExit}
+        onPlay={onPlay}
+      />
     </div>
   );
 }
