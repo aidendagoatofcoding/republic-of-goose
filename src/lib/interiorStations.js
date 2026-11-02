@@ -12,6 +12,7 @@ export const STATIONS = {
   ],
   government: [
     { id: 'desk', name: 'Government desk', x: 26, y: 82, content: 'government' },
+    { id: 'board', name: 'Job board', x: 68, y: 80, content: 'job-board' },
   ],
   exchange: [
     { id: 'floor', name: 'Trading floor', x: 28, y: 82, content: 'exchange' },

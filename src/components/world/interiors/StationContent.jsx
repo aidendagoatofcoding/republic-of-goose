@@ -4,6 +4,7 @@ import CapitalDoors from '@/components/world/interiors/CapitalDoors';
 import Country from '@/pages/Country';
 import Games from '@/pages/Games';
 import Jobs from '@/pages/Jobs';
+import JobBoard from '@/pages/JobBoard';
 import Laws from '@/pages/Laws';
 import Market from '@/pages/Market';
 import News from '@/pages/News';
@@ -19,6 +20,7 @@ const CONTENT = {
   exchange: Market,
   guild: ShopCatalogue,
   granary: Jobs,
+  'job-board': JobBoard,
   herald: News,
   bakery: Games,
 };

@@ -23,6 +23,7 @@ import Shop from '@/pages/Shop';
 import Market from '@/pages/Market';
 import News from '@/pages/News';
 import Jobs from '@/pages/Jobs';
+import JobBoard from '@/pages/JobBoard';
 import Bank from '@/pages/Bank';
 import World from '@/pages/World';
 import Login from '@/pages/Login';
@@ -73,6 +74,7 @@ const AuthenticatedApp = () => {
         <Route path="/market" element={<Market />} />
         <Route path="/news" element={<News />} />
         <Route path="/jobs" element={<Jobs />} />
+        <Route path="/job-board" element={<JobBoard />} />
         <Route path="/bank" element={<Bank />} />
         <Route path="/world" element={<World />} />
         <Route path="/admin" element={<Admin />} />
