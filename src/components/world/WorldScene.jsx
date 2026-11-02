@@ -19,7 +19,9 @@ import Areas from '@/components/world/areas/Areas';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
 import { placeFor } from '@/lib/places';
-import { AREAS, areaAt } from '@/lib/commonsAreas';
+import RealmScene from '@/components/world/RealmScene';
+import { areaAt } from '@/lib/commonsAreas';
+import { REALMS } from '@/lib/realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 
@@ -85,6 +87,7 @@ export default function WorldScene({
   pongHandler.current = pong.handlePong;
   const [sport, setSport] = useState('');
   const [inside, setInside] = useState('');
+  const [realm, setRealm] = useState('');
   const [isleOpen, setIsleOpen] = useState(false);
   const myKey = seat ? `seat:${seat}` : 'me';
 
@@ -161,7 +164,7 @@ export default function WorldScene({
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const box = boxRef.current;
-      if (!box || !mine || placing || inside) return;
+      if (!box || !mine || placing || inside || realm) return;
       const width = box.offsetWidth || 1;
       const height = box.offsetHeight || 1;
       const keys = keysRef.current;
@@ -187,7 +190,7 @@ export default function WorldScene({
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [mine, placing, move, inside]);
+  }, [mine, placing, move, inside, realm]);
 
   useEffect(() => {
     const KEYS = {
@@ -233,6 +236,7 @@ export default function WorldScene({
       if (!target) return;
       event.preventDefault();
       if (target.kind === 'sport') setSport(target.id);
+      else if (target.kind === 'realm') setRealm(target.id);
       else setInside(target.place);
     };
     window.addEventListener('keydown', onEnter);
@@ -378,18 +382,18 @@ export default function WorldScene({
     return distance !== null && distance <= REACH_PX;
   });
 
-  const nearBuilding = AREAS.flatMap((area) => area.buildings).find((building) => {
-    const distance = distanceTo(building, me);
+  const nearPortal = REALMS.find((entry) => {
+    const distance = distanceTo(entry.portal, me);
     return distance !== null && distance <= REACH_PX;
   });
 
   const enterTarget = nearVenue
     ? { kind: 'sport', id: nearVenue.id, name: nearVenue.name }
-    : nearBuilding
-      ? { kind: 'place', place: nearBuilding.place, name: nearBuilding.name }
+    : nearPortal
+      ? { kind: 'realm', id: nearPortal.id, name: nearPortal.name }
       : null;
 
-  enterRef.current = sport || placing || inside ? null : enterTarget;
+  enterRef.current = sport || placing || inside || realm ? null : enterTarget;
 
   const activeArea = areaAt(me);
 
@@ -416,9 +420,9 @@ export default function WorldScene({
 
       <Places />
 
-      <Areas activeId={activeArea?.id || ''} onEnter={setInside} />
+      <Areas activeId={activeArea?.id || ''} />
 
-      <Realms onEnter={setInside} />
+      <Realms onEnter={setRealm} activeId={nearPortal?.id || ''} />
 
       {VENUES.map((venue) => {
         const distance = distanceTo(venue, me);
@@ -688,6 +692,15 @@ export default function WorldScene({
           result={pong.result}
           onMove={pong.setPaddle}
           onQuit={pong.quit}
+        />
+      )}
+
+      {realm && (
+        <RealmScene
+          realm={REALMS.find((entry) => entry.id === realm)}
+          onExit={() => setRealm('')}
+          onEnterPlace={setInside}
+          blocked={Boolean(inside)}
         />
       )}
 

@@ -74,14 +74,16 @@ function Building({ variant }) {
   );
 }
 
-export default function CivicBuilding({ building, onEnter }) {
+export default function CivicBuilding({ building, onEnter, reachable = false }) {
   return (
     <button
       type="button"
       onClick={() => onEnter(building.place)}
       title={`${building.name} — step inside`}
       style={{ left: `${building.x}%`, top: `${building.y}%` }}
-      className="group absolute z-10 -translate-x-1/2 -translate-y-[94%] text-center"
+      className={`group absolute z-10 -translate-x-1/2 -translate-y-[94%] text-center ${
+        reachable ? 'rounded-md bg-primary/10 ring-1 ring-primary/40' : ''
+      }`}
     >
       <svg
         viewBox="0 0 80 60"
