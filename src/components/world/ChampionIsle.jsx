@@ -1,17 +1,19 @@
 import { useState } from 'react';
+import { Lock } from 'lucide-react';
 import PongLobby from '@/components/world/PongLobby';
+import { ISLE_EVENTS } from '@/lib/isleEvents';
 
 const SPORTS = [
-  { id: 'pong', name: 'Pond Pong', note: 'Two paddles · first to five', action: 'Match' },
-  { id: 'sprint', name: 'Honk Sprint', note: 'Outrun the Champion · 100 m', action: 'Play' },
-  { id: 'toss', name: 'Bread Toss', note: 'Five loaves · five rings', action: 'Play' },
-  { id: 'archery', name: 'Isle Archery', note: 'Three arrows · one ring', action: 'Play' },
-  { id: 'race', name: 'Reed Race', note: 'Clear five hurdles', action: 'Play' },
-  { id: 'choir', name: 'Honk Choir', note: 'Repeat the phrase · memory', action: 'Play' },
-  { id: 'guard', name: 'Nest Guard', note: 'Catch the thieves · 25 s', action: 'Play' },
+  { id: 'pong', name: 'Pond Pong', note: 'Two paddles · first to five' },
+  { id: 'sprint', name: 'Honk Sprint', note: 'Outrun the Champion · 100 m' },
+  { id: 'toss', name: 'Bread Toss', note: 'Five loaves · five rings' },
+  { id: 'archery', name: 'Isle Archery', note: 'Three arrows · one ring' },
+  { id: 'race', name: 'Reed Race', note: 'Clear five hurdles' },
+  { id: 'choir', name: 'Honk Choir', note: 'Repeat the phrase · memory' },
+  { id: 'guard', name: 'Nest Guard', note: 'Catch the thieves · 25 s' },
 ];
 
-export default function ChampionIsle({ people, seat, pong, onPlay }) {
+export default function ChampionIsle({ people, seat, pong, onPlay, nearId = '', boards = {} }) {
   const [open, setOpen] = useState('pong');
 
   const choose = (sport) => {
@@ -24,36 +26,53 @@ export default function ChampionIsle({ people, seat, pong, onPlay }) {
       <div className="flex items-baseline justify-between gap-2">
         <span className="meta-label">Champion Isle</span>
         <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-muted-foreground">
-          {SPORTS.length} events
+          walk up to a ground
         </span>
       </div>
 
       <ul className="mt-3 space-y-1">
-        {SPORTS.map((sport) => (
-          <li key={sport.id}>
-            <button
-              type="button"
-              onClick={() => choose(sport.id)}
-              className={`flex w-full items-center justify-between gap-2 rounded-sm border px-2.5 py-2 text-left ${
-                open === sport.id
-                  ? 'border-primary/50 bg-primary/10'
-                  : 'border-border/70 hover:border-primary/40'
-              }`}
-            >
-              <span className="min-w-0">
-                <span className="block truncate font-mono text-[10px] uppercase tracking-[0.14em] text-foreground">
-                  {sport.name}
+        {SPORTS.map((sport) => {
+          const event = ISLE_EVENTS.find((entry) => entry.id === sport.id);
+          const best = event ? boards[event.id]?.[0] : null;
+          const here = nearId === sport.id;
+          return (
+            <li key={sport.id}>
+              <button
+                type="button"
+                onClick={() => choose(sport.id)}
+                className={`flex w-full items-center justify-between gap-2 rounded-sm border px-2.5 py-2 text-left ${
+                  open === sport.id
+                    ? 'border-primary/50 bg-primary/10'
+                    : 'border-border/70 hover:border-primary/40'
+                }`}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-mono text-[10px] uppercase tracking-[0.14em] text-foreground">
+                    {sport.name}
+                  </span>
+                  <span className="mt-0.5 block truncate font-mono text-[8px] uppercase tracking-[0.1em] text-muted-foreground">
+                    {sport.note}
+                  </span>
                 </span>
-                <span className="mt-0.5 block truncate font-mono text-[8px] uppercase tracking-[0.1em] text-muted-foreground">
-                  {sport.note}
+                <span className="shrink-0 text-right">
+                  <span
+                    className={`flex items-center justify-end gap-1 font-mono text-[8px] uppercase tracking-[0.14em] ${
+                      sport.id === 'pong' || here ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {sport.id === 'pong' || here ? null : <Lock className="h-2.5 w-2.5" />}
+                    {sport.id === 'pong' ? 'Lobby' : here ? 'Play' : 'Walk'}
+                  </span>
+                  {best && (
+                    <span className="mt-0.5 block font-mono text-[7.5px] uppercase tracking-[0.1em] text-muted-foreground">
+                      best {Math.round(best.score)}
+                    </span>
+                  )}
                 </span>
-              </span>
-              <span className="shrink-0 font-mono text-[8px] uppercase tracking-[0.14em] text-primary">
-                {sport.action}
-              </span>
-            </button>
-          </li>
-        ))}
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
       {open === 'pong' && (

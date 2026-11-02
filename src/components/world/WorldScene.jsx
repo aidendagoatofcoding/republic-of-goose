@@ -13,6 +13,8 @@ import NestGuard from '@/components/world/NestGuard';
 import ArcheryGame from '@/components/world/ArcheryGame';
 import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
+import SportVenue from '@/components/world/SportVenue';
+import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 
@@ -36,6 +38,7 @@ export default function WorldScene({
   onOffersChanged,
   onBoards,
   panelsHidden,
+  boards = {},
 }) {
   const boxRef = useRef(null);
   const [camera, setCamera] = useState(0);
@@ -58,6 +61,8 @@ export default function WorldScene({
   const walkRef = useRef(null);
   const pendingOfferRef = useRef(null);
   const openOfferRef = useRef(null);
+  const pendingSportRef = useRef(null);
+  const openSportRef = useRef(null);
   const lastPublishRef = useRef(0);
 
   const say = useCallback((key, text) => {
@@ -176,6 +181,17 @@ export default function WorldScene({
           pendingOfferRef.current = null;
           walkRef.current = null;
           openOfferRef.current?.(pending.resident, pending.spot);
+        }
+      }
+
+      const pendingVenue = pendingSportRef.current;
+      if (pendingVenue) {
+        const venue = VENUE_BY_ID[pendingVenue];
+        const reach = venue ? distanceTo(venue, next) : null;
+        if (reach !== null && reach <= REACH_PX) {
+          pendingSportRef.current = null;
+          walkRef.current = null;
+          openSportRef.current?.(pendingVenue);
         }
       }
     };
@@ -314,7 +330,24 @@ export default function WorldScene({
     const point = toPercent(event);
     walkRef.current = { x: point.x, y: clamp(point.y, 14, 94) };
     pendingOfferRef.current = null;
+    pendingSportRef.current = null;
   };
+
+  const openVenue = (id) => {
+    const venue = VENUE_BY_ID[id];
+    if (!venue) return;
+    const distance = distanceTo(venue, meRef.current);
+    if (distance !== null && distance > REACH_PX) {
+      walkRef.current = { x: clamp(venue.x, 4, 96), y: clamp(venue.y + 5, 14, 94) };
+      pendingSportRef.current = id;
+      say(myKey, `Walking to the ${venue.name}…`);
+      return;
+    }
+    walkRef.current = null;
+    setSport(id);
+  };
+
+  openSportRef.current = setSport;
 
   const knock = (resident, spot) => {
     say(`house:${spot.item_id}`, pick(KNOCKS));
@@ -394,6 +427,11 @@ export default function WorldScene({
     [run, onBoards]
   );
 
+  const nearVenue = VENUES.find((venue) => {
+    const distance = distanceTo(venue, me);
+    return distance !== null && distance <= REACH_PX;
+  });
+
   const live = people.filter((person) => person.seat !== seat);
 
   return (
@@ -405,13 +443,25 @@ export default function WorldScene({
       onPointerLeave={endDrag}
       onClick={handleClick}
       style={{ transform: `translateX(${-camera}px)`, transition: 'transform 260ms ease-out' }}
-      className={`absolute inset-y-0 left-0 h-full w-[220%] min-w-[1400px] touch-none overflow-hidden bg-secondary/40 ${
+      className={`absolute inset-y-0 left-0 h-full w-[280%] min-w-[1800px] touch-none overflow-hidden bg-secondary/40 ${
         placing ? 'cursor-crosshair ring-1 ring-inset ring-primary/50' : ''
       }`}
     >
       <MeadowGround />
 
       <Realms />
+
+      {VENUES.map((venue) => {
+        const distance = distanceTo(venue, me);
+        return (
+          <SportVenue
+            key={venue.id}
+            venue={venue}
+            reachable={distance !== null && distance <= REACH_PX}
+            onSelect={openVenue}
+          />
+        );
+      })}
 
       {placing && ghost && (
         <div
@@ -625,7 +675,7 @@ export default function WorldScene({
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex items-end justify-between gap-2 p-2">
         <p className="max-w-[52%] rounded-sm border border-border/70 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
-          Tap to walk · hold WASD to roam · tap a home nearby to trade
+          Tap to walk · walk up to a ground to compete · homes trade up close
         </p>
         <div className="pointer-events-auto flex items-center gap-1.5">
           {connected && (
@@ -638,7 +688,14 @@ export default function WorldScene({
 
       {!panelsHidden && (
         <div className="absolute bottom-10 left-2 z-40 max-h-[54%] w-[216px] max-w-[calc(100%-1rem)] overflow-y-auto sm:w-[248px]">
-          <ChampionIsle people={people} seat={seat} pong={pong} onPlay={setSport} />
+          <ChampionIsle
+            people={people}
+            seat={seat}
+            pong={pong}
+            onPlay={openVenue}
+            nearId={nearVenue?.id || ''}
+            boards={boards}
+          />
         </div>
       )}
 

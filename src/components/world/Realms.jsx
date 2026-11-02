@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 
 const REALMS = [
-  { name: 'Deep Forest', path: '/country', glyph: '🌲', x: 12, y: 42 },
-  { name: 'Capital of Honkton', path: '/', glyph: '🏛️', x: 36, y: 34 },
-  { name: 'Bread Bakery', path: '/games', glyph: '🍞', x: 63, y: 45 },
-  { name: 'The Exchange', path: '/market', glyph: '📈', x: 88, y: 36 },
+  { name: 'Deep Forest', path: '/country', glyph: '🌲', x: 7, y: 58 },
+  { name: 'Capital of Honkton', path: '/', glyph: '🏛️', x: 30, y: 58 },
+  { name: 'Bread Bakery', path: '/games', glyph: '🍞', x: 52, y: 58 },
+  { name: 'The Exchange', path: '/market', glyph: '📈', x: 74, y: 58 },
 ];
 
 export default function Realms() {

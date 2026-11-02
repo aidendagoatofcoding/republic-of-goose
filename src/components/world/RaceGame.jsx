@@ -17,6 +17,8 @@ export default function RaceGame({ species = 'goose', onClose, onFinish }) {
   const [flash, setFlash] = useState('');
   const [jumping, setJumping] = useState(false);
   const [result, setResult] = useState('');
+  const [elapsed, setElapsed] = useState(0);
+  const [finalTime, setFinalTime] = useState(0);
 
   const hurdlesRef = useRef([]);
   const clearedRef = useRef(0);
@@ -25,6 +27,7 @@ export default function RaceGame({ species = 'goose', onClose, onFinish }) {
   const runningRef = useRef(false);
   const lastRef = useRef(0);
   const jumpTimer = useRef(null);
+  const clockRef = useRef(0);
   const finishRef = useRef(onFinish);
   finishRef.current = onFinish;
 
@@ -37,6 +40,7 @@ export default function RaceGame({ species = 'goose', onClose, onFinish }) {
   const end = useCallback(() => {
     stop();
     setPhase('done');
+    setFinalTime(Math.max(0, (performance.now() - clockRef.current) / 1000));
     const score = clearedRef.current * CLEAR_POINTS;
     setResult(
       score >= HURDLES * CLEAR_POINTS
@@ -57,6 +61,9 @@ export default function RaceGame({ species = 'goose', onClose, onFinish }) {
     setMissed(0);
     setFlash('');
     setResult('');
+    setElapsed(0);
+    setFinalTime(0);
+    clockRef.current = performance.now();
     setPhase('running');
     runningRef.current = true;
   };
@@ -68,6 +75,7 @@ export default function RaceGame({ species = 'goose', onClose, onFinish }) {
       if (!runningRef.current) return;
       const dt = Math.min(0.06, (now - lastRef.current) / 1000);
       lastRef.current = now;
+      setElapsed((now - clockRef.current) / 1000);
       const moved = hurdlesRef.current
         .map((hurdle) => ({ ...hurdle, x: hurdle.x - SPEED * dt }))
         .filter((hurdle) => {
@@ -151,6 +159,7 @@ export default function RaceGame({ species = 'goose', onClose, onFinish }) {
           <span>
             Score {score} · {cleared}/{HURDLES} cleared
           </span>
+          <span>{elapsed.toFixed(2)} s</span>
           <span>{missed} missed</span>
         </div>
 
@@ -216,7 +225,7 @@ export default function RaceGame({ species = 'goose', onClose, onFinish }) {
           <div className="mt-2 rounded-sm border border-primary/40 bg-primary/5 p-3 text-center">
             <p className="display-title text-xl">{result}</p>
             <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-              {score} points · {missed} missed
+              {score} points · {missed} missed · {finalTime.toFixed(2)} s
             </p>
             <button
               type="button"

@@ -18,6 +18,8 @@ export default function CommonsMenu({
   onWithdraw,
   onRefreshTrades,
   boards,
+  personal,
+  myKey,
   boardsLoading,
   boardsError,
   onRefreshBoards,
@@ -100,6 +102,8 @@ export default function CommonsMenu({
             ) : (
               <EventLeaderboard
                 boards={boards}
+                personal={personal}
+                myKey={myKey}
                 loading={boardsLoading}
                 error={boardsError}
                 onRefresh={onRefreshBoards}

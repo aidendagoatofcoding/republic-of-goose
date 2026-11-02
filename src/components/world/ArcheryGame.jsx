@@ -19,8 +19,11 @@ export default function ArcheryGame({ onClose, onFinish }) {
   const [last, setLast] = useState(null);
   const [shots, setShots] = useState([]);
   const [result, setResult] = useState('');
+  const [wind, setWind] = useState(0);
+  const [marks, setMarks] = useState([]);
 
   const aimRef = useRef({ x: 50, y: 50 });
+  const windRef = useRef(0);
   const scoreRef = useRef(0);
   const leftRef = useRef(ARROWS);
   const startRef = useRef(0);
@@ -48,6 +51,10 @@ export default function ArcheryGame({ onClose, onFinish }) {
     setShots([]);
     setLast(null);
     setResult('');
+    setMarks([]);
+    const gust = Math.round((Math.random() * 6 - 3) * 10) / 10;
+    windRef.current = gust;
+    setWind(gust);
   };
 
   useEffect(() => {
@@ -71,7 +78,8 @@ export default function ArcheryGame({ onClose, onFinish }) {
 
   const shoot = useCallback(() => {
     if (phase !== 'running') return;
-    const { x, y } = aimRef.current;
+    const { x: aimX, y } = aimRef.current;
+    const x = Math.max(4, Math.min(96, aimX + windRef.current * 2.4));
     const distance = Math.hypot(x - 50, y - 50);
     const ring = RINGS.find((entry) => distance < entry.limit) || MISS;
     const nextScore = scoreRef.current + ring.points;
@@ -83,6 +91,7 @@ export default function ArcheryGame({ onClose, onFinish }) {
     setLeft(nextLeft);
     setLast(ring);
     setShots((list) => [...list, ring.points]);
+    setMarks((list) => [...list, { x, y, points: ring.points }]);
 
     if (nextLeft === 0) {
       stop();
@@ -132,6 +141,9 @@ export default function ArcheryGame({ onClose, onFinish }) {
           <span>
             Score {score} · target {TARGET_SCORE}
           </span>
+          <span>
+            Wind {wind === 0 ? 'calm' : `${wind > 0 ? '→' : '←'} ${Math.abs(wind).toFixed(1)}`}
+          </span>
           <span>{left} arrows left</span>
         </div>
 
@@ -148,6 +160,15 @@ export default function ArcheryGame({ onClose, onFinish }) {
           >
             🎯
           </span>
+
+          {marks.map((mark, index) => (
+            <span
+              key={`mark-${index}`}
+              className="absolute h-[3px] w-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f2e2b4] shadow-[0_0_3px_rgba(0,0,0,0.8)]"
+              style={{ left: `${mark.x}%`, top: `${mark.y}%` }}
+              aria-hidden="true"
+            />
+          ))}
         </div>
 
         <p className="mt-2 h-4 font-mono text-[9px] uppercase tracking-[0.14em] text-primary">

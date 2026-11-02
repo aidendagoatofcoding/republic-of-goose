@@ -16,6 +16,7 @@ export default function World() {
   const [offerBusy, setOfferBusy] = useState('');
   const [offerError, setOfferError] = useState('');
   const [boards, setBoards] = useState({});
+  const [personal, setPersonal] = useState({});
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [boardsError, setBoardsError] = useState('');
   const [compact, setCompact] = useState(false);
@@ -58,15 +59,16 @@ export default function World() {
   const loadBoards = useCallback(async () => {
     setBoardsLoading(true);
     try {
-      const response = await base44.functions.invoke('citizen', { action: 'leaderboard' });
+      const response = await base44.functions.invoke('citizen', { action: 'leaderboard', code });
       setBoards(response?.data?.boards || {});
+      setPersonal(response?.data?.personal || {});
       setBoardsError('');
     } catch (err) {
       setBoardsError('The standings could not be read.');
     } finally {
       setBoardsLoading(false);
     }
-  }, []);
+  }, [code]);
 
   useEffect(() => {
     loadBoards();
@@ -155,6 +157,8 @@ export default function World() {
             onWithdraw={withdrawOffer}
             onRefreshTrades={loadOffers}
             boards={boards}
+            personal={personal}
+            myKey={citizen?.id || ''}
             boardsLoading={boardsLoading}
             boardsError={boardsError}
             onRefreshBoards={loadBoards}
@@ -205,6 +209,7 @@ export default function World() {
             onOffersChanged={setOffers}
             onBoards={setBoards}
             panelsHidden={compact}
+            boards={boards}
             profile={{
               name: citizen?.goose_name || citizen?.full_name || 'You',
               species: citizen?.species || 'goose',

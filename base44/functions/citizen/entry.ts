@@ -145,6 +145,7 @@ async function loadBoards(admin) {
     if (!list || list.length >= 5) return;
     list.push({
       id: row.id,
+      citizen_key: row.citizen_key || '',
       name: row.name || 'A citizen',
       species: row.species || 'goose',
       score: Math.round(row.score ?? 0),
@@ -174,7 +175,22 @@ export default async function (req) {
     }
 
     if (action === 'leaderboard') {
-      return Response.json({ boards: await loadBoards(admin) });
+      const viewerCode = String(body.code ?? '').trim().toLowerCase();
+      const viewer = viewerCode ? await findCitizen(admin, viewerCode) : null;
+      const personal: Record<string, number> = {};
+      if (viewer) {
+        const mine = await admin.entities.EventScore.filter(
+          { citizen_key: viewer.id },
+          { limit: 20 }
+        );
+        (mine?.items ?? []).forEach((row) => {
+          const event = String(row.event ?? '');
+          if (EVENT_IDS.includes(event)) {
+            personal[event] = Math.max(personal[event] ?? 0, Math.round(row.score ?? 0));
+          }
+        });
+      }
+      return Response.json({ boards: await loadBoards(admin), personal });
     }
 
     if (action === 'world') {
