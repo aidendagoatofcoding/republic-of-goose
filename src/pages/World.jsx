@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { RefreshCw } from 'lucide-react';
+import { Maximize2, Minimize2, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import WorldScene from '@/components/world/WorldScene';
@@ -15,6 +15,7 @@ export default function World() {
   const [offers, setOffers] = useState({ incoming: [], outgoing: [] });
   const [offerBusy, setOfferBusy] = useState('');
   const [offerError, setOfferError] = useState('');
+  const [compact, setCompact] = useState(false);
   const code = citizen?.passport_code || '';
 
   const load = useCallback(async () => {
@@ -130,6 +131,14 @@ export default function World() {
           </span>
           <button
             type="button"
+            onClick={() => setCompact((value) => !value)}
+            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
+          >
+            {compact ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
+            <span className="hidden sm:inline">{compact ? 'Show panels' : 'Full map'}</span>
+          </button>
+          <button
+            type="button"
             onClick={load}
             className="rounded-sm border border-border p-1.5 text-muted-foreground hover:text-primary"
             aria-label="Refresh the Commons"
@@ -161,6 +170,7 @@ export default function World() {
             onCancelPlace={() => setPlacing(null)}
             run={run}
             onOffersChanged={setOffers}
+            panelsHidden={compact}
             profile={{
               name: citizen?.goose_name || citizen?.full_name || 'You',
               species: citizen?.species || 'goose',
@@ -169,7 +179,7 @@ export default function World() {
           />
         )}
 
-        {signedIn && (
+        {signedIn && !compact && (
           <div className="absolute right-2 top-2 z-40 w-[268px] max-w-[calc(100%-1rem)] space-y-3 overflow-y-auto pr-1 pb-1 [max-height:calc(100%-1rem)]">
             {world?.mine && (
               <CommonsPalette

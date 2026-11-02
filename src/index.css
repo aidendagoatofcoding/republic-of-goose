@@ -169,6 +169,28 @@
   }
 }
 
+@keyframes portal-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.portal-ring {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.7) 22%,
+    transparent 52%,
+    hsl(var(--primary) / 0.45) 78%,
+    transparent 100%
+  );
+  filter: blur(1px);
+  animation: portal-spin 6s linear infinite;
+}
+
 .bubble-pop {
   animation: bubble-pop 0.22s ease-out both;
   transform: translate(-50%, 0);

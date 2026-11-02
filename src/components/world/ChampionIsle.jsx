@@ -5,6 +5,8 @@ const SPORTS = [
   { id: 'pong', name: 'Pond Pong', note: 'Two paddles · first to five', action: 'Match' },
   { id: 'sprint', name: 'Honk Sprint', note: 'Outrun the Champion · 100 m', action: 'Play' },
   { id: 'toss', name: 'Bread Toss', note: 'Five loaves · five rings', action: 'Play' },
+  { id: 'choir', name: 'Honk Choir', note: 'Repeat the phrase · memory', action: 'Play' },
+  { id: 'guard', name: 'Nest Guard', note: 'Catch the thieves · 25 s', action: 'Play' },
 ];
 
 export default function ChampionIsle({ people, seat, pong, onPlay }) {
@@ -20,7 +22,7 @@ export default function ChampionIsle({ people, seat, pong, onPlay }) {
       <div className="flex items-baseline justify-between gap-2">
         <span className="meta-label">Champion Isle</span>
         <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-muted-foreground">
-          3 events
+          {SPORTS.length} events
         </span>
       </div>
 

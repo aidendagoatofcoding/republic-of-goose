@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HouseSprite from '@/components/world/HouseSprite';
 import MeadowGround from '@/components/world/MeadowGround';
 import Walker from '@/components/world/Walker';
@@ -8,6 +9,9 @@ import ChampionIsle from '@/components/world/ChampionIsle';
 import PongTable from '@/components/world/PongTable';
 import SprintGame from '@/components/world/SprintGame';
 import BreadToss from '@/components/world/BreadToss';
+import ChoirGame from '@/components/world/ChoirGame';
+import NestGuard from '@/components/world/NestGuard';
+import Realms from '@/components/world/Realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 
@@ -26,8 +30,22 @@ export default function WorldScene({
   profile,
   run,
   onOffersChanged,
+  panelsHidden,
 }) {
   const boxRef = useRef(null);
+  const [shift, setShift] = useState(0);
+
+  const pan = (dir) => {
+    const view = boxRef.current?.parentElement;
+    if (!view) return;
+    const width = view.clientWidth;
+    const maxPx = Math.max(0, (boxRef.current.offsetWidth || width) - width);
+    setShift((current) => {
+      const px = (current / 100) * width;
+      const next = Math.min(maxPx, Math.max(0, px + dir * width * 0.66));
+      return width ? (next / width) * 100 : 0;
+    });
+  };
   const [drag, setDrag] = useState(null);
   const [ghost, setGhost] = useState(null);
   const draggedRef = useRef(false);
@@ -294,43 +312,14 @@ export default function WorldScene({
       onPointerUp={endDrag}
       onPointerLeave={endDrag}
       onClick={handleClick}
-      className={`relative h-full w-full touch-none overflow-hidden bg-secondary/40 ${
+      style={{ left: `-${shift}%` }}
+      className={`absolute inset-y-0 h-full w-[220%] min-w-[1400px] touch-none overflow-hidden bg-secondary/40 ${
         placing ? 'cursor-crosshair ring-1 ring-inset ring-primary/50' : ''
       }`}
     >
       <MeadowGround />
 
-      {placing && (
-        <div className="absolute left-2 top-2 z-40 flex items-center gap-2 rounded-sm border border-primary/50 bg-card/95 px-2.5 py-1.5">
-          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
-            Tap the meadow to place {placing.name}
-          </span>
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onCancelPlace();
-            }}
-            className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-
-      {!placing && mine && (
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            say(myKey, 'HONK!');
-            honk(0);
-          }}
-          className="absolute left-2 top-2 z-40 rounded-sm border border-primary/60 bg-card/90 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary hover:bg-primary/10"
-        >
-          Honk
-        </button>
-      )}
+      <Realms />
 
       {placing && ghost && (
         <div
@@ -348,7 +337,7 @@ export default function WorldScene({
       )}
 
       {residents.length === 0 && (
-        <p className="absolute inset-0 z-30 flex items-center justify-center px-6 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="absolute left-0 top-0 z-30 flex h-full w-[45%] items-center justify-center px-6 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           The Commons are empty. Be the first to build here.
         </p>
       )}
@@ -510,22 +499,73 @@ export default function WorldScene({
         />
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-wrap items-end justify-between gap-2 p-2">
-        <p className="rounded-sm border border-border/70 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
-          Tap the meadow to walk · tap a neighbour to honk · tap their home, pet or cart to offer
-          bread
-        </p>
-        {connected && (
-          <span className="rounded-sm border border-primary/40 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em] text-primary">
-            {people.length} wandering now
-          </span>
-        )}
-      </div>
       </div>
 
-      <div className="absolute bottom-10 left-2 z-40 max-h-[54%] w-[216px] max-w-[calc(100%-1rem)] overflow-y-auto sm:w-[248px]">
-        <ChampionIsle people={people} seat={seat} pong={pong} onPlay={setSport} />
+      {placing && (
+        <div className="absolute left-2 top-2 z-40 flex items-center gap-2 rounded-sm border border-primary/50 bg-card/95 px-2.5 py-1.5">
+          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
+            Tap the meadow to place {placing.name}
+          </span>
+          <button
+            type="button"
+            onClick={onCancelPlace}
+            className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {!placing && mine && (
+        <button
+          type="button"
+          onClick={() => {
+            say(myKey, 'HONK!');
+            honk(0);
+          }}
+          className="absolute left-2 top-2 z-40 rounded-sm border border-primary/60 bg-card/90 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary hover:bg-primary/10"
+        >
+          Honk
+        </button>
+      )}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex items-end justify-between gap-2 p-2">
+        <p className="max-w-[46%] rounded-sm border border-border/70 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
+          Tap to walk · drag your plot · pan with the arrows
+        </p>
+        <div className="pointer-events-auto flex items-center gap-1.5">
+          {connected && (
+            <span className="rounded-sm border border-primary/40 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em] text-primary">
+              {people.length} wandering now
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => pan(-1)}
+            aria-label="Pan the meadow left"
+            className="rounded-sm border border-border bg-card/90 p-1.5 text-muted-foreground hover:text-primary"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => pan(1)}
+            aria-label="Pan the meadow right"
+            className="rounded-sm border border-border bg-card/90 p-1.5 text-muted-foreground hover:text-primary"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
+
+      {!panelsHidden && (
+        <div className="absolute bottom-10 left-2 z-40 max-h-[54%] w-[216px] max-w-[calc(100%-1rem)] overflow-y-auto sm:w-[248px]">
+          <ChampionIsle people={people} seat={seat} pong={pong} onPlay={setSport} />
+        </div>
+      )}
+
+      {sport === 'choir' && <ChoirGame onClose={() => setSport('')} />}
+      {sport === 'guard' && <NestGuard onClose={() => setSport('')} />}
 
       {sport === 'sprint' && (
         <SprintGame species={profile?.species} onClose={() => setSport('')} />

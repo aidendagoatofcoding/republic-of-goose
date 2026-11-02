@@ -463,8 +463,8 @@ export default async function (req) {
           ...spots,
           {
             item_id: item.id,
-            x: clampSpot(24 + (spots.length % 4) * 18, 2, 98),
-            y: clampSpot(52 + (Math.floor(spots.length / 4) % 3) * 15, 6, 94),
+            x: clampSpot(10 + (spots.length % 6) * 7, 2, 98),
+            y: clampSpot(46 + (Math.floor(spots.length / 6) % 4) * 12, 10, 92),
           },
         ];
       }
@@ -644,8 +644,8 @@ export default async function (req) {
           ...buyerSpots,
           {
             item_id: itemId,
-            x: clampSpot(24 + (buyerSpots.length % 4) * 18, 2, 98),
-            y: clampSpot(52 + (Math.floor(buyerSpots.length / 4) % 3) * 15, 6, 94),
+            x: clampSpot(10 + (buyerSpots.length % 6) * 7, 2, 98),
+            y: clampSpot(46 + (Math.floor(buyerSpots.length / 6) % 4) * 12, 10, 92),
           },
         ],
       });
