@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DoorOpen, X } from 'lucide-react';
 import InteriorRoom from '@/components/world/interiors/InteriorRoom';
@@ -8,7 +8,8 @@ import { useCitizen } from '@/hooks/useCitizen';
 import useInteriorWalk from '@/hooks/useInteriorWalk';
 import { stationsFor } from '@/lib/interiorStations';
 
-const REACH = 230;
+// Talking range, measured as a share of the room's longer side so it works on every screen.
+const REACH = 0.32;
 
 export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, startOpen = '' }) {
   const { citizen } = useCitizen();
@@ -22,22 +23,15 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
   });
 
   const distanceTo = useCallback(
-    (station) => {
+    (spot) => {
       const box = roomRef.current;
       if (!box) return null;
-      const dx = ((pos.x - station.x) / 100) * box.offsetWidth;
-      const dy = ((pos.y - station.y) / 100) * box.offsetHeight;
-      return Math.hypot(dx, dy);
+      const dx = ((pos.x - spot.x) / 100) * box.offsetWidth;
+      const dy = ((pos.y - spot.y) / 100) * box.offsetHeight;
+      return Math.hypot(dx, dy) / Math.max(box.offsetWidth, box.offsetHeight, 1);
     },
     [pos.x, pos.y]
   );
-
-  const near = stations.find((station) => {
-    const distance = distanceTo(station);
-    return distance !== null && distance <= REACH;
-  });
-
-  const open = stations.find((station) => station.id === openId) || null;
 
   // Every person standing in the room serves the counter nearest them.
   const keeperStation = useCallback(
@@ -51,6 +45,39 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
     [stations]
   );
 
+  // Everything worth pressing Enter on: the people in the room first, then the counters.
+  const targets = useMemo(() => {
+    const people = (place.actors || [])
+      .map((actor, index) => {
+        const station = keeperStation(actor);
+        if (!station) return null;
+        return {
+          id: `person-${index}`,
+          x: actor.x,
+          y: actor.y,
+          stationId: station.id,
+          label: `Talk to ${actor.name || station.name}`,
+        };
+      })
+      .filter(Boolean);
+    const counters = stations.map((station) => ({
+      id: `counter-${station.id}`,
+      x: station.x,
+      y: station.y,
+      stationId: station.id,
+      label: station.name,
+    }));
+    return [...people, ...counters];
+  }, [place.actors, stations, keeperStation]);
+
+  const near =
+    targets
+      .map((target) => ({ ...target, gap: distanceTo(target) }))
+      .filter((target) => target.gap !== null && target.gap <= REACH)
+      .sort((a, b) => a.gap - b.gap)[0] || null;
+
+  const open = stations.find((station) => station.id === openId) || null;
+
   useEffect(() => {
     const onKey = (event) => {
       if (event.key === 'Escape') {
@@ -62,7 +89,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
       const tag = event.target?.tagName;
       if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tag)) return;
       event.preventDefault();
-      setOpenId(near.id);
+      setOpenId(near.stationId);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -106,7 +133,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
       )}
 
       {stations.map((station) => {
-        const active = near?.id === station.id;
+        const active = near?.stationId === station.id;
         return (
           <button
             key={station.id}
@@ -175,7 +202,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
 
       {near && !open && (
         <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary shadow-lg">
-          ⏎ Enter · {near.name}
+          ⏎ {near.label}
         </div>
       )}
 

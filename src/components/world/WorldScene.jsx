@@ -5,6 +5,7 @@ import Places from '@/components/world/Places';
 import Walker from '@/components/world/Walker';
 import WorldBubble from '@/components/world/WorldBubble';
 import NeighbourDialog from '@/components/world/NeighbourDialog';
+import NeighbourTalk from '@/components/world/NeighbourTalk';
 import ChampionIsle from '@/components/world/ChampionIsle';
 import PongTable from '@/components/world/PongTable';
 import SprintGame from '@/components/world/SprintGame';
@@ -30,7 +31,16 @@ import usePong from '@/hooks/usePong';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
 
-const NPC_LINES = ['HONK!', 'Lovely day.', 'Any bread?', 'Mind the pond.', 'HONK honk.'];
+const NPC_LINES = [
+  'HONK!',
+  'Lovely day for it.',
+  'Any bread going spare?',
+  'Mind the pond, it bites back.',
+  'HONK honk.',
+  'The bakery queue is shorter at dawn.',
+  'Have you seen the new houses on the east road?',
+  'The Bank pays better than it used to.',
+];
 const KNOCKS = ['Come in!', 'Who honks there?', 'Door is open.', 'Wipe your webbed feet.'];
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
@@ -95,6 +105,7 @@ export default function WorldScene({
   const [isleOpen, setIsleOpen] = useState(false);
   const myKey = seat ? `seat:${seat}` : 'me';
 
+  const [talk, setTalk] = useState(null);
   const [offerTarget, setOfferTarget] = useState(null);
   const [offerAmount, setOfferAmount] = useState('');
   const [offerBusy, setOfferBusy] = useState(false);
@@ -257,11 +268,16 @@ export default function WorldScene({
       event.preventDefault();
       if (target.kind === 'sport') setSport(target.id);
       else if (target.kind === 'realm') setRealm(target.id);
+      else if (target.kind === 'npc') {
+        const line = pick(NPC_LINES);
+        say(target.id, line);
+        setTalk({ ...target.talk, line });
+      }
       else setInside(target.place);
     };
     window.addEventListener('keydown', onEnter);
     return () => window.removeEventListener('keydown', onEnter);
-  }, []);
+  }, [say]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -406,11 +422,32 @@ export default function WorldScene({
     return distance !== null && distance <= REACH_PX;
   });
 
+  const nearNeighbour = residents
+    .filter((resident) => !resident.is_me)
+    .map((resident) => {
+      const home = resident.spots.find((spot) => spot.category === 'home');
+      const drift = wander[resident.key];
+      const spot = drift || { x: home?.x ?? 50, y: home?.y ?? 60 };
+      return { resident, distance: distanceTo(spot, me) };
+    })
+    .filter((entry) => entry.distance !== null && entry.distance <= REACH_PX)
+    .sort((a, b) => a.distance - b.distance)[0];
+
   const enterTarget = nearVenue
-    ? { kind: 'sport', id: nearVenue.id, name: nearVenue.name }
+    ? { kind: 'sport', id: nearVenue.id, name: `Enter the ${nearVenue.name}` }
     : nearPortal
-      ? { kind: 'realm', id: nearPortal.id, name: nearPortal.name }
-      : null;
+      ? { kind: 'realm', id: nearPortal.id, name: `Enter ${nearPortal.name}` }
+      : nearNeighbour
+        ? {
+          kind: 'npc',
+          id: nearNeighbour.resident.key,
+          name: `Talk to ${String(nearNeighbour.resident.name).split(' ')[0]}`,
+          talk: {
+            name: nearNeighbour.resident.name,
+            species: nearNeighbour.resident.species,
+          },
+        }
+        : null;
 
   enterRef.current = sport || placing || inside || realm ? null : enterTarget;
 
@@ -573,7 +610,9 @@ export default function WorldScene({
               bubble={bubbles[resident.key]?.text}
               speed="2.6s"
               onPoke={() => {
-                say(resident.key, pick(NPC_LINES));
+                const line = pick(NPC_LINES);
+                say(resident.key, line);
+                setTalk({ name: resident.name, species: resident.species, line });
                 honkAt(0);
               }}
             />
@@ -624,7 +663,7 @@ export default function WorldScene({
 
       {enterTarget && !sport && !placing && (
         <div className="pointer-events-none absolute bottom-14 left-1/2 z-40 -translate-x-1/2 whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary shadow-lg">
-          ⏎ Enter {enterTarget.name}
+          ⏎ {enterTarget.name}
         </div>
       )}
 
@@ -698,6 +737,8 @@ export default function WorldScene({
       {sport === 'toss' && (
         <BreadToss onClose={() => setSport('')} onFinish={(score) => submitScore('toss', score)} />
       )}
+
+      <NeighbourTalk target={talk} onClose={() => setTalk(null)} />
 
       <NeighbourDialog
         target={offerTarget}
