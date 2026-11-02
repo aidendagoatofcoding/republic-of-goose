@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { USERNAME_PATTERN, hashPassword, newSalt, normaliseUsername } from '../../shared/passport.ts';
 
 const DISTRICTS = [
   'Honkton',
@@ -37,6 +38,8 @@ export default async function (req) {
     const district = String(body.district ?? '');
     const level = String(body.honkish_level ?? '');
     const email = String(body.email ?? '').trim().slice(0, 160);
+    const username = normaliseUsername(body.username);
+    const password = String(body.password ?? '');
 
     if (fullName.length < 2) {
       return Response.json(
@@ -62,6 +65,26 @@ export default async function (req) {
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return Response.json({ error: 'That email address does not look valid.' }, { status: 400 });
     }
+    if (!USERNAME_PATTERN.test(username)) {
+      return Response.json(
+        { error: 'Choose a username of 3-20 letters, numbers or underscores.' },
+        { status: 400 }
+      );
+    }
+    if (password.length < 6 || password.length > 100) {
+      return Response.json(
+        { error: 'Choose a password of at least 6 characters.' },
+        { status: 400 }
+      );
+    }
+
+    const taken = await admin.entities.Citizen.filter({ username }, { limit: 1 });
+    if (taken?.items?.length) {
+      return Response.json(
+        { error: 'That username is already held by another citizen.' },
+        { status: 409 }
+      );
+    }
 
     const ip = clientIp(req);
 
@@ -78,6 +101,7 @@ export default async function (req) {
       }
     }
 
+    const salt = newSalt();
     const record = await admin.entities.Citizen.create({
       full_name: fullName,
       goose_name: gooseName,
@@ -88,8 +112,13 @@ export default async function (req) {
       oath_accepted: true,
       ip_address: ip,
       passport_code: crypto.randomUUID(),
+      username,
+      password_salt: salt,
+      password_hash: await hashPassword(password, salt),
       bread: WELCOME_BREAD,
       decorations: [],
+      workers: 0,
+      last_baked: new Date().toISOString(),
     });
 
     return Response.json({
@@ -104,6 +133,8 @@ export default async function (req) {
         bread: record.bread ?? WELCOME_BREAD,
         decorations: [],
         passport_code: record.passport_code,
+        username: record.username || '',
+        workers: 0,
         created_date: record.created_date,
         holdings: [],
       },

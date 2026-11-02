@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { MARKET, marketSnapshot, priceAt, currentTick } from '../../shared/market.ts';
+import { hashPassword, normaliseUsername } from '../../shared/passport.ts';
 
 const CHAT_REWARD = 5;
 const CHAT_COOLDOWN_MS = 12000;
@@ -7,9 +8,20 @@ const BAKE_RATE = 1;
 const MAX_BAKE_CLICKS = 40;
 const MAX_SHARES = 5000;
 const MAX_DECORATIONS = 40;
+const WORKER_BASE_COST = 30;
+const WORKER_COST_GROWTH = 1.18;
+const WORKER_SECONDS_PER_LOAF = 4;
+const MAX_WORKERS = 200;
+const MAX_WORKER_EARN = 2000;
+const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
+
+function workerCost(workers) {
+  return Math.round(WORKER_BASE_COST * Math.pow(WORKER_COST_GROWTH, workers));
+}
 
 function publicCitizen(citizen, holdings = []) {
   const decorations = Array.isArray(citizen.decorations) ? citizen.decorations : [];
+  const workers = Math.max(0, Math.floor(citizen.workers ?? 0));
   return {
     id: citizen.id,
     full_name: citizen.full_name,
@@ -21,6 +33,9 @@ function publicCitizen(citizen, holdings = []) {
     bread: Math.round(citizen.bread ?? 0),
     decorations,
     passport_code: citizen.passport_code,
+    username: citizen.username || '',
+    workers,
+    next_worker_cost: workerCost(workers),
     created_date: citizen.created_date,
     holdings,
   };
@@ -50,6 +65,29 @@ export default async function (req) {
 
     if (action === 'market') {
       return Response.json({ market: marketSnapshot() });
+    }
+
+    if (action === 'login') {
+      const username = normaliseUsername(body.username);
+      const password = String(body.password ?? '');
+      if (!username || !password) {
+        return Response.json(
+          { error: 'Enter your citizen username and password.' },
+          { status: 400 }
+        );
+      }
+      const page = await admin.entities.Citizen.filter({ username }, { limit: 1 });
+      const found = page?.items?.[0] ?? null;
+      const hash = found?.password_hash || '';
+      const computed = hash ? await hashPassword(password, found.password_salt || '') : '';
+      if (!found || !hash || computed !== hash) {
+        return Response.json(
+          { error: 'That username and password do not match a citizen on the register.' },
+          { status: 401 }
+        );
+      }
+      const loginHoldings = await loadHoldings(admin, found.passport_code);
+      return Response.json({ citizen: publicCitizen(found, loginHoldings) });
     }
 
     const code = String(body.code ?? '').trim().toLowerCase();
@@ -90,6 +128,44 @@ export default async function (req) {
         bread: Math.round(citizen.bread ?? 0) + earned,
       });
       return Response.json({ citizen: publicCitizen(updated, holdings), earned });
+    }
+
+    if (action === 'collect') {
+      const workers = Math.max(0, Math.floor(citizen.workers ?? 0));
+      if (workers < 1) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings), earned: 0 });
+      }
+      const now = Date.now();
+      const last = citizen.last_baked ? new Date(citizen.last_baked).getTime() : now;
+      const seconds = Math.min(Math.max(0, (now - last) / 1000), MAX_OFFLINE_SECONDS);
+      const earned = Math.min(Math.floor((seconds * workers) / WORKER_SECONDS_PER_LOAF), MAX_WORKER_EARN);
+      if (earned < 1) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings), earned: 0 });
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        bread: Math.round(citizen.bread ?? 0) + earned,
+        last_baked: new Date(now).toISOString(),
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings), earned });
+    }
+
+    if (action === 'hireWorker') {
+      const workers = Math.max(0, Math.floor(citizen.workers ?? 0));
+      if (workers >= MAX_WORKERS) {
+        return Response.json({ error: 'The kitchen is already full of hands.' }, { status: 400 });
+      }
+      const cost = workerCost(workers);
+      const bread = Math.round(citizen.bread ?? 0);
+      if (bread < cost) {
+        return Response.json(
+          { error: `A new bakery hand costs ${cost} bread. Keep honking the lever.` },
+          { status: 400 }
+        );
+      }
+      const patch = { bread: bread - cost, workers: workers + 1 };
+      if (!citizen.last_baked || workers < 1) patch.last_baked = new Date().toISOString();
+      const updated = await admin.entities.Citizen.update(citizen.id, patch);
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
     }
 
     if (action === 'chatReward') {

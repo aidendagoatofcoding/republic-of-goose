@@ -57,6 +57,24 @@ export function CitizenProvider({ children }) {
     return data.citizen;
   }, []);
 
+  const signInWithPassword = useCallback(async (username, password) => {
+    if (!username.trim() || !password) {
+      throw new Error('Enter your citizen username and password.');
+    }
+    const data = await call({
+      action: 'login',
+      username: username.trim().toLowerCase(),
+      password,
+    });
+    if (!data.citizen) {
+      throw new Error('That username and password do not match a citizen on the register.');
+    }
+    savePassport(data.citizen.passport_code);
+    setCitizen(data.citizen);
+    setCode(data.citizen.passport_code);
+    return data.citizen;
+  }, []);
+
   const adopt = useCallback((nextCitizen) => {
     if (!nextCitizen?.passport_code) return;
     savePassport(nextCitizen.passport_code);
@@ -85,6 +103,7 @@ export function CitizenProvider({ children }) {
     loading,
     signedIn: Boolean(citizen),
     signIn,
+    signInWithPassword,
     signOut,
     adopt,
     run,

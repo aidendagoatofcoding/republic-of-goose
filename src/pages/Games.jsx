@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Gamepad2 } from 'lucide-react';
 import Panel from '@/components/Panel';
+import BakeryStaff from '@/components/games/BakeryStaff';
 import { useCitizen } from '@/hooks/useCitizen';
 
 export default function Games() {
@@ -10,6 +11,7 @@ export default function Games() {
   const [pending, setPending] = useState(0);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [hiring, setHiring] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(async () => {
@@ -28,9 +30,40 @@ export default function Games() {
     return () => clearInterval(timer);
   }, [run]);
 
+  useEffect(() => {
+    if (!signedIn) return undefined;
+    const collect = async () => {
+      try {
+        const data = await run({ action: 'collect' });
+        if (data.earned > 0) {
+          setMessage(`Kitchen staff baked ${data.earned} loaves`);
+          setError('');
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    collect();
+    const timer = setInterval(collect, 6000);
+    return () => clearInterval(timer);
+  }, [run, signedIn]);
+
   const bake = () => {
     pendingRef.current += 1;
     setPending(pendingRef.current);
+  };
+
+  const hire = async () => {
+    setHiring(true);
+    setError('');
+    try {
+      const data = await run({ action: 'hireWorker' });
+      setMessage(`${data.citizen.workers} hands now work the ovens`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setHiring(false);
+    }
   };
 
   if (!signedIn) {
@@ -114,6 +147,8 @@ export default function Games() {
           )}
         </div>
       </Panel>
+
+      <BakeryStaff citizen={citizen} onHire={hire} hiring={hiring} />
 
       <Panel>
         <span className="meta-label">Other Ways To Earn</span>

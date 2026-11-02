@@ -27,9 +27,10 @@ export default function Passport() {
         </div>
         <h2 className="display-title mt-4 text-3xl md:text-4xl">Your Passport</h2>
         <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-foreground/75">
-          Every registered citizen receives a passport code at the Citizenship Office. Sign in with
-          it to carry your badge, earn bread for honking in the chat, trade on the national exchange
-          and wear your decorations.
+          Every registered citizen receives a username, a password and a passport code at the
+          Citizenship Office. Sign in with your username and password — the code still works as a
+          backup — to carry your badge, earn bread for honking in the chat, trade on the national
+          exchange and wear your decorations.
         </p>
         <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           Not registered yet? <Link to="/citizenship" className="text-primary underline-offset-4 hover:underline">Apply for citizenship</Link>

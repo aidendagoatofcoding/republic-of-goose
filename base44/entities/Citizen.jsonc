@@ -10,6 +10,18 @@
       "type": "string",
       "description": "Chosen national Goose name"
     },
+    "username": {
+      "type": "string",
+      "description": "Unique citizen username used to sign in"
+    },
+    "password_hash": {
+      "type": "string",
+      "description": "Hashed citizen password, never shown to anyone"
+    },
+    "password_salt": {
+      "type": "string",
+      "description": "Random salt used to hash the citizen password"
+    },
     "species": {
       "type": "string",
       "description": "Species of the citizen: goose, fox, squirrel, turtle, anteater, hummingbird or marlin"
@@ -52,6 +64,14 @@
         "type": "string"
       },
       "description": "Shop items owned by the citizen, worn on their animal"
+    },
+    "workers": {
+      "type": "number",
+      "description": "Bakery hands hired by the citizen, each baking bread automatically"
+    },
+    "last_baked": {
+      "type": "string",
+      "description": "Timestamp of the last collection from hired bakery hands"
     },
     "last_chat_reward": {
       "type": "string",

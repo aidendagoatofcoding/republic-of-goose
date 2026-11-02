@@ -27,6 +27,8 @@ export default function CitizenshipForm() {
   const { adopt } = useCitizen();
   const [fullName, setFullName] = useState('');
   const [gooseName, setGooseName] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [species, setSpecies] = useState('goose');
   const [district, setDistrict] = useState(DISTRICTS[0]);
   const [level, setLevel] = useState(LEVELS[1]);
@@ -48,6 +50,14 @@ export default function CitizenshipForm() {
       setError('That email address does not look valid.');
       return;
     }
+    if (!/^[a-z0-9_]{3,20}$/.test(username.trim().toLowerCase())) {
+      setError('Choose a username of 3-20 letters, numbers or underscores.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Choose a password of at least 6 characters.');
+      return;
+    }
     if (!oath) {
       setError("You must take the Citizen's Oath before joining.");
       return;
@@ -59,6 +69,8 @@ export default function CitizenshipForm() {
       const response = await base44.functions.invoke('registerCitizen', {
         full_name: name.slice(0, 120),
         goose_name: gooseName.trim().slice(0, 60),
+        username: username.trim().toLowerCase(),
+        password,
         species,
         district,
         honkish_level: level,
@@ -75,7 +87,10 @@ export default function CitizenshipForm() {
       setGranted(data.citizen);
       adopt(data.citizen);
     } catch (err) {
-      setError('The registry office could not process that application. Please try again.');
+      setError(
+        err?.response?.data?.error ||
+          'The registry office could not process that application. Please try again.'
+      );
     } finally {
       setBusy(false);
     }
@@ -98,6 +113,7 @@ export default function CitizenshipForm() {
           {[
             ['Species', `${speciesInfo(granted.species).emoji} ${speciesInfo(granted.species).label}`],
             ['Goose Name', granted.goose_name || 'Not yet declared'],
+            ['Username', `@${granted.username || username.trim().toLowerCase()}`],
             ['District', granted.district],
             ['HONKISH Level', granted.honkish_level],
             ['Bread Granted', `🍞 ${granted.bread}`],
@@ -226,6 +242,35 @@ export default function CitizenshipForm() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="citizen-username" className={FIELD_LABEL}>
+            Username
+          </label>
+          <input
+            id="citizen-username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            placeholder="e.g. sir_honksalot"
+            autoComplete="username"
+            className={`mt-2 ${INPUT_CLASS}`}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="citizen-password" className={FIELD_LABEL}>
+            Password
+          </label>
+          <input
+            id="citizen-password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="At least 6 characters"
+            autoComplete="new-password"
+            className={`mt-2 ${INPUT_CLASS}`}
+          />
         </div>
 
         <div className="sm:col-span-2">

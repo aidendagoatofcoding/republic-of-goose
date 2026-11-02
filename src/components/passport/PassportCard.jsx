@@ -60,6 +60,11 @@ export default function PassportCard({ citizen }) {
               <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 {citizen.full_name} · {speciesInfo(citizen.species).label}
               </p>
+              {citizen.username && (
+                <p className="mt-1 font-mono text-[10px] tracking-[0.12em] text-primary">
+                  @{citizen.username}
+                </p>
+              )}
             </div>
           </div>
           <button
@@ -106,7 +111,8 @@ export default function PassportCard({ citizen }) {
           </span>
         </div>
         <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-          Keep the code private · portrait stored publicly — anyone with the link can open it
+          Sign in with your username and password · keep the passport code private · portrait stored
+          publicly — anyone with the link can open it
         </p>
 
         {error && (
