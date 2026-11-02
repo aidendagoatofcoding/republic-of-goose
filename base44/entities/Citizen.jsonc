@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Chosen national Goose name"
     },
+    "species": {
+      "type": "string",
+      "description": "Species of the citizen: goose, fox, squirrel, turtle, anteater, hummingbird or marlin"
+    },
     "district": {
       "type": "string",
       "description": "District of residence inside the Republic"
@@ -29,6 +33,29 @@
     "ip_address": {
       "type": "string",
       "description": "Network address the registration came from, used to admit one citizen per address"
+    },
+    "passport_code": {
+      "type": "string",
+      "description": "Private passport code the citizen uses to sign in"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Uploaded portrait shown beside the citizen in the Honk Hall"
+    },
+    "bread": {
+      "type": "number",
+      "description": "Bread balance held by the citizen"
+    },
+    "decorations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Shop items owned by the citizen, worn on their animal"
+    },
+    "last_chat_reward": {
+      "type": "string",
+      "description": "Timestamp of the last chat bread reward, used for the cooldown"
     }
   },
   "required": [

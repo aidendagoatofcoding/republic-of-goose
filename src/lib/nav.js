@@ -9,6 +9,11 @@ import {
   Lock,
   BadgeCheck,
   MessageSquare,
+  Newspaper,
+  Gamepad2,
+  Store,
+  TrendingUp,
+  UserRound,
 } from 'lucide-react';
 
 export const NAV_GROUPS = [
@@ -17,6 +22,7 @@ export const NAV_GROUPS = [
     items: [
       { path: '/', label: 'Homepage', title: 'Homepage', icon: Home },
       { path: '/country', label: 'About the Country', title: 'About the Country', icon: Map },
+      { path: '/news', label: 'Goose News', title: 'The Goose Gazette', icon: Newspaper },
     ],
   },
   {
@@ -31,6 +37,15 @@ export const NAV_GROUPS = [
     label: 'Community',
     items: [
       { path: '/chat', label: 'Goose Chat', title: 'The Honk Hall', icon: MessageSquare },
+      { path: '/games', label: 'Goose Games', title: 'Goose Games', icon: Gamepad2 },
+    ],
+  },
+  {
+    label: 'Economy',
+    items: [
+      { path: '/passport', label: 'My Passport', title: 'Citizen Passport', icon: UserRound },
+      { path: '/shop', label: 'E-Shop', title: 'The National E-Shop', icon: Store },
+      { path: '/market', label: 'Stock Market', title: 'Goose Stock Market', icon: TrendingUp },
     ],
   },
   {

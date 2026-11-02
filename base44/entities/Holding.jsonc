@@ -1,0 +1,49 @@
+{
+  "name": "Holding",
+  "type": "object",
+  "properties": {
+    "passport_code": {
+      "type": "string",
+      "description": "Passport code of the citizen holding the shares"
+    },
+    "symbol": {
+      "type": "string",
+      "description": "Goose stock ticker symbol"
+    },
+    "shares": {
+      "type": "number",
+      "description": "Number of shares held"
+    },
+    "avg_price": {
+      "type": "number",
+      "description": "Average purchase price in bread"
+    }
+  },
+  "required": [
+    "passport_code",
+    "symbol",
+    "shares"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

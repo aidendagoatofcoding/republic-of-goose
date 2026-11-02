@@ -11,6 +11,10 @@ const DISTRICTS = [
 
 const LEVELS = ['Not yet honking', 'Apprentice honker', 'Fluent honker', 'Native honker'];
 
+const SPECIES = ['goose', 'fox', 'squirrel', 'turtle', 'anteater', 'hummingbird', 'marlin'];
+
+const WELCOME_BREAD = 50;
+
 function clientIp(req) {
   const forwarded = req.headers.get('x-forwarded-for') || '';
   const first = forwarded.split(',')[0].trim();
@@ -29,6 +33,7 @@ export default async function (req) {
 
     const fullName = String(body.full_name ?? '').trim().slice(0, 120);
     const gooseName = String(body.goose_name ?? '').trim().slice(0, 60);
+    const species = String(body.species ?? 'goose');
     const district = String(body.district ?? '');
     const level = String(body.honkish_level ?? '');
     const email = String(body.email ?? '').trim().slice(0, 160);
@@ -38,6 +43,9 @@ export default async function (req) {
         { error: 'Enter your full name as it should appear on the national register.' },
         { status: 400 }
       );
+    }
+    if (!SPECIES.includes(species)) {
+      return Response.json({ error: 'Choose a species recognised by the Republic.' }, { status: 400 });
     }
     if (!DISTRICTS.includes(district)) {
       return Response.json({ error: 'Choose a district of residence.' }, { status: 400 });
@@ -70,17 +78,36 @@ export default async function (req) {
       }
     }
 
-    const citizen = await admin.entities.Citizen.create({
+    const record = await admin.entities.Citizen.create({
       full_name: fullName,
       goose_name: gooseName,
+      species,
       district,
       honkish_level: level,
       email,
       oath_accepted: true,
       ip_address: ip,
+      passport_code: crypto.randomUUID(),
+      bread: WELCOME_BREAD,
+      decorations: [],
     });
 
-    return Response.json({ citizen });
+    return Response.json({
+      citizen: {
+        id: record.id,
+        full_name: record.full_name,
+        goose_name: record.goose_name || '',
+        species: record.species || 'goose',
+        district: record.district,
+        honkish_level: record.honkish_level,
+        avatar_url: '',
+        bread: record.bread ?? WELCOME_BREAD,
+        decorations: [],
+        passport_code: record.passport_code,
+        created_date: record.created_date,
+        holdings: [],
+      },
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

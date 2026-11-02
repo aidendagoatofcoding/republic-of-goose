@@ -3,10 +3,10 @@ import Panel from '@/components/Panel';
 const RULES = [
   ['Sentence Structure', 'HONKISH uses English sentence order: Subject → Verb → Object.'],
   ['Word Separation', 'Every word is separated with a slash (/).'],
-  ['Alphabet', 'Each letter is represented by five binary sounds and an ending K.'],
+  ['Alphabet', 'Each letter is five bits — h for 1, k for 0 — closed with nk.'],
   [
     'Dictionary Words',
-    'Dictionary entries use the GOOSEK prefix, a unique binary identifier, and a final K.',
+    'Dictionary entries use the GOOSEK prefix, a unique h/k identifier, and a closing nk.',
   ],
   ['Questions', 'Questions end with a question mark.'],
   ['Emotions', 'Long honks express stronger emotions. Rapid honks express urgency.'],

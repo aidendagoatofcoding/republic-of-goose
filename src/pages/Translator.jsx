@@ -44,8 +44,8 @@ export default function Translator() {
               Alphabet codes
             </h3>
             <p className="mt-2 text-[15px] leading-relaxed text-foreground/70">
-              Five binary honk sounds followed by K. Used for any word that is not in the national
-              dictionary.
+              Five bits written h for 1 and k for 0, closed with nk. Used for any word that is not in
+              the national dictionary.
             </p>
           </div>
           <div>
@@ -53,8 +53,8 @@ export default function Translator() {
               Dictionary codes
             </h3>
             <p className="mt-2 text-[15px] leading-relaxed text-foreground/70">
-              GOOSEK + binary identifier + K. These are separate formats, so dictionary words can
-              never be mistaken for alphabet letters.
+              GOOSEK + h/k identifier + nk. These are separate formats, so dictionary words can never
+              be mistaken for alphabet letters.
             </p>
           </div>
         </div>

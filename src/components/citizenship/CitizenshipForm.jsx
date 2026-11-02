@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { BadgeCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useCitizen } from '@/hooks/useCitizen';
+import { SPECIES, speciesInfo } from '@/lib/species';
 
 const DISTRICTS = [
   'Honkton',
@@ -21,8 +24,10 @@ const SELECT_CLASS = `${INPUT_CLASS} appearance-none`;
 const FIELD_LABEL = 'block font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground';
 
 export default function CitizenshipForm() {
+  const { adopt } = useCitizen();
   const [fullName, setFullName] = useState('');
   const [gooseName, setGooseName] = useState('');
+  const [species, setSpecies] = useState('goose');
   const [district, setDistrict] = useState(DISTRICTS[0]);
   const [level, setLevel] = useState(LEVELS[1]);
   const [email, setEmail] = useState('');
@@ -54,6 +59,7 @@ export default function CitizenshipForm() {
       const response = await base44.functions.invoke('registerCitizen', {
         full_name: name.slice(0, 120),
         goose_name: gooseName.trim().slice(0, 60),
+        species,
         district,
         honkish_level: level,
         email: email.trim().slice(0, 160),
@@ -67,6 +73,7 @@ export default function CitizenshipForm() {
         return;
       }
       setGranted(data.citizen);
+      adopt(data.citizen);
     } catch (err) {
       setError('The registry office could not process that application. Please try again.');
     } finally {
@@ -89,9 +96,11 @@ export default function CitizenshipForm() {
 
         <dl className="mt-6 grid grid-cols-1 gap-px border border-border/70 bg-border/70 sm:grid-cols-2">
           {[
+            ['Species', `${speciesInfo(granted.species).emoji} ${speciesInfo(granted.species).label}`],
             ['Goose Name', granted.goose_name || 'Not yet declared'],
             ['District', granted.district],
             ['HONKISH Level', granted.honkish_level],
+            ['Bread Granted', `🍞 ${granted.bread}`],
             ['Date of Entry', new Date(granted.created_date).toLocaleDateString()],
           ].map(([label, value]) => (
             <div key={label} className="bg-card px-4 py-3">
@@ -102,6 +111,25 @@ export default function CitizenshipForm() {
             </div>
           ))}
         </dl>
+
+        <div className="mt-6 border border-primary/40 bg-primary/5 p-4">
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-primary">
+            Your passport code
+          </p>
+          <p className="mt-2 break-all font-mono text-[13px] text-foreground">
+            {granted.passport_code}
+          </p>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-foreground/65">
+            You are signed in on this device. Keep this code — it is the only way back into your
+            passport on another one.
+          </p>
+          <Link
+            to="/passport"
+            className="mt-3 inline-block font-mono text-[10px] uppercase tracking-[0.16em] text-primary underline-offset-4 hover:underline"
+          >
+            Open my passport
+          </Link>
+        </div>
 
         <p className="mt-6 text-[15px] leading-relaxed text-foreground/70">
           Welcome to the Republic of Goose. Honk loudly, protect the bread reserves, and report any
@@ -144,6 +172,24 @@ export default function CitizenshipForm() {
             placeholder="e.g. Sir Honksalot"
             className={`mt-2 ${INPUT_CLASS}`}
           />
+        </div>
+
+        <div>
+          <label htmlFor="species" className={FIELD_LABEL}>
+            Species
+          </label>
+          <select
+            id="species"
+            value={species}
+            onChange={(event) => setSpecies(event.target.value)}
+            className={`mt-2 ${SELECT_CLASS}`}
+          >
+            {SPECIES.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.emoji} {option.label} — {option.note}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

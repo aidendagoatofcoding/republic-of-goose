@@ -1,14 +1,20 @@
 // The official HONKISH language engine.
-// Alphabet codes: five binary sounds + ending K.
-// Dictionary codes: GOOSEK + twelve binary sounds + ending K.
+// Alphabet codes: five bits, written h for 1 and k for 0, closed with an nk.
+// Dictionary codes: GOOSEK + twelve bits (h/k) + nk.
+
+export function bitsOf(value, width) {
+  return value
+    .toString(2)
+    .padStart(width, '0')
+    .split('')
+    .map((bit) => (bit === '1' ? 'h' : 'k'))
+    .join('');
+}
 
 export const ALPHABET = {};
 
 for (let i = 0; i < 26; i += 1) {
-  const letter = String.fromCharCode(65 + i);
-  const binary = i.toString(2).padStart(5, '0');
-  const sounds = binary.split('').map((bit) => (bit === '0' ? 'HONKK' : 'HOOONKK'));
-  ALPHABET[letter] = [...sounds, 'K'].join(' ');
+  ALPHABET[String.fromCharCode(65 + i)] = `${bitsOf(i, 5)}nk`;
 }
 
 const NORMAL_WORDS = `
@@ -123,9 +129,7 @@ export const DICTIONARY = {};
 export const REVERSE_DICTIONARY = {};
 
 function makeDictionaryCode(index) {
-  const binary = index.toString(2).padStart(12, '0');
-  const sounds = binary.split('').map((bit) => (bit === '0' ? 'HONKK' : 'HOOONKK'));
-  return ['GOOSEK', ...sounds, 'K'].join(' ');
+  return `GOOSEK${bitsOf(index, 12)}nk`;
 }
 
 ALL_ENTRIES.forEach((word, index) => {

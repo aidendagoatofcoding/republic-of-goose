@@ -1,0 +1,44 @@
+{
+  "name": "ShopItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the decoration"
+    },
+    "emoji": {
+      "type": "string",
+      "description": "Emoji worn on the citizen's animal"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price in bread"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short shop description"
+    }
+  },
+  "required": [
+    "name",
+    "price"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

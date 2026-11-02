@@ -17,6 +17,11 @@ import Dictionary from '@/pages/Dictionary';
 import Laws from '@/pages/Laws';
 import Grammar from '@/pages/Grammar';
 import Admin from '@/pages/Admin';
+import Passport from '@/pages/Passport';
+import Games from '@/pages/Games';
+import Shop from '@/pages/Shop';
+import Market from '@/pages/Market';
+import News from '@/pages/News';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -55,6 +60,11 @@ const AuthenticatedApp = () => {
         <Route path="/dictionary" element={<Dictionary />} />
         <Route path="/laws" element={<Laws />} />
         <Route path="/grammar" element={<Grammar />} />
+        <Route path="/passport" element={<Passport />} />
+        <Route path="/games" element={<Games />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/market" element={<Market />} />
+        <Route path="/news" element={<News />} />
         <Route path="/admin" element={<Admin />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />

@@ -9,6 +9,18 @@
     "body": {
       "type": "string",
       "description": "Message text"
+    },
+    "author_species": {
+      "type": "string",
+      "description": "Species of the author, shown beside the name"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Portrait of the author, uploaded by them"
+    },
+    "author_citizen": {
+      "type": "boolean",
+      "description": "Whether the author is a registered citizen and carries the badge"
     }
   },
   "required": [

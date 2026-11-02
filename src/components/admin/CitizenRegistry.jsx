@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw, Trash2 } from 'lucide-react';
+import { speciesInfo } from '@/lib/species';
 
 const formatDate = (value) =>
   value ? new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
@@ -89,7 +90,8 @@ export default function CitizenRegistry({ run }) {
                 ) : null}
               </p>
               <p className="mt-1 font-mono text-[10.5px] leading-relaxed text-muted-foreground">
-                {citizen.district} · {citizen.honkish_level} · joined {formatDate(citizen.created_date)}
+                {speciesInfo(citizen.species).label} · {citizen.district} · {citizen.honkish_level} · joined {formatDate(citizen.created_date)}
+                {citizen.bread ? ` · 🍞 ${citizen.bread}` : ''}
                 {citizen.email ? ` · ${citizen.email}` : ''}
               </p>
             </div>

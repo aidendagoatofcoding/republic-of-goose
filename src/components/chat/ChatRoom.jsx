@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Radio } from 'lucide-react';
+import { useCitizen } from '@/hooks/useCitizen';
+import CitizenBadge from '@/components/CitizenBadge';
 import ChatMessage from './ChatMessage';
 import ChatComposer from './ChatComposer';
 
-export default function ChatRoom({ name, onChangeName }) {
+export default function ChatRoom({ name, citizen, onChangeName }) {
+  const { run } = useCitizen();
   const [messages, setMessages] = useState(null);
+  const [earned, setEarned] = useState(0);
   const [error, setError] = useState('');
   const listRef = useRef(null);
 
@@ -56,29 +60,50 @@ export default function ChatRoom({ name, onChangeName }) {
   }, [messages?.length]);
 
   const send = async (body) => {
-    const record = await base44.entities.ChatMessage.create({ author_name: name, body });
+    const record = await base44.entities.ChatMessage.create({
+      author_name: name,
+      body,
+      author_species: citizen?.species || '',
+      author_avatar: citizen?.avatar_url || '',
+      author_citizen: Boolean(citizen),
+    });
     setMessages((current) => {
       if (!current) return [record];
       if (current.some((message) => message.id === record.id)) return current;
       return [...current, record];
     });
+
+    if (citizen) {
+      try {
+        const data = await run({ action: 'chatReward' });
+        setEarned(data.earned || 0);
+      } catch (err) {
+        setEarned(0);
+      }
+    }
   };
 
   return (
     <section className="overflow-hidden rounded-md border border-border/80 bg-card">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Radio className="h-3.5 w-3.5 text-primary" />
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
             Chatting as {name}
           </span>
+          {citizen ? <CitizenBadge species={citizen.species} /> : null}
+          {earned > 0 ? (
+            <span className="font-mono text-[10px] text-primary">+{earned} 🍞</span>
+          ) : null}
         </div>
-        <button
-          onClick={onChangeName}
-          className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Change name
-        </button>
+        {onChangeName ? (
+          <button
+            onClick={onChangeName}
+            className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Change name
+          </button>
+        ) : null}
       </div>
 
       {error && (
