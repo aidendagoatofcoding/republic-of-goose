@@ -98,58 +98,61 @@ export default function World() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4">
-      <Panel>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <span className="meta-label">Community Land</span>
-            <h2 className="display-title mt-3 text-3xl md:text-4xl">The Honk Commons</h2>
-            <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-foreground/75">
-              One meadow, everyone in it. Walk your animal with the arrow keys or by tapping the
-              grass, honk at neighbours you meet, knock on their doors, and drag your own house,
-              vehicles and pets anywhere on the map. Other citizens appear here live as they wander.
-            </p>          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
-                {signedIn ? 'Bread in hand' : 'Not signed in'}
-              </p>
-              <p className="font-mono text-xl font-bold text-primary">
-                🍞 {signedIn ? citizen.bread : '—'}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={load}
-              className="rounded-sm border border-border p-2 text-muted-foreground hover:text-primary"
-              aria-label="Refresh the Commons"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </button>
-          </div>
+    <div className="fixed inset-0 z-40 flex flex-col bg-background">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-card/95 px-3 py-2 sm:px-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="hidden font-mono text-[9px] uppercase tracking-[0.24em] text-muted-foreground sm:inline">
+            Community Land
+          </span>
+          <h1 className="truncate font-display text-lg font-bold">The Honk Commons</h1>
+          {world && (
+            <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground xl:inline">
+              tap to walk · drag your own plot · tap a neighbour's home to offer bread
+            </span>
+          )}
         </div>
 
-        {!signedIn && (
-          <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            <Link to="/passport" className="text-primary underline-offset-4 hover:underline">
-              Sign in with your passport
-            </Link>{' '}
-            to place your own home and pets.
-          </p>
-        )}
+        <div className="flex items-center gap-2">
+          {error && (
+            <span role="alert" className="font-mono text-[10px] text-[#FF6B4A]">
+              {error}
+            </span>
+          )}
+          {!signedIn && (
+            <Link
+              to="/passport"
+              className="font-mono text-[9px] uppercase tracking-[0.14em] text-primary underline-offset-4 hover:underline"
+            >
+              Sign in
+            </Link>
+          )}
+          <span className="font-mono text-[11px] font-bold text-primary">
+            🍞 {signedIn ? citizen.bread : '—'}
+          </span>
+          <button
+            type="button"
+            onClick={load}
+            className="rounded-sm border border-border p-1.5 text-muted-foreground hover:text-primary"
+            aria-label="Refresh the Commons"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </button>
+          <Link
+            to="/"
+            className="rounded-sm border border-border px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
+          >
+            Leave
+          </Link>
+        </div>
+      </header>
 
-        {error && (
-          <p role="alert" className="mt-4 font-mono text-[11px] text-[#FF6B4A]">
-            {error}
-          </p>
-        )}
-      </Panel>
-
-      <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+      <div className="relative flex-1 overflow-hidden">
         {world === null ? (
-          <Panel>
-            <p className="font-mono text-[11px] text-muted-foreground">Walking out to the meadow...</p>
-          </Panel>
+          <div className="flex h-full items-center justify-center">
+            <p className="font-mono text-[11px] text-muted-foreground">
+              Walking out to the meadow...
+            </p>
+          </div>
         ) : (
           <WorldScene
             residents={world.residents}
@@ -167,16 +170,16 @@ export default function World() {
           />
         )}
 
-        <div className="space-y-4">
-          {signedIn && world?.mine && (
-            <CommonsPalette
-              items={world.mine.items}
-              placingId={placing?.item_id || ''}
-              onPlace={setPlacing}
-              onCancel={() => setPlacing(null)}
-            />
-          )}
-          {signedIn && (
+        {signedIn && (
+          <div className="absolute right-2 top-2 z-40 w-[268px] max-w-[calc(100%-1rem)] space-y-3 overflow-y-auto pr-1 pb-1 [max-height:calc(100%-1rem)]">
+            {world?.mine && (
+              <CommonsPalette
+                items={world.mine.items}
+                placingId={placing?.item_id || ''}
+                onPlace={setPlacing}
+                onCancel={() => setPlacing(null)}
+              />
+            )}
             <TradePanel
               offers={offers}
               busyId={offerBusy}
@@ -185,8 +188,8 @@ export default function World() {
               onWithdraw={withdrawOffer}
               onRefresh={loadOffers}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
