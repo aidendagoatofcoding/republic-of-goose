@@ -12,10 +12,11 @@ export default function PongLobby({
 
   return (
     <section className="rounded-md border border-border/80 bg-card p-5">
-      <span className="meta-label">Pond Pong</span>
-      <h3 className="display-title mt-2 text-xl">Challenge a neighbour</h3>
+      <span className="meta-label">Champion Isle</span>
+      <h3 className="display-title mt-2 text-xl">Pond Pong</h3>
       <p className="mt-2 text-[14px] leading-relaxed text-foreground/70">
-        A two-paddle match on the pond, first to five. Both citizens need the Commons open.
+        The island's opening sport. Two paddles, one pond, first to five takes the ribbon. Both
+        citizens need the Commons open.
       </p>
 
       {incoming && (

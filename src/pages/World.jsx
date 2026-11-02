@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
-import Panel from '@/components/Panel';
 import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import WorldScene from '@/components/world/WorldScene';

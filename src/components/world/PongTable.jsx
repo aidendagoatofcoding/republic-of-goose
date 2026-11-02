@@ -18,7 +18,7 @@ export default function PongTable({ table, role, opponentName, result, onMove, o
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-primary">
-              Pond Pong · first to five
+              Honk Champion Isle · Pond Pong
             </p>
             <p className="mt-1 font-display text-xl font-bold">
               {mine} — {theirs}{' '}
@@ -42,7 +42,7 @@ export default function PongTable({ table, role, opponentName, result, onMove, o
           className="relative mt-3 aspect-[16/9] w-full touch-none overflow-hidden rounded-sm border border-primary/30 bg-[#08120F]"
           style={{
             backgroundImage:
-              'radial-gradient(circle at 50% 50%, rgba(190,255,140,0.08), transparent 60%)',
+              'linear-gradient(180deg, rgba(30,80,55,0.55) 0%, rgba(8,18,15,0.9) 60%), radial-gradient(circle at 50% 50%, rgba(190,255,140,0.12), transparent 65%)',
           }}
         >
           <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 border-l border-dashed border-primary/25" />

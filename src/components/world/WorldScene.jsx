@@ -284,15 +284,15 @@ export default function WorldScene({
   const live = people.filter((person) => person.seat !== seat);
 
   return (
-    <div className="space-y-3">
+    <div className="relative h-full w-full">
       <div
       ref={boxRef}
       onPointerMove={handlePointerMove}
       onPointerUp={endDrag}
       onPointerLeave={endDrag}
       onClick={handleClick}
-      className={`relative aspect-[4/3] w-full touch-none overflow-hidden rounded-md border border-border/80 bg-secondary/40 md:aspect-[16/10] ${
-        placing ? 'cursor-crosshair ring-1 ring-primary/50' : ''
+      className={`relative h-full w-full touch-none overflow-hidden bg-secondary/40 ${
+        placing ? 'cursor-crosshair ring-1 ring-inset ring-primary/50' : ''
       }`}
     >
       <MeadowGround />
@@ -323,7 +323,7 @@ export default function WorldScene({
             say(myKey, 'HONK!');
             honk(0);
           }}
-          className="absolute right-2 top-2 z-40 rounded-sm border border-primary/60 bg-card/90 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary hover:bg-primary/10"
+          className="absolute left-2 top-2 z-40 rounded-sm border border-primary/60 bg-card/90 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary hover:bg-primary/10"
         >
           Honk
         </button>
@@ -520,16 +520,18 @@ export default function WorldScene({
       </div>
       </div>
 
-      <PongLobby
-        people={people}
-        seat={seat}
-        incoming={pong.incoming}
-        notice={pong.notice}
-        active={pong.game}
-        onChallenge={pong.challenge}
-        onAccept={pong.accept}
-        onDecline={pong.decline}
-      />
+      <div className="absolute bottom-10 left-2 z-40 max-h-[54%] w-[216px] max-w-[calc(100%-1rem)] overflow-y-auto sm:w-[248px]">
+        <PongLobby
+          people={people}
+          seat={seat}
+          incoming={pong.incoming}
+          notice={pong.notice}
+          active={pong.game}
+          onChallenge={pong.challenge}
+          onAccept={pong.accept}
+          onDecline={pong.decline}
+        />
+      </div>
 
       <NeighbourDialog
         target={offerTarget}

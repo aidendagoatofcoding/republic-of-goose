@@ -74,6 +74,7 @@ export default function usePong({ seat, send }) {
     let lastBroadcast = 0;
 
     const step = (now) => {
+      if (overRef.current) return;
       const dt = Math.min(0.045, Math.max(0, (now - last) / 1000));
       last = now;
       const sim = simRef.current;
@@ -238,7 +239,7 @@ export default function usePong({ seat, send }) {
 
   const quit = useCallback(() => {
     const current = gameRef.current;
-    if (current) {
+    if (current && !overRef.current) {
       sendRef.current?.({ type: 'pong_end', to: current.opponentSeat, winnerSeat: 0 });
     }
     gameRef.current = null;
