@@ -2,7 +2,7 @@ import AreaZone from '@/components/world/areas/AreaZone';
 import CivicBuilding from '@/components/world/areas/CivicBuilding';
 import { AREAS } from '@/lib/commonsAreas';
 
-export default function Areas({ activeId = '' }) {
+export default function Areas({ activeId = '', onEnter }) {
   return (
     <>
       {AREAS.map((area) => (
@@ -10,7 +10,7 @@ export default function Areas({ activeId = '' }) {
       ))}
       {AREAS.flatMap((area) =>
         area.buildings.map((building) => (
-          <CivicBuilding key={building.id} building={building} />
+          <CivicBuilding key={building.id} building={building} onEnter={onEnter} />
         ))
       )}
     </>

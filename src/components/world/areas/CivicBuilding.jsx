@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-
 const STONE = '#5b5140';
 const LIGHT = '#7a6a4e';
 const INK = '#241a11';
@@ -76,11 +74,12 @@ function Building({ variant }) {
   );
 }
 
-export default function CivicBuilding({ building }) {
+export default function CivicBuilding({ building, onEnter }) {
   return (
-    <Link
-      to={building.to}
-      title={`${building.name} — visit`}
+    <button
+      type="button"
+      onClick={() => onEnter(building.place)}
+      title={`${building.name} — step inside`}
       style={{ left: `${building.x}%`, top: `${building.y}%` }}
       className="group absolute z-10 -translate-x-1/2 -translate-y-[94%] text-center"
     >
@@ -94,6 +93,6 @@ export default function CivicBuilding({ building }) {
       <span className="mt-0.5 block whitespace-nowrap rounded-sm border border-border/70 bg-card/85 px-1.5 py-0.5 font-mono text-[7.5px] uppercase tracking-[0.14em] text-foreground/75 group-hover:border-primary/60 group-hover:text-primary">
         {building.name}
       </span>
-    </Link>
+    </button>
   );
 }

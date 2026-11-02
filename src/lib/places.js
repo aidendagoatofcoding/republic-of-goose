@@ -1,0 +1,160 @@
+// Interiors of the Republic. Every civic building in the Commons opens into one of these rooms.
+export const PLACES = {
+  capital: {
+    name: 'The Capital of Honkton',
+    sign: 'CAPITAL OF HONKTON',
+    honkish: 'HONK HONK HONK',
+    blurb: 'Marble, banners, and the long echo of official honking.',
+    accent: '#f2c96b',
+    props: [
+      { type: 'chandelier', x: 50, y: 15 },
+      { type: 'banner', x: 16, y: 34 },
+      { type: 'banner', x: 84, y: 34 },
+      { type: 'podium', x: 50, y: 70, label: 'THE HONK' },
+      { type: 'benches', x: 26, y: 76 },
+      { type: 'benches', x: 74, y: 76 },
+    ],
+    actors: [
+      { emoji: '🦢', x: 34, y: 60, size: 34 },
+      { emoji: '🦉', x: 66, y: 62, size: 30, delay: '0.9s' },
+      { emoji: '🦆', x: 50, y: 56, size: 26, delay: '1.6s' },
+    ],
+  },
+  bank: {
+    name: 'The National Bank',
+    sign: 'THE NATIONAL BANK',
+    honkish: 'HONKK HOOONKK HONK',
+    blurb: 'Brass, ledgers, and one very heavy door.',
+    accent: '#f2c96b',
+    props: [
+      { type: 'chandelier', x: 26, y: 14 },
+      { type: 'vault', x: 78, y: 48 },
+      { type: 'counter', x: 32, y: 68, label: 'LOANS & BREAD' },
+      { type: 'coins', x: 62, y: 82 },
+    ],
+    actors: [
+      { emoji: '🦉', x: 32, y: 58, size: 30 },
+      { emoji: '🐢', x: 16, y: 76, size: 26, delay: '1.2s' },
+    ],
+  },
+  parliament: {
+    name: 'The Goose Parliament',
+    sign: 'PARLIAMENT',
+    honkish: 'HONK HOOONKK HONK',
+    blurb: 'Where the laws of the Republic are argued at full volume.',
+    accent: '#c8d8a0',
+    props: [
+      { type: 'banner', x: 18, y: 28 },
+      { type: 'banner', x: 82, y: 28 },
+      { type: 'podium', x: 50, y: 64, label: 'THE SPEAKER' },
+      { type: 'benches', x: 24, y: 78 },
+      { type: 'benches', x: 76, y: 78 },
+    ],
+    actors: [
+      { emoji: '🦉', x: 50, y: 54, size: 32 },
+      { emoji: '🦊', x: 24, y: 68, size: 28, delay: '0.7s' },
+      { emoji: '🐿️', x: 76, y: 68, size: 26, delay: '1.3s' },
+    ],
+  },
+  government: {
+    name: 'Government House',
+    sign: 'GOVERNMENT HOUSE',
+    honkish: 'HOOONKK HONK HONKK',
+    blurb: 'Maps of every district, pinned and re-pinned.',
+    accent: '#c8b48a',
+    props: [
+      { type: 'banner', x: 20, y: 30 },
+      { type: 'map', x: 58, y: 42 },
+      { type: 'counter', x: 26, y: 70, label: 'THE DESK' },
+    ],
+    actors: [
+      { emoji: '🦉', x: 58, y: 58, size: 30 },
+      { emoji: '🐢', x: 34, y: 80, size: 26, delay: '1s' },
+    ],
+  },
+  exchange: {
+    name: 'The Honk Exchange',
+    sign: 'THE HONK EXCHANGE',
+    honkish: 'HONKK HONKK HOOONKK',
+    blurb: 'Bread, shares, and shouting.',
+    accent: '#8fdca0',
+    props: [
+      { type: 'board', x: 52, y: 34 },
+      { type: 'counter', x: 26, y: 72, label: 'THE FLOOR' },
+      { type: 'coins', x: 74, y: 84 },
+    ],
+    actors: [
+      { emoji: '🐿️', x: 66, y: 56, size: 30 },
+      { emoji: '🦊', x: 40, y: 60, size: 28, delay: '0.8s' },
+    ],
+  },
+  guild: {
+    name: 'The Shop Guild',
+    sign: 'SHOP GUILD',
+    honkish: 'HONK HOOONKK HOOONKK',
+    blurb: 'Homes, beds, pets and small shiny things.',
+    accent: '#e0b98a',
+    props: [
+      { type: 'shelf', x: 22, y: 54 },
+      { type: 'shelf', x: 78, y: 54 },
+      { type: 'counter', x: 50, y: 74, label: 'THE GOODS' },
+    ],
+    actors: [{ emoji: '🦉', x: 50, y: 62, size: 32 }],
+  },
+  granary: {
+    name: 'The Granary',
+    sign: 'THE GRANARY',
+    honkish: 'HONK HONK HOOONKK',
+    blurb: 'Wheat, work, and the smell of a real day’s labour.',
+    accent: '#e8cf8a',
+    props: [
+      { type: 'mill', x: 78, y: 46 },
+      { type: 'sacks', x: 26, y: 60 },
+      { type: 'sacks', x: 44, y: 78 },
+      { type: 'counter', x: 62, y: 74, label: 'LABOUR OFFICE' },
+    ],
+    actors: [{ emoji: '🦊', x: 18, y: 82, size: 28 }],
+  },
+  herald: {
+    name: 'The Honk Herald',
+    sign: 'THE HONK HERALD',
+    honkish: 'HOOONKK HONK HONK',
+    blurb: 'Ink on webbed feet, news before noon.',
+    accent: '#c8c8b0',
+    props: [
+      { type: 'press', x: 66, y: 50 },
+      { type: 'shelf', x: 24, y: 56 },
+      { type: 'counter', x: 38, y: 78, label: 'THE EDITOR' },
+    ],
+    actors: [{ emoji: '🦉', x: 66, y: 68, size: 30 }],
+  },
+  bakery: {
+    name: 'The National Bakery',
+    sign: 'THE NATIONAL BAKERY',
+    honkish: 'HONK HOOONKK HONKK',
+    blurb: 'Ovens that never quite cool down.',
+    accent: '#f2b96b',
+    props: [
+      { type: 'oven', x: 74, y: 52 },
+      { type: 'counter', x: 32, y: 72, label: 'FRESH BREAD' },
+      { type: 'sacks', x: 16, y: 84 },
+    ],
+    actors: [{ emoji: '🦢', x: 52, y: 66, size: 30 }],
+  },
+  forest: {
+    name: 'The Deep Forest',
+    sign: 'THE DEEP FOREST',
+    honkish: 'HOOONKK HONK HOOONKK',
+    blurb: 'Pines, fireflies and the deep green quiet.',
+    accent: '#8fdca0',
+    props: [
+      { type: 'trees', x: 20, y: 58 },
+      { type: 'trees', x: 78, y: 62 },
+      { type: 'trees', x: 50, y: 86 },
+    ],
+    actors: [{ emoji: '🐿️', x: 62, y: 74, size: 26 }],
+  },
+};
+
+export const PLACE_LIST = Object.values(PLACES);
+export const placeFor = (id) => PLACES[id] || null;

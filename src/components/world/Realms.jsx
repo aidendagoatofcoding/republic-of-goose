@@ -1,26 +1,22 @@
-import { useNavigate } from 'react-router-dom';
-
 const REALMS = [
-  { name: 'Deep Forest', path: '/country', glyph: '🌲', x: 7, y: 58 },
-  { name: 'Capital of Honkton', path: '/', glyph: '🏛️', x: 30, y: 58 },
-  { name: 'Bread Bakery', path: '/games', glyph: '🍞', x: 52, y: 58 },
-  { name: 'The Exchange', path: '/market', glyph: '📈', x: 74, y: 58 },
+  { name: 'Deep Forest', place: 'forest', glyph: '🌲', x: 7, y: 58 },
+  { name: 'Portal to the Capital', place: 'capital', glyph: '🏛️', x: 30, y: 58 },
+  { name: 'Bread Bakery', place: 'bakery', glyph: '🍞', x: 52, y: 58 },
+  { name: 'The Exchange', place: 'exchange', glyph: '📈', x: 74, y: 58 },
 ];
 
-export default function Realms() {
-  const navigate = useNavigate();
-
+export default function Realms({ onEnter }) {
   return (
     <>
       {REALMS.map((realm) => (
         <button
-          key={realm.path}
+          key={realm.place}
           type="button"
-          title={`Portal to ${realm.name}`}
+          title={`${realm.name} — step through`}
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => {
             event.stopPropagation();
-            navigate(realm.path);
+            onEnter(realm.place);
           }}
           style={{ left: `${realm.x}%`, top: `${realm.y}%` }}
           className="absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center"

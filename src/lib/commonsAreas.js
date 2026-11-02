@@ -8,10 +8,10 @@ export const AREAS = [
     rx: 14,
     ry: 12,
     buildings: [
-      { id: 'capital-hall', name: 'Capital Building', variant: 'capital', x: 30, y: 71, to: '/' },
-      { id: 'parliament', name: 'Parliament', variant: 'temple', x: 26.5, y: 84, to: '/laws' },
-      { id: 'bank', name: 'National Bank', variant: 'bank', x: 33.5, y: 84, to: '/bank' },
-      { id: 'government', name: 'Government House', variant: 'tower', x: 30, y: 92, to: '/country' },
+      { id: 'capital-hall', name: 'Capital Building', variant: 'capital', x: 30, y: 71, place: 'capital' },
+      { id: 'parliament', name: 'Parliament', variant: 'temple', x: 26.5, y: 84, place: 'parliament' },
+      { id: 'bank', name: 'National Bank', variant: 'bank', x: 33.5, y: 84, place: 'bank' },
+      { id: 'government', name: 'Government House', variant: 'tower', x: 30, y: 92, place: 'government' },
     ],
   },
   {
@@ -22,8 +22,8 @@ export const AREAS = [
     rx: 10,
     ry: 10,
     buildings: [
-      { id: 'exchange', name: 'The Exchange', variant: 'tower', x: 72.5, y: 67, to: '/market' },
-      { id: 'guild', name: 'Shop Guild', variant: 'cottage', x: 78, y: 74, to: '/shop' },
+      { id: 'exchange', name: 'The Exchange', variant: 'tower', x: 72.5, y: 67, place: 'exchange' },
+      { id: 'guild', name: 'Shop Guild', variant: 'cottage', x: 78, y: 74, place: 'guild' },
     ],
   },
   {
@@ -33,7 +33,7 @@ export const AREAS = [
     y: 77,
     rx: 11,
     ry: 12,
-    buildings: [{ id: 'granary', name: 'Granary', variant: 'cottage', x: 17, y: 70, to: '/jobs' }],
+    buildings: [{ id: 'granary', name: 'Granary', variant: 'cottage', x: 17, y: 70, place: 'granary' }],
   },
   {
     id: 'harbour',
@@ -42,7 +42,7 @@ export const AREAS = [
     y: 46,
     rx: 9,
     ry: 12,
-    buildings: [{ id: 'herald', name: 'Honk Herald', variant: 'tower', x: 94, y: 53, to: '/news' }],
+    buildings: [{ id: 'herald', name: 'Honk Herald', variant: 'tower', x: 94, y: 53, place: 'herald' }],
   },
 ];
 

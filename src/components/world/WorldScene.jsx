@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import HouseSprite from '@/components/world/HouseSprite';
 import MeadowGround from '@/components/world/MeadowGround';
 import Places from '@/components/world/Places';
@@ -17,7 +16,9 @@ import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
 import SportVenue from '@/components/world/SportVenue';
 import Areas from '@/components/world/areas/Areas';
+import PlaceInterior from '@/components/world/interiors/PlaceInterior';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
+import { placeFor } from '@/lib/places';
 import { AREAS, areaAt } from '@/lib/commonsAreas';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
@@ -61,7 +62,6 @@ export default function WorldScene({
   const centeredRef = useRef(false);
   const snappedRef = useRef(false);
   const enterRef = useRef(null);
-  const navigate = useNavigate();
 
   const say = useCallback((key, text) => {
     setBubbles((current) => ({ ...current, [key]: { text, at: Date.now() } }));
@@ -84,6 +84,7 @@ export default function WorldScene({
   const pong = usePong({ seat, send: sendRoom });
   pongHandler.current = pong.handlePong;
   const [sport, setSport] = useState('');
+  const [inside, setInside] = useState('');
   const [isleOpen, setIsleOpen] = useState(false);
   const myKey = seat ? `seat:${seat}` : 'me';
 
@@ -160,7 +161,7 @@ export default function WorldScene({
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const box = boxRef.current;
-      if (!box || !mine || placing) return;
+      if (!box || !mine || placing || inside) return;
       const width = box.offsetWidth || 1;
       const height = box.offsetHeight || 1;
       const keys = keysRef.current;
@@ -186,7 +187,7 @@ export default function WorldScene({
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [mine, placing, move]);
+  }, [mine, placing, move, inside]);
 
   useEffect(() => {
     const KEYS = {
@@ -232,11 +233,11 @@ export default function WorldScene({
       if (!target) return;
       event.preventDefault();
       if (target.kind === 'sport') setSport(target.id);
-      else navigate(target.to);
+      else setInside(target.place);
     };
     window.addEventListener('keydown', onEnter);
     return () => window.removeEventListener('keydown', onEnter);
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -385,10 +386,10 @@ export default function WorldScene({
   const enterTarget = nearVenue
     ? { kind: 'sport', id: nearVenue.id, name: nearVenue.name }
     : nearBuilding
-      ? { kind: 'building', to: nearBuilding.to, name: nearBuilding.name }
+      ? { kind: 'place', place: nearBuilding.place, name: nearBuilding.name }
       : null;
 
-  enterRef.current = sport || placing ? null : enterTarget;
+  enterRef.current = sport || placing || inside ? null : enterTarget;
 
   const activeArea = areaAt(me);
 
@@ -415,9 +416,9 @@ export default function WorldScene({
 
       <Places />
 
-      <Areas activeId={activeArea?.id || ''} />
+      <Areas activeId={activeArea?.id || ''} onEnter={setInside} />
 
-      <Realms />
+      <Realms onEnter={setInside} />
 
       {VENUES.map((venue) => {
         const distance = distanceTo(venue, me);
@@ -687,6 +688,14 @@ export default function WorldScene({
           result={pong.result}
           onMove={pong.setPaddle}
           onQuit={pong.quit}
+        />
+      )}
+
+      {inside && (
+        <PlaceInterior
+          place={placeFor(inside)}
+          onEnterPlace={setInside}
+          onExit={() => setInside('')}
         />
       )}
     </div>
