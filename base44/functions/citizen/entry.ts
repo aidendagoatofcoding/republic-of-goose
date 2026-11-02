@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { MARKET, marketSnapshot, priceAt, currentTick } from '../../shared/market.ts';
 import { hashPassword, normaliseUsername } from '../../shared/passport.ts';
+import { JOBS, jobById } from '../../shared/jobs.ts';
 
 const CHAT_REWARD = 5;
 const CHAT_COOLDOWN_MS = 12000;
@@ -14,6 +15,7 @@ const WORKER_SECONDS_PER_LOAF = 4;
 const MAX_WORKERS = 200;
 const MAX_WORKER_EARN = 2000;
 const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
+const MAX_SHIFT_SECONDS = 180;
 
 function workerCost(workers) {
   return Math.round(WORKER_BASE_COST * Math.pow(WORKER_COST_GROWTH, workers));
@@ -36,6 +38,7 @@ function publicCitizen(citizen, holdings = []) {
     username: citizen.username || '',
     workers,
     next_worker_cost: workerCost(workers),
+    job: citizen.job || '',
     created_date: citizen.created_date,
     holdings,
   };
@@ -65,6 +68,46 @@ export default async function (req) {
 
     if (action === 'market') {
       return Response.json({ market: marketSnapshot() });
+    }
+
+    if (action === 'jobs') {
+      return Response.json({ jobs: JOBS });
+    }
+
+    if (action === 'googleLogin') {
+      const email = String(body.email ?? '').trim().toLowerCase();
+      const userId = String(body.user_id ?? '').trim();
+      if (!email && !userId) {
+        return Response.json(
+          { error: 'Google did not share an address with the passport office.' },
+          { status: 400 }
+        );
+      }
+
+      let found = null;
+      if (userId) {
+        const byAccount = await admin.entities.Citizen.filter({ auth_user_id: userId }, { limit: 1 });
+        found = byAccount?.items?.[0] ?? null;
+      }
+      if (!found && email) {
+        const byEmail = await admin.entities.Citizen.filter({ email }, { limit: 1 });
+        found = byEmail?.items?.[0] ?? null;
+      }
+      if (!found) {
+        return Response.json(
+          {
+            error:
+              'No passport on the register uses that Google address. Register at the Citizenship Office with it, or sign in with your username and password.',
+          },
+          { status: 404 }
+        );
+      }
+      if (userId && found.auth_user_id !== userId) {
+        await admin.entities.Citizen.update(found.id, { auth_user_id: userId });
+      }
+
+      const googleHoldings = await loadHoldings(admin, found.passport_code);
+      return Response.json({ citizen: publicCitizen(found, googleHoldings) });
     }
 
     if (action === 'login') {
@@ -178,6 +221,45 @@ export default async function (req) {
         last_chat_reward: new Date().toISOString(),
       });
       return Response.json({ citizen: publicCitizen(updated, holdings), earned: CHAT_REWARD });
+    }
+
+    if (action === 'takeJob') {
+      const job = jobById(String(body.job ?? ''));
+      if (!job) {
+        return Response.json({ error: 'That post is not on the national register.' }, { status: 400 });
+      }
+      if (citizen.job === job.id) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings) });
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        job: job.id,
+        last_wage: new Date().toISOString(),
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'quitJob') {
+      const updated = await admin.entities.Citizen.update(citizen.id, { job: '', last_wage: '' });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'workShift') {
+      const job = jobById(citizen.job);
+      if (!job) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings), earned: 0 });
+      }
+      const now = Date.now();
+      const last = citizen.last_wage ? new Date(citizen.last_wage).getTime() : now;
+      const seconds = Math.min(Math.max(0, (now - last) / 1000), MAX_SHIFT_SECONDS);
+      const earned = Math.floor((seconds / 60) * job.wage);
+      if (earned < 1) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings), earned: 0 });
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        bread: Math.round(citizen.bread ?? 0) + earned,
+        last_wage: new Date(now).toISOString(),
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings), earned });
     }
 
     if (action === 'buyDecoration') {

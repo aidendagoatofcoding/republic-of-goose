@@ -1,12 +1,26 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BadgeCheck } from 'lucide-react';
 import Panel from '@/components/Panel';
 import { useCitizen } from '@/hooks/useCitizen';
+import { takeGoogleSignIn } from '@/lib/citizenSession';
 import PassportLogin from '@/components/passport/PassportLogin';
 import PassportCard from '@/components/passport/PassportCard';
 
 export default function Passport() {
-  const { citizen, loading } = useCitizen();
+  const { citizen, loading, signInWithGoogle } = useCitizen();
+  const [googleError, setGoogleError] = useState('');
+
+  useEffect(() => {
+    if (!takeGoogleSignIn()) return undefined;
+    let active = true;
+    signInWithGoogle().catch((error) => {
+      if (active) setGoogleError(error.message);
+    });
+    return () => {
+      active = false;
+    };
+  }, [signInWithGoogle]);
 
   if (loading) {
     return (
@@ -28,13 +42,22 @@ export default function Passport() {
         <h2 className="display-title mt-4 text-3xl md:text-4xl">Your Passport</h2>
         <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-foreground/75">
           Every registered citizen receives a username, a password and a passport code at the
-          Citizenship Office. Sign in with your username and password — the code still works as a
-          backup — to carry your badge, earn bread for honking in the chat, trade on the national
+          Citizenship Office. Sign in with Google, your username and password, or your passport
+          code to carry your badge, earn bread for honking in the chat, trade on the national
           exchange and wear your decorations.
         </p>
         <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Not registered yet? <Link to="/citizenship" className="text-primary underline-offset-4 hover:underline">Apply for citizenship</Link>
+          Not registered yet?{' '}
+          <Link to="/citizenship" className="text-primary underline-offset-4 hover:underline">
+            Apply for citizenship
+          </Link>
         </p>
+
+        {googleError && (
+          <p role="alert" className="mt-4 border border-destructive/40 bg-destructive/5 p-3 font-mono text-[11px] leading-relaxed text-[#FF6B4A]">
+            {googleError}
+          </p>
+        )}
       </Panel>
 
       <PassportLogin />

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { KeyRound } from 'lucide-react';
+import GoogleIcon from '@/components/GoogleIcon';
 import { useCitizen } from '@/hooks/useCitizen';
+import { loginWithGoogle } from '@/lib/authMfa';
+import { markGoogleSignIn, clearGoogleSignIn } from '@/lib/citizenSession';
 
 const INPUT =
   'mt-2 w-full rounded-sm border border-input bg-background/80 px-4 py-3 font-mono text-[13px] text-foreground placeholder:text-muted-foreground/60';
@@ -35,6 +38,17 @@ export default function PassportLogin() {
     }
   };
 
+  const google = async () => {
+    setError('');
+    markGoogleSignIn();
+    try {
+      await loginWithGoogle('/passport');
+    } catch (err) {
+      clearGoogleSignIn();
+      setError(err.message);
+    }
+  };
+
   const ready =
     mode === 'password' ? Boolean(username.trim() && password) : Boolean(code.trim());
 
@@ -45,6 +59,23 @@ export default function PassportLogin() {
         <span className="meta-label">
           {mode === 'password' ? 'Citizen Sign In' : 'Passport Code'}
         </span>
+      </div>
+
+      <button
+        type="button"
+        onClick={google}
+        className="mt-5 flex w-full items-center justify-center gap-3 rounded-sm border border-border bg-secondary/40 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-foreground hover:border-primary/60 hover:text-primary"
+      >
+        <GoogleIcon className="h-4 w-4" />
+        Continue with Google
+      </button>
+
+      <div className="mt-5 flex items-center gap-3">
+        <span className="h-px flex-1 bg-border" />
+        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+          or your passport
+        </span>
+        <span className="h-px flex-1 bg-border" />
       </div>
 
       {mode === 'password' ? (

@@ -30,14 +30,16 @@ function clientIp(req) {
 export default async function (req) {
   try {
     const body = await req.json().catch(() => ({}));
-    const admin = createClientFromRequest(req).asServiceRole;
+    const client = createClientFromRequest(req);
+    const admin = client.asServiceRole;
+    const signedIn = await client.auth.me().catch(() => null);
 
     const fullName = String(body.full_name ?? '').trim().slice(0, 120);
     const gooseName = String(body.goose_name ?? '').trim().slice(0, 60);
     const species = String(body.species ?? 'goose');
     const district = String(body.district ?? '');
     const level = String(body.honkish_level ?? '');
-    const email = String(body.email ?? '').trim().slice(0, 160);
+    const email = String(body.email ?? '').trim().toLowerCase().slice(0, 160);
     const username = normaliseUsername(body.username);
     const password = String(body.password ?? '');
 
@@ -86,6 +88,16 @@ export default async function (req) {
       );
     }
 
+    if (email) {
+      const emailTaken = await admin.entities.Citizen.filter({ email }, { limit: 1 });
+      if (emailTaken?.items?.length) {
+        return Response.json(
+          { error: 'A passport already uses that email address.' },
+          { status: 409 }
+        );
+      }
+    }
+
     const ip = clientIp(req);
 
     if (ip) {
@@ -109,6 +121,7 @@ export default async function (req) {
       district,
       honkish_level: level,
       email,
+      auth_user_id: signedIn?.id || '',
       oath_accepted: true,
       ip_address: ip,
       passport_code: crypto.randomUUID(),
@@ -135,6 +148,7 @@ export default async function (req) {
         passport_code: record.passport_code,
         username: record.username || '',
         workers: 0,
+        job: '',
         created_date: record.created_date,
         holdings: [],
       },

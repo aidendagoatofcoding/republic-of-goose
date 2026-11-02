@@ -36,7 +36,11 @@
     },
     "email": {
       "type": "string",
-      "description": "Optional contact address for official correspondence"
+      "description": "Optional contact address for official correspondence, also used to sign in with Google"
+    },
+    "auth_user_id": {
+      "type": "string",
+      "description": "Google account identity linked to this passport"
     },
     "oath_accepted": {
       "type": "boolean",
@@ -76,6 +80,14 @@
     "last_chat_reward": {
       "type": "string",
       "description": "Timestamp of the last chat bread reward, used for the cooldown"
+    },
+    "job": {
+      "type": "string",
+      "description": "National job held by the citizen, paid in bread while the site is open"
+    },
+    "last_wage": {
+      "type": "string",
+      "description": "Timestamp of the last wage paid out for the citizen's job"
     }
   },
   "required": [

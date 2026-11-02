@@ -14,6 +14,7 @@ import {
   Store,
   TrendingUp,
   UserRound,
+  Briefcase,
 } from 'lucide-react';
 
 export const NAV_GROUPS = [
@@ -44,6 +45,7 @@ export const NAV_GROUPS = [
     label: 'Economy',
     items: [
       { path: '/passport', label: 'My Passport', title: 'Citizen Passport', icon: UserRound },
+      { path: '/jobs', label: 'Jobs', title: 'National Labour Office', icon: Briefcase },
       { path: '/shop', label: 'E-Shop', title: 'The National E-Shop', icon: Store },
       { path: '/market', label: 'Stock Market', title: 'Goose Stock Market', icon: TrendingUp },
     ],

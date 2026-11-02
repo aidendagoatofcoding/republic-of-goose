@@ -75,6 +75,26 @@ export function CitizenProvider({ children }) {
     return data.citizen;
   }, []);
 
+  const signInWithGoogle = useCallback(async () => {
+    let me = null;
+    try {
+      me = await base44.auth.me();
+    } catch (err) {
+      me = null;
+    }
+    if (!me?.email) {
+      throw new Error('Google did not share an address. Sign in with your username and password.');
+    }
+    const data = await call({ action: 'googleLogin', email: me.email, user_id: me.id });
+    if (!data.citizen) {
+      throw new Error('No passport on the register uses that Google address.');
+    }
+    savePassport(data.citizen.passport_code);
+    setCitizen(data.citizen);
+    setCode(data.citizen.passport_code);
+    return data.citizen;
+  }, []);
+
   const adopt = useCallback((nextCitizen) => {
     if (!nextCitizen?.passport_code) return;
     savePassport(nextCitizen.passport_code);
@@ -104,6 +124,7 @@ export function CitizenProvider({ children }) {
     signedIn: Boolean(citizen),
     signIn,
     signInWithPassword,
+    signInWithGoogle,
     signOut,
     adopt,
     run,

@@ -22,6 +22,11 @@ import Games from '@/pages/Games';
 import Shop from '@/pages/Shop';
 import Market from '@/pages/Market';
 import News from '@/pages/News';
+import Jobs from '@/pages/Jobs';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -65,8 +70,13 @@ const AuthenticatedApp = () => {
         <Route path="/shop" element={<Shop />} />
         <Route path="/market" element={<Market />} />
         <Route path="/news" element={<News />} />
+        <Route path="/jobs" element={<Jobs />} />
         <Route path="/admin" element={<Admin />} />
       </Route>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import GooseSidebar from '@/components/GooseSidebar';
 import GooseHeader from '@/components/GooseHeader';
 import { CitizenProvider } from '@/hooks/useCitizen';
+import JobTicker from '@/components/jobs/JobTicker';
 
 export default function GooseShell() {
   const [open, setOpen] = useState(false);
@@ -14,6 +15,7 @@ export default function GooseShell() {
 
   return (
     <CitizenProvider>
+      <JobTicker />
       <div className="min-h-screen bg-background text-foreground">
         <div className="grain-overlay" aria-hidden="true" />
         <GooseSidebar open={open} onClose={() => setOpen(false)} />

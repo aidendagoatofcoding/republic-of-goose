@@ -12,20 +12,20 @@ export default function Alphabet() {
             <span className="meta-label">Section I</span>
             <h2 className="display-title mt-3 text-3xl md:text-4xl">HONKISH Alphabet</h2>
             <p className="mt-4 max-w-2xl text-[17px] leading-relaxed text-foreground/75">
-              Every letter is five bits. Write <span className="text-primary">h</span> for one and{' '}
-              <span className="text-primary">k</span> for zero, then close the letter with{' '}
-              <span className="text-primary">nk</span>.
+              Every letter is five honks. Say <span className="text-primary">HONKK</span> for zero
+              and <span className="text-primary">HOOONKK</span> for one, then close the letter with{' '}
+              <span className="text-primary">K</span>.
             </p>
           </div>
           <div className="font-mono text-[11px] leading-relaxed text-muted-foreground">
             <div>
-              <span className="text-primary">h</span> = 1
+              <span className="text-primary">HONKK</span> = 0
             </div>
             <div>
-              <span className="text-primary">k</span> = 0
+              <span className="text-primary">HOOONKK</span> = 1
             </div>
             <div>
-              <span className="text-primary">nk</span> = end marker
+              <span className="text-primary">K</span> = end marker
             </div>
           </div>
         </div>
