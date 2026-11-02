@@ -39,7 +39,7 @@ const DUST = Array.from({ length: 16 }, (_, i) => ({
   size: i % 3 === 0 ? 2 : 1,
 }));
 
-function InteriorRoom({ place }) {
+function InteriorRoom({ place, onTalk }) {
   const accent = place.accent || '#f2c96b';
 
   return (
@@ -104,9 +104,12 @@ function InteriorRoom({ place }) {
       })}
 
       {place.actors.map((actor, index) => (
-        <span
+        <button
           key={`${actor.emoji}-${index}`}
-          className="room-bob absolute z-10 -translate-x-1/2 -translate-y-1/2"
+          type="button"
+          onClick={() => onTalk?.(actor)}
+          title="Talk to them"
+          className="room-bob absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full px-2 py-2 transition-colors hover:bg-[#f2c96b]/15"
           style={{
             left: `${actor.x}%`,
             top: `${actor.y}%`,
@@ -114,10 +117,9 @@ function InteriorRoom({ place }) {
             animationDelay: actor.delay || `${index * 0.4}s`,
             filter: 'drop-shadow(0 8px 8px rgba(0,0,0,0.55))',
           }}
-          aria-hidden="true"
         >
-          {actor.emoji}
-        </span>
+          <span aria-hidden="true">{actor.emoji}</span>
+        </button>
       ))}
 
       {DUST.map((mote, index) => (

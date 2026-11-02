@@ -14,6 +14,8 @@ import NestGuard from '@/components/world/NestGuard';
 import ArcheryGame from '@/components/world/ArcheryGame';
 import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
+import Roads from '@/components/world/Roads';
+import { nearestRoad, pointOnRoad, spotOnRoadNear } from '@/lib/roads';
 import SportVenue from '@/components/world/SportVenue';
 import Areas from '@/components/world/areas/Areas';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
@@ -268,12 +270,11 @@ export default function WorldScene({
           if (resident.is_me) return;
           const home = resident.spots.find((spot) => spot.category === 'home');
           const base = home || { x: 24 + ((index * 19) % 56), y: 46 + ((index * 13) % 32) };
-          if (Math.random() < 0.45) {
-            next[resident.key] = {
-              x: clamp(base.x + (Math.random() - 0.5) * 20, 8, 92),
-              y: clamp(base.y + (Math.random() - 0.5) * 14 + 6, 20, 92),
-              face: Math.random() > 0.5 ? 1 : -1,
-            };
+          const street = nearestRoad(base);
+          if (Math.random() < 0.55 && street) {
+            const t = Math.min(0.97, Math.max(0.03, street.t + (Math.random() - 0.5) * 0.12));
+            const spot = pointOnRoad(street.road, t);
+            next[resident.key] = { x: spot.x, y: spot.y, face: Math.random() > 0.5 ? 1 : -1 };
           }
           resident.spots
             .filter((spot) => spot.category === 'pet')
@@ -434,9 +435,11 @@ export default function WorldScene({
         transform: `translate(${-camera}px, ${-camY}px)`,
         transition: 'transform 260ms ease-out',
       }}
-      className="absolute left-0 top-0 h-[140%] w-[420%] min-w-[3200px] overflow-hidden bg-secondary/40"
+      className="absolute left-0 top-0 h-[180%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
     >
       <MeadowGround />
+
+      <Roads />
 
       <Places />
 
@@ -548,9 +551,10 @@ export default function WorldScene({
         .map((resident, index) => {
           const home = resident.spots.find((spot) => spot.category === 'home');
           const base = home || { x: 24 + ((index * 19) % 56), y: 46 + ((index * 13) % 32) };
+          const streetStart = spotOnRoadNear(base, 0.2 + ((index * 7) % 50) / 100);
           const position = wander[resident.key] || {
-            x: base.x + 5,
-            y: base.y + 9,
+            x: streetStart.x,
+            y: streetStart.y,
             face: 1,
           };
           return (

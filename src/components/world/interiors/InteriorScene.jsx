@@ -8,7 +8,7 @@ import { useCitizen } from '@/hooks/useCitizen';
 import useInteriorWalk from '@/hooks/useInteriorWalk';
 import { stationsFor } from '@/lib/interiorStations';
 
-const REACH = 170;
+const REACH = 230;
 
 export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, startOpen = '' }) {
   const { citizen } = useCitizen();
@@ -39,6 +39,17 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
 
   const open = stations.find((station) => station.id === openId) || null;
 
+  // Talking to whoever is standing in the room opens the counter they serve.
+  const talkTo = useCallback(
+    (actor) => {
+      const nearest = stations
+        .map((station) => ({ station, gap: Math.hypot(station.x - actor.x, station.y - actor.y) }))
+        .sort((a, b) => a.gap - b.gap)[0];
+      if (nearest) setOpenId(nearest.station.id);
+    },
+    [stations]
+  );
+
   useEffect(() => {
     const onKey = (event) => {
       if (event.key === 'Escape') {
@@ -59,7 +70,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
   return (
     <div className="relative h-full w-full overflow-hidden">
       <div ref={roomRef} className="absolute inset-0">
-        <InteriorRoom place={place} />
+        <InteriorRoom place={place} onTalk={talkTo} />
       </div>
 
       <div className="absolute left-3 top-3 z-30 max-w-[62%] sm:left-5 sm:top-5">

@@ -196,6 +196,23 @@
   transform: translate(-50%, 0);
 }
 
+@keyframes news-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.news-ticker {
+  animation: news-scroll 64s linear infinite;
+}
+
+.news-ticker:hover {
+  animation-play-state: paused;
+}
+
 @keyframes lantern-sway {
   0%,
   100% {

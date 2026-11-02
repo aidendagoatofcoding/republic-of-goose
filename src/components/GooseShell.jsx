@@ -4,6 +4,7 @@ import GooseSidebar from '@/components/GooseSidebar';
 import GooseHeader from '@/components/GooseHeader';
 import { CitizenProvider } from '@/hooks/useCitizen';
 import JobTicker from '@/components/jobs/JobTicker';
+import NewsTicker from '@/components/news/NewsTicker';
 
 export default function GooseShell() {
   const [open, setOpen] = useState(false);
@@ -21,6 +22,7 @@ export default function GooseShell() {
         <GooseSidebar open={open} onClose={() => setOpen(false)} />
 
         <div className="md:pl-[262px]">
+          <NewsTicker />
           <GooseHeader onOpenNav={() => setOpen(true)} />
 
           <main className="px-4 pb-24 pt-8 md:px-10 md:pt-10">
