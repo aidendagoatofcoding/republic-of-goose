@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Maximize2, Minimize2, RefreshCw } from 'lucide-react';
+import { Package, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import WorldScene from '@/components/world/WorldScene';
@@ -19,7 +19,7 @@ export default function World() {
   const [personal, setPersonal] = useState({});
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [boardsError, setBoardsError] = useState('');
-  const [compact, setCompact] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const code = citizen?.passport_code || '';
 
   const load = useCallback(async () => {
@@ -166,14 +166,20 @@ export default function World() {
           <span className="font-mono text-[11px] font-bold text-primary">
             🍞 {signedIn ? citizen.bread : '—'}
           </span>
-          <button
-            type="button"
-            onClick={() => setCompact((value) => !value)}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
-          >
-            {compact ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
-            <span className="hidden sm:inline">{compact ? 'Show panels' : 'Full map'}</span>
-          </button>
+          {signedIn && world?.mine && (
+            <button
+              type="button"
+              onClick={() => setPaletteOpen((value) => !value)}
+              className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] ${
+                paletteOpen
+                  ? 'border-primary/60 text-primary'
+                  : 'border-border text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Package className="h-3 w-3" />
+              <span className="hidden sm:inline">My items</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={load}
@@ -208,7 +214,6 @@ export default function World() {
             run={run}
             onOffersChanged={setOffers}
             onBoards={setBoards}
-            panelsHidden={compact}
             boards={boards}
             profile={{
               name: citizen?.goose_name || citizen?.full_name || 'You',
@@ -218,7 +223,7 @@ export default function World() {
           />
         )}
 
-        {signedIn && !compact && world?.mine && (
+        {signedIn && paletteOpen && world?.mine && (
           <div className="absolute right-2 top-2 z-40 w-[268px] max-w-[calc(100%-1rem)]">
             <CommonsPalette
               items={world.mine.items}

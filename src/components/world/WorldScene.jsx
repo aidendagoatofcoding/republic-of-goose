@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import HouseSprite from '@/components/world/HouseSprite';
 import MeadowGround from '@/components/world/MeadowGround';
+import Places from '@/components/world/Places';
 import Walker from '@/components/world/Walker';
 import WorldBubble from '@/components/world/WorldBubble';
 import NeighbourDialog from '@/components/world/NeighbourDialog';
@@ -25,7 +26,7 @@ const KNOCKS = ['Come in!', 'Who honks there?', 'Door is open.', 'Wipe your webb
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 const REACH_PX = 190;
-const MOVE_SPEED = 300;
+const MOVE_SPEED = 165;
 
 export default function WorldScene({
   residents,
@@ -37,7 +38,6 @@ export default function WorldScene({
   run,
   onOffersChanged,
   onBoards,
-  panelsHidden,
   boards = {},
 }) {
   const boxRef = useRef(null);
@@ -86,6 +86,7 @@ export default function WorldScene({
   const pong = usePong({ seat, send: sendRoom });
   pongHandler.current = pong.handlePong;
   const [sport, setSport] = useState('');
+  const [isleOpen, setIsleOpen] = useState(false);
   const myKey = seat ? `seat:${seat}` : 'me';
 
   const [offerTarget, setOfferTarget] = useState(null);
@@ -443,11 +444,13 @@ export default function WorldScene({
       onPointerLeave={endDrag}
       onClick={handleClick}
       style={{ transform: `translateX(${-camera}px)`, transition: 'transform 260ms ease-out' }}
-      className={`absolute inset-y-0 left-0 h-full w-[280%] min-w-[1800px] touch-none overflow-hidden bg-secondary/40 ${
+      className={`absolute inset-y-0 left-0 h-full w-[420%] min-w-[3200px] touch-none overflow-hidden bg-secondary/40 ${
         placing ? 'cursor-crosshair ring-1 ring-inset ring-primary/50' : ''
       }`}
     >
       <MeadowGround />
+
+      <Places />
 
       <Realms />
 
@@ -673,21 +676,14 @@ export default function WorldScene({
         </button>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex items-end justify-between gap-2 p-2">
-        <p className="max-w-[52%] rounded-sm border border-border/70 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
-          Tap to walk · walk up to a ground to compete · homes trade up close
-        </p>
-        <div className="pointer-events-auto flex items-center gap-1.5">
-          {connected && (
-            <span className="rounded-sm border border-primary/40 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em] text-primary">
-              {people.length} wandering now
-            </span>
-          )}
-        </div>
-      </div>
+      {connected && (
+        <span className="pointer-events-none absolute bottom-3 right-3 z-40 rounded-sm border border-primary/40 bg-card/85 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em] text-primary">
+          {people.length} wandering now
+        </span>
+      )}
 
-      {!panelsHidden && (
-        <div className="absolute bottom-10 left-2 z-40 max-h-[54%] w-[216px] max-w-[calc(100%-1rem)] overflow-y-auto sm:w-[248px]">
+      {isleOpen && (
+        <div className="absolute bottom-12 left-3 z-40 max-h-[62%] w-[236px] max-w-[calc(100%-1.5rem)] overflow-y-auto sm:w-[262px]">
           <ChampionIsle
             people={people}
             seat={seat}
@@ -698,6 +694,14 @@ export default function WorldScene({
           />
         </div>
       )}
+
+      <button
+        type="button"
+        onClick={() => setIsleOpen((value) => !value)}
+        className="absolute bottom-3 left-3 z-40 rounded-sm border border-border bg-card/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary"
+      >
+        {isleOpen ? 'Hide Isle' : 'Isle & sports'}
+      </button>
 
       {sport === 'choir' && (
         <ChoirGame onClose={() => setSport('')} onFinish={(score) => submitScore('choir', score)} />
