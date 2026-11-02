@@ -45,7 +45,16 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
     [stations]
   );
 
-  // Everything worth pressing Enter on: the people in the room first, then the counters.
+  // Counters a person is standing at are reached by talking to them, so their own chip is hidden.
+  const servedIds = useMemo(
+    () =>
+      new Set(
+        (place.actors || []).map((actor) => keeperStation(actor)?.id).filter(Boolean)
+      ),
+    [place.actors, keeperStation]
+  );
+
+  // Everything worth pressing Enter on: the people in the room first, then the unstaffed counters.
   const targets = useMemo(() => {
     const people = (place.actors || [])
       .map((actor, index) => {
@@ -60,15 +69,17 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
         };
       })
       .filter(Boolean);
-    const counters = stations.map((station) => ({
-      id: `counter-${station.id}`,
-      x: station.x,
-      y: station.y,
-      stationId: station.id,
-      label: station.name,
-    }));
+    const counters = stations
+      .filter((station) => !servedIds.has(station.id))
+      .map((station) => ({
+        id: `counter-${station.id}`,
+        x: station.x,
+        y: station.y,
+        stationId: station.id,
+        label: station.name,
+      }));
     return [...people, ...counters];
-  }, [place.actors, stations, keeperStation]);
+  }, [place.actors, stations, keeperStation, servedIds]);
 
   const near =
     targets
@@ -132,7 +143,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
         </button>
       )}
 
-      {stations.map((station) => {
+      {stations.filter((station) => !servedIds.has(station.id)).map((station) => {
         const active = near?.stationId === station.id;
         return (
           <button
