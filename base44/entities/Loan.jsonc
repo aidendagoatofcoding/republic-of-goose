@@ -1,0 +1,49 @@
+{
+  "name": "Loan",
+  "type": "object",
+  "properties": {
+    "passport_code": {
+      "type": "string",
+      "description": "Passport code of the citizen who holds the loan"
+    },
+    "principal": {
+      "type": "number",
+      "description": "Bread lent to the citizen when the loan was taken"
+    },
+    "outstanding": {
+      "type": "number",
+      "description": "Bread still owed to the National Bank, including the arrangement fee"
+    },
+    "status": {
+      "type": "string",
+      "description": "active while bread is owed, repaid once the balance reaches zero"
+    }
+  },
+  "required": [
+    "passport_code",
+    "principal",
+    "outstanding"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

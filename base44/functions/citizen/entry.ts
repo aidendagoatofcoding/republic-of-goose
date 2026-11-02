@@ -16,13 +16,53 @@ const MAX_WORKERS = 200;
 const MAX_WORKER_EARN = 2000;
 const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
 const MAX_SHIFT_SECONDS = 180;
+const MAX_POSSESSIONS = 40;
+const LOAN_BASE = 100;
+const LOAN_PER_EARNED = 2;
+const LOAN_CAP = 5000;
+const LOAN_FEE = 1.2;
 
 function workerCost(workers) {
   return Math.round(WORKER_BASE_COST * Math.pow(WORKER_COST_GROWTH, workers));
 }
 
+function earnedTotal(citizen) {
+  return Math.max(0, Math.floor(citizen.bread_earned ?? 0));
+}
+
+function loanCeiling(earned) {
+  return Math.min(LOAN_CAP, LOAN_BASE + LOAN_PER_EARNED * earned);
+}
+
+function clampSpot(value, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return (min + max) / 2;
+  return Math.min(max, Math.max(min, Math.round(number * 10) / 10));
+}
+
+function publicLoan(loan, earned) {
+  if (!loan) return { active: false, limit: loanCeiling(earned) };
+  return {
+    active: true,
+    id: loan.id,
+    principal: Math.round(loan.principal ?? 0),
+    outstanding: Math.round(loan.outstanding ?? 0),
+    limit: loanCeiling(earned),
+  };
+}
+
+async function loadLoan(admin, code) {
+  const page = await admin.entities.Loan.filter(
+    { passport_code: code, status: 'active' },
+    { limit: 1 }
+  );
+  return page?.items?.[0] ?? null;
+}
+
 function publicCitizen(citizen, holdings = []) {
   const decorations = Array.isArray(citizen.decorations) ? citizen.decorations : [];
+  const possessions = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+  const worldSpots = Array.isArray(citizen.world_spots) ? citizen.world_spots : [];
   const workers = Math.max(0, Math.floor(citizen.workers ?? 0));
   return {
     id: citizen.id,
@@ -33,7 +73,10 @@ function publicCitizen(citizen, holdings = []) {
     honkish_level: citizen.honkish_level,
     avatar_url: citizen.avatar_url || '',
     bread: Math.round(citizen.bread ?? 0),
+    bread_earned: earnedTotal(citizen),
     decorations,
+    possessions,
+    world_spots: worldSpots,
     passport_code: citizen.passport_code,
     username: citizen.username || '',
     workers,
@@ -72,6 +115,65 @@ export default async function (req) {
 
     if (action === 'jobs') {
       return Response.json({ jobs: JOBS });
+    }
+
+    if (action === 'world') {
+      const itemsPage = await admin.entities.ShopItem.list({ limit: 200 });
+      const itemsById = new Map((itemsPage?.items ?? []).map((item) => [item.id, item]));
+      const citizensPage = await admin.entities.Citizen.list({ limit: 200, sort: 'created_date' });
+      const residentsRaw = citizensPage?.items ?? [];
+      const rawCode = String(body.code ?? '').trim().toLowerCase();
+
+      const spotsOf = (citizen) =>
+        (Array.isArray(citizen.world_spots) ? citizen.world_spots : [])
+          .map((spot) => {
+            const item = itemsById.get(spot.item_id);
+            if (!item) return null;
+            return {
+              item_id: item.id,
+              name: item.name,
+              emoji: item.emoji || '📦',
+              category: item.category || 'decoration',
+              x: clampSpot(spot.x, 2, 98),
+              y: clampSpot(spot.y, 6, 94),
+            };
+          })
+          .filter(Boolean);
+
+      const residents = residentsRaw.map((entry) => ({
+        key: entry.id,
+        name: entry.goose_name || entry.full_name || entry.username || 'Anonymous honker',
+        username: entry.username || '',
+        species: entry.species || 'goose',
+        avatar_url: entry.avatar_url || '',
+        district: entry.district || '',
+        job: entry.job || '',
+        is_me: Boolean(rawCode) && entry.passport_code === rawCode,
+        spots: spotsOf(entry),
+      }));
+
+      const mineEntry = rawCode
+        ? residentsRaw.find((entry) => entry.passport_code === rawCode) ?? null
+        : null;
+      let mine = null;
+      if (mineEntry) {
+        const placedSpots = spotsOf(mineEntry);
+        mine = {
+          name: mineEntry.goose_name || mineEntry.full_name || 'You',
+          items: (Array.isArray(mineEntry.possessions) ? mineEntry.possessions : [])
+            .map((id) => itemsById.get(id))
+            .filter(Boolean)
+            .map((item) => ({
+              item_id: item.id,
+              name: item.name,
+              emoji: item.emoji || '📦',
+              category: item.category || 'decoration',
+              placed: placedSpots.some((spot) => spot.item_id === item.id),
+            })),
+        };
+      }
+
+      return Response.json({ residents, mine });
     }
 
     if (action === 'googleLogin') {
@@ -169,6 +271,7 @@ export default async function (req) {
       const earned = clicks * BAKE_RATE;
       const updated = await admin.entities.Citizen.update(citizen.id, {
         bread: Math.round(citizen.bread ?? 0) + earned,
+        bread_earned: earnedTotal(citizen) + earned,
       });
       return Response.json({ citizen: publicCitizen(updated, holdings), earned });
     }
@@ -187,6 +290,7 @@ export default async function (req) {
       }
       const updated = await admin.entities.Citizen.update(citizen.id, {
         bread: Math.round(citizen.bread ?? 0) + earned,
+        bread_earned: earnedTotal(citizen) + earned,
         last_baked: new Date(now).toISOString(),
       });
       return Response.json({ citizen: publicCitizen(updated, holdings), earned });
@@ -218,6 +322,7 @@ export default async function (req) {
       }
       const updated = await admin.entities.Citizen.update(citizen.id, {
         bread: Math.round(citizen.bread ?? 0) + CHAT_REWARD,
+        bread_earned: earnedTotal(citizen) + CHAT_REWARD,
         last_chat_reward: new Date().toISOString(),
       });
       return Response.json({ citizen: publicCitizen(updated, holdings), earned: CHAT_REWARD });
@@ -230,6 +335,15 @@ export default async function (req) {
       }
       if (citizen.job === job.id) {
         return Response.json({ citizen: publicCitizen(citizen, holdings) });
+      }
+      const earned = earnedTotal(citizen);
+      if (earned < job.unlock_bread) {
+        return Response.json(
+          {
+            error: `${job.title} only opens once you have earned ${job.unlock_bread} bread in the Republic. You have earned ${earned}.`,
+          },
+          { status: 400 }
+        );
       }
       const updated = await admin.entities.Citizen.update(citizen.id, {
         job: job.id,
@@ -257,27 +371,32 @@ export default async function (req) {
       }
       const updated = await admin.entities.Citizen.update(citizen.id, {
         bread: Math.round(citizen.bread ?? 0) + earned,
+        bread_earned: earnedTotal(citizen) + earned,
         last_wage: new Date(now).toISOString(),
       });
       return Response.json({ citizen: publicCitizen(updated, holdings), earned });
     }
 
-    if (action === 'buyDecoration') {
+    if (action === 'buyItem') {
       const itemId = String(body.item_id ?? '');
       const item = await admin.entities.ShopItem
         .get(itemId)
         .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
 
       if (!item) {
-        return Response.json({ error: 'That decoration is no longer sold.' }, { status: 404 });
+        return Response.json({ error: 'That item is no longer sold.' }, { status: 404 });
       }
 
-      const owned = Array.isArray(citizen.decorations) ? citizen.decorations : [];
-      if (owned.includes(item.id)) {
-        return Response.json({ error: 'You already own that decoration.' }, { status: 400 });
+      const category = item.category || 'decoration';
+      const worn = Array.isArray(citizen.decorations) ? citizen.decorations : [];
+      const owned = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+      const collection = category === 'decoration' ? worn : owned;
+
+      if (collection.includes(item.id)) {
+        return Response.json({ error: 'You already own that.' }, { status: 400 });
       }
-      if (owned.length >= MAX_DECORATIONS) {
-        return Response.json({ error: 'Your animal is carrying enough decoration.' }, { status: 400 });
+      if (collection.length >= (category === 'decoration' ? MAX_DECORATIONS : MAX_POSSESSIONS)) {
+        return Response.json({ error: 'You already hold as many as the Republic allows.' }, { status: 400 });
       }
       if (Math.round(citizen.bread ?? 0) < item.price) {
         return Response.json(
@@ -286,11 +405,108 @@ export default async function (req) {
         );
       }
 
-      const updated = await admin.entities.Citizen.update(citizen.id, {
-        bread: Math.round(citizen.bread ?? 0) - item.price,
-        decorations: [...owned, item.id],
-      });
+      const patch = { bread: Math.round(citizen.bread ?? 0) - item.price };
+      if (category === 'decoration') {
+        patch.decorations = [...worn, item.id];
+      } else {
+        patch.possessions = [...owned, item.id];
+        const spots = Array.isArray(citizen.world_spots) ? citizen.world_spots : [];
+        patch.world_spots = [
+          ...spots,
+          {
+            item_id: item.id,
+            x: clampSpot(50 + (spots.length % 5) * 6 - 12, 2, 98),
+            y: clampSpot(62 + (spots.length % 4) * 6, 6, 94),
+          },
+        ];
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, patch);
       return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'placeSpot') {
+      const itemId = String(body.item_id ?? '');
+      const owned = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+      if (!owned.includes(itemId)) {
+        return Response.json({ error: 'You do not own that.' }, { status: 400 });
+      }
+      const spots = Array.isArray(citizen.world_spots) ? citizen.world_spots : [];
+      const next = [
+        ...spots.filter((spot) => spot.item_id !== itemId),
+        { item_id: itemId, x: clampSpot(body.x, 2, 98), y: clampSpot(body.y, 6, 94) },
+      ];
+      const updated = await admin.entities.Citizen.update(citizen.id, { world_spots: next });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'loan') {
+      const loan = await loadLoan(admin, code);
+      return Response.json({ loan: publicLoan(loan, earnedTotal(citizen)) });
+    }
+
+    if (action === 'takeLoan') {
+      const earned = earnedTotal(citizen);
+      const limit = loanCeiling(earned);
+      const active = await loadLoan(admin, code);
+      if (active) {
+        return Response.json(
+          { error: 'The bank is still owed for your last loan. Settle it first.' },
+          { status: 400 }
+        );
+      }
+      const amount = Math.floor(Number(body.amount));
+      if (!Number.isFinite(amount) || amount < 10) {
+        return Response.json({ error: 'The bank lends at least 10 bread.' }, { status: 400 });
+      }
+      if (amount > limit) {
+        return Response.json(
+          {
+            error: `The bank will lend you up to ${limit} bread. Earn more in the Republic to raise your ceiling.`,
+          },
+          { status: 400 }
+        );
+      }
+      const loan = await admin.entities.Loan.create({
+        passport_code: code,
+        principal: amount,
+        outstanding: Math.round(amount * LOAN_FEE),
+        status: 'active',
+      });
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        bread: Math.round(citizen.bread ?? 0) + amount,
+      });
+      return Response.json({
+        citizen: publicCitizen(updated, holdings),
+        loan: publicLoan(loan, earned),
+      });
+    }
+
+    if (action === 'repayLoan') {
+      const loan = await loadLoan(admin, code);
+      if (!loan) {
+        return Response.json({ error: 'You owe the bank nothing.' }, { status: 400 });
+      }
+      const bread = Math.round(citizen.bread ?? 0);
+      const amount = Math.floor(Number(body.amount));
+      if (!Number.isFinite(amount) || amount < 1) {
+        return Response.json({ error: 'Repay at least 1 bread.' }, { status: 400 });
+      }
+      if (bread < amount) {
+        return Response.json({ error: 'Not enough bread in hand.' }, { status: 400 });
+      }
+      const outstanding = Math.round(loan.outstanding ?? 0);
+      const paid = Math.min(amount, outstanding);
+      const remaining = outstanding - paid;
+      const saved = await admin.entities.Loan.update(loan.id, {
+        outstanding: remaining,
+        status: remaining === 0 ? 'repaid' : 'active',
+      });
+      const updated = await admin.entities.Citizen.update(citizen.id, { bread: bread - paid });
+      return Response.json({
+        citizen: publicCitizen(updated, holdings),
+        loan: publicLoan(remaining === 0 ? null : saved, earnedTotal(citizen)),
+        paid,
+      });
     }
 
     if (action === 'trade') {

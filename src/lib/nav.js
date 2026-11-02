@@ -15,6 +15,8 @@ import {
   TrendingUp,
   UserRound,
   Briefcase,
+  Landmark,
+  Users,
 } from 'lucide-react';
 
 export const NAV_GROUPS = [
@@ -39,6 +41,7 @@ export const NAV_GROUPS = [
     items: [
       { path: '/chat', label: 'Goose Chat', title: 'The Honk Hall', icon: MessageSquare },
       { path: '/games', label: 'Goose Games', title: 'Goose Games', icon: Gamepad2 },
+      { path: '/world', label: 'The Commons', title: 'The Honk Commons', icon: Users },
     ],
   },
   {
@@ -46,6 +49,7 @@ export const NAV_GROUPS = [
     items: [
       { path: '/passport', label: 'My Passport', title: 'Citizen Passport', icon: UserRound },
       { path: '/jobs', label: 'Jobs', title: 'National Labour Office', icon: Briefcase },
+      { path: '/bank', label: 'Bank', title: 'The National Bank', icon: Landmark },
       { path: '/shop', label: 'E-Shop', title: 'The National E-Shop', icon: Store },
       { path: '/market', label: 'Stock Market', title: 'Goose Stock Market', icon: TrendingUp },
     ],

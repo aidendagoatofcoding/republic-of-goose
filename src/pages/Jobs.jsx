@@ -106,6 +106,9 @@ export default function Jobs() {
               Bread in hand
             </p>
             <p className="font-mono text-xl font-bold text-primary">🍞 {citizen.bread}</p>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+              Earned all time {citizen.bread_earned ?? 0}
+            </p>
           </div>
         </div>
 
@@ -147,6 +150,7 @@ export default function Jobs() {
               job={job}
               current={citizen.job === job.id}
               busy={busy === job.id}
+              earned={citizen.bread_earned ?? 0}
               onTake={() => take(job)}
             />
           ))}

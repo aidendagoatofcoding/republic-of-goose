@@ -4,11 +4,11 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Name of the decoration"
+      "description": "Name of the item sold in the e-shop"
     },
     "emoji": {
       "type": "string",
-      "description": "Emoji worn on the citizen's animal"
+      "description": "Emoji shown for the item, and worn or placed in the Commons"
     },
     "price": {
       "type": "number",
@@ -17,6 +17,17 @@
     "description": {
       "type": "string",
       "description": "Short shop description"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "decoration",
+        "home",
+        "vehicle",
+        "pet"
+      ],
+      "default": "decoration",
+      "description": "Kind of purchase: a worn decoration, a home, a vehicle or a pet"
     }
   },
   "required": [

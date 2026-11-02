@@ -62,12 +62,41 @@
       "type": "number",
       "description": "Bread balance held by the citizen"
     },
+    "bread_earned": {
+      "type": "number",
+      "description": "Total bread earned through work, baking and chat, used to unlock better jobs"
+    },
     "decorations": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "description": "Shop items owned by the citizen, worn on their animal"
+    },
+    "possessions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Homes, vehicles and pets bought by the citizen, placed in the Honk Commons"
+    },
+    "world_spots": {
+      "type": "array",
+      "description": "Where the citizen's home, vehicle, pets and items sit in the Honk Commons",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          }
+        }
+      }
     },
     "workers": {
       "type": "number",

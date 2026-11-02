@@ -6,6 +6,13 @@ import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import ShopCard from '@/components/shop/ShopCard';
 
+const SECTIONS = [
+  { key: 'decoration', title: 'Decorations', blurb: 'Worn on your animal in the Hall of Honks.' },
+  { key: 'home', title: 'Homes', blurb: 'A roof of your own in the Honk Commons.' },
+  { key: 'vehicle', title: 'Vehicles', blurb: 'Cross the Republic without walking.' },
+  { key: 'pet', title: 'Pets', blurb: 'Small companions that live on your plot.' },
+];
+
 export default function Shop() {
   const { citizen, signedIn, run } = useCitizen();
   const [items, setItems] = useState(null);
@@ -15,7 +22,7 @@ export default function Shop() {
   useEffect(() => {
     let active = true;
     base44.entities.ShopItem
-      .list({ sort: 'price', limit: 60 })
+      .list({ sort: 'price', limit: 80 })
       .then((page) => {
         if (active) setItems(page?.items ?? []);
       })
@@ -34,7 +41,7 @@ export default function Shop() {
     setBuying(item.id);
     setError('');
     try {
-      await run({ action: 'buyDecoration', item_id: item.id });
+      await run({ action: 'buyItem', item_id: item.id });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -42,16 +49,26 @@ export default function Shop() {
     }
   };
 
+  const ownedIds = new Set([
+    ...(citizen?.decorations ?? []),
+    ...(citizen?.possessions ?? []),
+  ]);
+
+  const groups = SECTIONS.map((section) => ({
+    ...section,
+    items: (items ?? []).filter((item) => (item.category || 'decoration') === section.key),
+  })).filter((section) => section.items.length > 0);
+
   return (
     <div className="mx-auto max-w-6xl space-y-4">
       <Panel>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="meta-label">National E-Shop · Honkton</span>
-            <h2 className="display-title mt-3 text-3xl md:text-4xl">Decorations</h2>
+            <h2 className="display-title mt-3 text-3xl md:text-4xl">The National E-Shop</h2>
             <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-foreground/75">
-              Dress your base animal in the finest goods the Republic can produce. Everything is paid
-              for in bread, and everything stays yours.
+              Dress your animal, buy a home, a vehicle or a pet, and build a life in the Commons.
+              Everything is paid for in bread, and everything stays yours.
             </p>
           </div>
           <div className="text-right">
@@ -69,7 +86,7 @@ export default function Shop() {
             <Link to="/passport" className="text-primary underline-offset-4 hover:underline">
               Sign in with your passport
             </Link>{' '}
-            to buy decorations.
+            to buy from the shelves.
           </p>
         )}
 
@@ -94,19 +111,29 @@ export default function Shop() {
           </div>
         </Panel>
       ) : (
-        <div className="grid gap-px border border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
-            <ShopCard
-              key={item.id}
-              item={item}
-              owned={Boolean(citizen?.decorations?.includes(item.id))}
-              canBuy={signedIn}
-              busy={buying === item.id}
-              affordable={(citizen?.bread ?? 0) >= item.price}
-              onBuy={() => buy(item)}
-            />
-          ))}
-        </div>
+        groups.map((group) => (
+          <div key={group.key} className="space-y-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+              <h3 className="display-title text-xl">{group.title}</h3>
+              <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+                {group.blurb}
+              </p>
+            </div>
+            <div className="grid gap-px border border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-3">
+              {group.items.map((item) => (
+                <ShopCard
+                  key={item.id}
+                  item={item}
+                  owned={ownedIds.has(item.id)}
+                  canBuy={signedIn}
+                  busy={buying === item.id}
+                  affordable={(citizen?.bread ?? 0) >= item.price}
+                  onBuy={() => buy(item)}
+                />
+              ))}
+            </div>
+          </div>
+        ))
       )}
     </div>
   );

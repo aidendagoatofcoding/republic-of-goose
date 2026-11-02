@@ -4,6 +4,7 @@ export const JOBS = [
     title: 'Pond Scraper',
     emoji: '🪣',
     wage: 2,
+    unlock_bread: 0,
     description: 'Skim the leaves, the feathers and the occasional duck off the national ponds.',
   },
   {
@@ -11,6 +12,7 @@ export const JOBS = [
     title: 'Bread Courier',
     emoji: '🥖',
     wage: 3,
+    unlock_bread: 15,
     description: 'Carry warm loaves from the bakery to every nest in the district before they cool.',
   },
   {
@@ -18,6 +20,7 @@ export const JOBS = [
     title: 'Feather Inspector',
     emoji: '🪶',
     wage: 4,
+    unlock_bread: 60,
     description: 'Certify that every citizen feather meets the national standard of fluff.',
   },
   {
@@ -25,6 +28,7 @@ export const JOBS = [
     title: 'Nest Architect',
     emoji: '🌿',
     wage: 5,
+    unlock_bread: 180,
     description: 'Design twig structures sturdy enough for a family of geese and one opinionated turtle.',
   },
   {
@@ -32,6 +36,7 @@ export const JOBS = [
     title: 'Pond Warden',
     emoji: '🚨',
     wage: 7,
+    unlock_bread: 500,
     description: 'Guard the shoreline, log every honk after dark and chase off foxes politely.',
   },
   {
@@ -39,6 +44,7 @@ export const JOBS = [
     title: 'Chief Honk Officer',
     emoji: '🎺',
     wage: 10,
+    unlock_bread: 1200,
     description: 'Lead the national honk at dawn. A loud voice and a clean conscience required.',
   },
 ];
