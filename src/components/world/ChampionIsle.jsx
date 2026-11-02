@@ -5,6 +5,8 @@ const SPORTS = [
   { id: 'pong', name: 'Pond Pong', note: 'Two paddles · first to five', action: 'Match' },
   { id: 'sprint', name: 'Honk Sprint', note: 'Outrun the Champion · 100 m', action: 'Play' },
   { id: 'toss', name: 'Bread Toss', note: 'Five loaves · five rings', action: 'Play' },
+  { id: 'archery', name: 'Isle Archery', note: 'Three arrows · one ring', action: 'Play' },
+  { id: 'race', name: 'Reed Race', note: 'Clear five hurdles', action: 'Play' },
   { id: 'choir', name: 'Honk Choir', note: 'Repeat the phrase · memory', action: 'Play' },
   { id: 'guard', name: 'Nest Guard', note: 'Catch the thieves · 25 s', action: 'Play' },
 ];

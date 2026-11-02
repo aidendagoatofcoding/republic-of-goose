@@ -12,7 +12,7 @@ const RINGS = [
 ];
 const MISS = { points: 5, label: 'Off the rim' };
 
-export default function BreadToss({ onClose }) {
+export default function BreadToss({ onClose, onFinish }) {
   const [phase, setPhase] = useState('ready');
   const [pos, setPos] = useState(0.5);
   const [score, setScore] = useState(0);
@@ -25,6 +25,8 @@ export default function BreadToss({ onClose }) {
   const startRef = useRef(0);
   const frameRef = useRef(0);
   const runningRef = useRef(false);
+  const finishRef = useRef(onFinish);
+  finishRef.current = onFinish;
 
   const stop = useCallback(() => {
     runningRef.current = false;
@@ -75,6 +77,7 @@ export default function BreadToss({ onClose }) {
       setResult(
         nextScore >= TARGET ? 'You beat the Isle Champion!' : 'The Champion keeps the ribbon.'
       );
+      finishRef.current?.(nextScore);
     }
   }, [phase, score, left, stop]);
 

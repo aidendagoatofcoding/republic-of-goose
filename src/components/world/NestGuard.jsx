@@ -7,7 +7,7 @@ const TARGET = 15;
 const SPAWN_MS = 850;
 const THIEF_MS = 900;
 
-export default function NestGuard({ onClose }) {
+export default function NestGuard({ onClose, onFinish }) {
   const [phase, setPhase] = useState('ready');
   const [thief, setThief] = useState(-1);
   const [score, setScore] = useState(0);
@@ -17,6 +17,8 @@ export default function NestGuard({ onClose }) {
   const thiefRef = useRef(-1);
   const scoreRef = useRef(0);
   const timers = useRef([]);
+  const finishRef = useRef(onFinish);
+  finishRef.current = onFinish;
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
@@ -32,6 +34,7 @@ export default function NestGuard({ onClose }) {
     setResult(
       scoreRef.current >= TARGET ? 'The nests are safe!' : 'The thieves got away with bread.'
     );
+    finishRef.current?.(scoreRef.current);
   }, []);
 
   const spawn = useCallback(() => {

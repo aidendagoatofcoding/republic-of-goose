@@ -131,6 +131,28 @@ async function loadHoldings(admin, code) {
   }));
 }
 
+const EVENT_IDS = ['sprint', 'toss', 'archery', 'race', 'choir', 'guard'];
+
+async function loadBoards(admin) {
+  const page = await admin.entities.EventScore.list({ limit: 400, sort: '-score' });
+  const rows = page?.items ?? [];
+  const boards = {};
+  EVENT_IDS.forEach((id) => {
+    boards[id] = [];
+  });
+  rows.forEach((row) => {
+    const list = boards[row.event];
+    if (!list || list.length >= 5) return;
+    list.push({
+      id: row.id,
+      name: row.name || 'A citizen',
+      species: row.species || 'goose',
+      score: Math.round(row.score ?? 0),
+    });
+  });
+  return boards;
+}
+
 async function findCitizen(admin, code) {
   if (!code) return null;
   const page = await admin.entities.Citizen.filter({ passport_code: code }, { limit: 1 });
@@ -149,6 +171,10 @@ export default async function (req) {
 
     if (action === 'jobs') {
       return Response.json({ jobs: JOBS });
+    }
+
+    if (action === 'leaderboard') {
+      return Response.json({ boards: await loadBoards(admin) });
     }
 
     if (action === 'world') {
@@ -291,6 +317,44 @@ export default async function (req) {
     }
 
     const holdings = await loadHoldings(admin, code);
+
+    if (action === 'submitScore') {
+      const event = String(body.event ?? '');
+      if (!EVENT_IDS.includes(event)) {
+        return Response.json({ error: 'That is not a Champion Isle event.' }, { status: 400 });
+      }
+      const score = Math.floor(Number(body.score));
+      if (!Number.isFinite(score) || score < 0 || score > 100000) {
+        return Response.json({ error: 'That score could not be recorded.' }, { status: 400 });
+      }
+      const name = citizen.goose_name || citizen.full_name || 'A citizen';
+      const existing = await admin.entities.EventScore.filter(
+        { citizen_key: citizen.id, event },
+        { limit: 1 }
+      );
+      const best = existing?.items?.[0] ?? null;
+      const previousBest = Math.round(best?.score ?? 0);
+      if (!best) {
+        await admin.entities.EventScore.create({
+          event,
+          citizen_key: citizen.id,
+          name,
+          species: citizen.species || 'goose',
+          score,
+        });
+      } else if (score > previousBest) {
+        await admin.entities.EventScore.update(best.id, {
+          name,
+          species: citizen.species || 'goose',
+          score,
+        });
+      }
+      return Response.json({
+        boards: await loadBoards(admin),
+        best: Math.max(score, previousBest),
+        improved: score > previousBest,
+      });
+    }
 
     if (action === 'profile') {
       const shelf = await admin.entities.ShopItem.list({ limit: 200 });

@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import WorldScene from '@/components/world/WorldScene';
 import CommonsPalette from '@/components/world/CommonsPalette';
-import TradePanel from '@/components/world/TradePanel';
+import CommonsMenu from '@/components/world/CommonsMenu';
 
 export default function World() {
   const { citizen, signedIn, run } = useCitizen();
@@ -15,6 +15,9 @@ export default function World() {
   const [offers, setOffers] = useState({ incoming: [], outgoing: [] });
   const [offerBusy, setOfferBusy] = useState('');
   const [offerError, setOfferError] = useState('');
+  const [boards, setBoards] = useState({});
+  const [boardsLoading, setBoardsLoading] = useState(true);
+  const [boardsError, setBoardsError] = useState('');
   const [compact, setCompact] = useState(false);
   const code = citizen?.passport_code || '';
 
@@ -51,6 +54,23 @@ export default function World() {
     const timer = setInterval(loadOffers, 20000);
     return () => clearInterval(timer);
   }, [loadOffers, signedIn]);
+
+  const loadBoards = useCallback(async () => {
+    setBoardsLoading(true);
+    try {
+      const response = await base44.functions.invoke('citizen', { action: 'leaderboard' });
+      setBoards(response?.data?.boards || {});
+      setBoardsError('');
+    } catch (err) {
+      setBoardsError('The standings could not be read.');
+    } finally {
+      setBoardsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadBoards();
+  }, [loadBoards]);
 
   const replyOffer = async (offer, accept) => {
     setOfferBusy(offer.id);
@@ -107,7 +127,7 @@ export default function World() {
           <h1 className="truncate font-display text-lg font-bold">The Honk Commons</h1>
           {world && (
             <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground xl:inline">
-              tap to walk · drag your own plot · tap a neighbour's home to offer bread
+              walk up to a neighbour's home to offer bread
             </span>
           )}
         </div>
@@ -126,6 +146,19 @@ export default function World() {
               Sign in
             </Link>
           )}
+          <CommonsMenu
+            offerCount={offers.incoming.length}
+            offers={offers}
+            busyId={offerBusy}
+            tradeError={offerError}
+            onReply={replyOffer}
+            onWithdraw={withdrawOffer}
+            onRefreshTrades={loadOffers}
+            boards={boards}
+            boardsLoading={boardsLoading}
+            boardsError={boardsError}
+            onRefreshBoards={loadBoards}
+          />
           <span className="font-mono text-[11px] font-bold text-primary">
             🍞 {signedIn ? citizen.bread : '—'}
           </span>
@@ -170,6 +203,7 @@ export default function World() {
             onCancelPlace={() => setPlacing(null)}
             run={run}
             onOffersChanged={setOffers}
+            onBoards={setBoards}
             panelsHidden={compact}
             profile={{
               name: citizen?.goose_name || citizen?.full_name || 'You',
@@ -179,23 +213,13 @@ export default function World() {
           />
         )}
 
-        {signedIn && !compact && (
-          <div className="absolute right-2 top-2 z-40 w-[268px] max-w-[calc(100%-1rem)] space-y-3 overflow-y-auto pr-1 pb-1 [max-height:calc(100%-1rem)]">
-            {world?.mine && (
-              <CommonsPalette
-                items={world.mine.items}
-                placingId={placing?.item_id || ''}
-                onPlace={setPlacing}
-                onCancel={() => setPlacing(null)}
-              />
-            )}
-            <TradePanel
-              offers={offers}
-              busyId={offerBusy}
-              error={offerError}
-              onReply={replyOffer}
-              onWithdraw={withdrawOffer}
-              onRefresh={loadOffers}
+        {signedIn && !compact && world?.mine && (
+          <div className="absolute right-2 top-2 z-40 w-[268px] max-w-[calc(100%-1rem)]">
+            <CommonsPalette
+              items={world.mine.items}
+              placingId={placing?.item_id || ''}
+              onPlace={setPlacing}
+              onCancel={() => setPlacing(null)}
             />
           </div>
         )}

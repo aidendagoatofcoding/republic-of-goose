@@ -12,7 +12,7 @@ const SHOW_MS = 520;
 
 const randomPad = () => Math.floor(Math.random() * PADS.length);
 
-export default function ChoirGame({ onClose }) {
+export default function ChoirGame({ onClose, onFinish }) {
   const [phase, setPhase] = useState('ready');
   const [sequence, setSequence] = useState([]);
   const [lit, setLit] = useState(-1);
@@ -22,6 +22,8 @@ export default function ChoirGame({ onClose }) {
   const [result, setResult] = useState('');
 
   const timers = useRef([]);
+  const finishRef = useRef(onFinish);
+  finishRef.current = onFinish;
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
@@ -63,6 +65,7 @@ export default function ChoirGame({ onClose }) {
       setPhase('done');
       setMessage('');
       setResult(`The Choir caught you at level ${level}.`);
+      finishRef.current?.(Math.max(0, level - 1) * 20);
       return;
     }
 
@@ -76,6 +79,7 @@ export default function ChoirGame({ onClose }) {
       setPhase('done');
       setMessage('');
       setResult('You completed the Champion’s Choir!');
+      finishRef.current?.(WIN_LEVEL * 20);
       return;
     }
 

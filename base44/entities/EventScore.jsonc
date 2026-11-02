@@ -1,0 +1,53 @@
+{
+  "name": "EventScore",
+  "type": "object",
+  "properties": {
+    "event": {
+      "type": "string",
+      "description": "Champion Isle event id: sprint, toss, archery, race, choir or guard"
+    },
+    "event_name": {
+      "type": "string",
+      "description": "Display name of the event at the time the score was set"
+    },
+    "citizen_key": {
+      "type": "string",
+      "description": "Citizen record id of the athlete who set the score"
+    },
+    "name": {
+      "type": "string",
+      "description": "Goose name shown on the standings board"
+    },
+    "species": {
+      "type": "string",
+      "description": "Species of the athlete, shown beside the score"
+    },
+    "score": {
+      "type": "number",
+      "description": "Best score the citizen has recorded for the event"
+    }
+  },
+  "required": [
+    "event",
+    "citizen_key",
+    "score"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

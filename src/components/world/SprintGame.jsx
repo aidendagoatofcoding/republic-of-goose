@@ -27,7 +27,7 @@ function Lane({ label, value, emoji }) {
   );
 }
 
-export default function SprintGame({ species = 'goose', onClose }) {
+export default function SprintGame({ species = 'goose', onClose, onFinish }) {
   const [phase, setPhase] = useState('ready');
   const [mine, setMine] = useState(0);
   const [rival, setRival] = useState(0);
@@ -40,6 +40,8 @@ export default function SprintGame({ species = 'goose', onClose }) {
   const startRef = useRef(0);
   const frameRef = useRef(0);
   const runningRef = useRef(false);
+  const finishRef = useRef(onFinish);
+  finishRef.current = onFinish;
 
   const stop = useCallback(() => {
     runningRef.current = false;
@@ -53,6 +55,7 @@ export default function SprintGame({ species = 'goose', onClose }) {
       stop();
       setPhase('done');
       setResult(won ? 'You take the ribbon!' : 'The Champion holds the ribbon.');
+      finishRef.current?.(Math.round(mineRef.current));
     },
     [stop]
   );

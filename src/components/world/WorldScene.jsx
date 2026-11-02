@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HouseSprite from '@/components/world/HouseSprite';
 import MeadowGround from '@/components/world/MeadowGround';
 import Walker from '@/components/world/Walker';
@@ -11,6 +10,8 @@ import SprintGame from '@/components/world/SprintGame';
 import BreadToss from '@/components/world/BreadToss';
 import ChoirGame from '@/components/world/ChoirGame';
 import NestGuard from '@/components/world/NestGuard';
+import ArcheryGame from '@/components/world/ArcheryGame';
+import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
@@ -21,6 +22,9 @@ const NPC_LINES = ['HONK!', 'Lovely day.', 'Any bread?', 'Mind the pond.', 'HONK
 const KNOCKS = ['Come in!', 'Who honks there?', 'Door is open.', 'Wipe your webbed feet.'];
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
+const REACH_PX = 190;
+const MOVE_SPEED = 300;
+
 export default function WorldScene({
   residents,
   onMove,
@@ -30,22 +34,12 @@ export default function WorldScene({
   profile,
   run,
   onOffersChanged,
+  onBoards,
   panelsHidden,
 }) {
   const boxRef = useRef(null);
-  const [shift, setShift] = useState(0);
-
-  const pan = (dir) => {
-    const view = boxRef.current?.parentElement;
-    if (!view) return;
-    const width = view.clientWidth;
-    const maxPx = Math.max(0, (boxRef.current.offsetWidth || width) - width);
-    setShift((current) => {
-      const px = (current / 100) * width;
-      const next = Math.min(maxPx, Math.max(0, px + dir * width * 0.66));
-      return width ? (next / width) * 100 : 0;
-    });
-  };
+  const [camera, setCamera] = useState(0);
+  const [viewTick, setViewTick] = useState(0);
   const [drag, setDrag] = useState(null);
   const [ghost, setGhost] = useState(null);
   const draggedRef = useRef(false);
@@ -60,6 +54,11 @@ export default function WorldScene({
     face: 1,
   });
   const meRef = useRef(me);
+  const keysRef = useRef(new Set());
+  const walkRef = useRef(null);
+  const pendingOfferRef = useRef(null);
+  const openOfferRef = useRef(null);
+  const lastPublishRef = useRef(0);
 
   const say = useCallback((key, text) => {
     setBubbles((current) => ({ ...current, [key]: { text, at: Date.now() } }));
@@ -89,66 +88,135 @@ export default function WorldScene({
   const [offerBusy, setOfferBusy] = useState(false);
   const [offerError, setOfferError] = useState('');
 
-  const send = useCallback(
-    (next) => {
-      meRef.current = next;
-      setMe(next);
-      move(next.x, next.y, next.face);
-    },
-    [move]
-  );
-
   useEffect(() => {
     if (connected) move(meRef.current.x, meRef.current.y, meRef.current.face);
   }, [connected, move]);
 
-  const stepTo = useCallback(
-    (point) => {
-      const current = meRef.current;
-      send({
-        x: clamp(point.x),
-        y: clamp(point.y, 18, 94),
-        face: point.x >= current.x ? 1 : -1,
-      });
-    },
-    [send]
-  );
-
-  const stepBy = useCallback(
-    (dx, dy) => {
-      const current = meRef.current;
-      send({
-        x: clamp(current.x + dx),
-        y: clamp(current.y + dy, 18, 94),
-        face: dx < 0 ? -1 : dx > 0 ? 1 : current.face,
-      });
-    },
-    [send]
-  );
+  const distanceTo = useCallback((spot, position) => {
+    const box = boxRef.current;
+    if (!box || !position) return null;
+    const dx = ((position.x - spot.x) / 100) * box.offsetWidth;
+    const dy = ((position.y - spot.y) / 100) * box.offsetHeight;
+    return Math.hypot(dx, dy);
+  }, []);
 
   useEffect(() => {
-    const onKey = (event) => {
+    const onResize = () => setViewTick((value) => value + 1);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    const box = boxRef.current;
+    const view = box?.parentElement;
+    if (!box || !view) return;
+    const worldWidth = box.offsetWidth || view.clientWidth;
+    const viewWidth = view.clientWidth;
+    if (!viewWidth) return;
+    const playerPx = (me.x / 100) * worldWidth;
+    const margin = Math.min(viewWidth * 0.34, 260);
+    setCamera((current) => {
+      let next = current;
+      if (playerPx - next < margin) next = playerPx - margin;
+      if (playerPx - next > viewWidth - margin) next = viewWidth - margin;
+      return Math.max(0, Math.min(Math.max(0, worldWidth - viewWidth), next));
+    });
+  }, [me.x, viewTick]);
+
+  useEffect(() => {
+    let frame = 0;
+    let last = performance.now();
+    const tick = (now) => {
+      frame = requestAnimationFrame(tick);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const box = boxRef.current;
+      if (!box || !mine || placing) return;
+      const width = box.offsetWidth || 1;
+      const height = box.offsetHeight || 1;
+      const keys = keysRef.current;
+      let vx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
+      let vy = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
+      if (vx || vy) {
+        walkRef.current = null;
+      } else if (walkRef.current) {
+        const goal = walkRef.current;
+        const gx = ((goal.x - meRef.current.x) / 100) * width;
+        const gy = ((goal.y - meRef.current.y) / 100) * height;
+        const distance = Math.hypot(gx, gy);
+        if (distance < 6) {
+          walkRef.current = null;
+          return;
+        }
+        vx = gx / distance;
+        vy = gy / distance;
+      }
+      if (!vx && !vy) return;
+
+      const length = Math.hypot(vx, vy) || 1;
+      const nx = vx / length;
+      const ny = vy / length;
+      const current = meRef.current;
+      const next = {
+        x: clamp(current.x + ((nx * MOVE_SPEED * dt) / width) * 100, 2, 98),
+        y: clamp(current.y + ((ny * MOVE_SPEED * dt) / height) * 100, 14, 96),
+        face: nx < -0.05 ? -1 : nx > 0.05 ? 1 : current.face,
+      };
+      meRef.current = next;
+      if (now - lastPublishRef.current > 45) {
+        lastPublishRef.current = now;
+        setMe(next);
+        move(next.x, next.y, next.face);
+      }
+
+      const pending = pendingOfferRef.current;
+      if (pending) {
+        const reach = distanceTo(pending.spot, next);
+        if (reach !== null && reach <= REACH_PX) {
+          pendingOfferRef.current = null;
+          walkRef.current = null;
+          openOfferRef.current?.(pending.resident, pending.spot);
+        }
+      }
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [mine, placing, move, distanceTo]);
+
+  useEffect(() => {
+    const KEYS = {
+      arrowleft: 'left',
+      a: 'left',
+      arrowright: 'right',
+      d: 'right',
+      arrowup: 'up',
+      w: 'up',
+      arrowdown: 'down',
+      s: 'down',
+    };
+    const onDown = (event) => {
       const tag = event.target?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      const key = event.key?.toLowerCase();
-      const deltas = {
-        arrowleft: [-3, 0],
-        arrowright: [3, 0],
-        arrowup: [0, -3],
-        arrowdown: [0, 3],
-        a: [-3, 0],
-        d: [3, 0],
-        w: [0, -3],
-        s: [0, 3],
-      };
-      const delta = deltas[key];
-      if (!delta) return;
+      const direction = KEYS[event.key?.toLowerCase()];
+      if (!direction) return;
       event.preventDefault();
-      stepBy(delta[0], delta[1]);
+      keysRef.current.add(direction);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [stepBy]);
+    const onUp = (event) => {
+      const direction = KEYS[event.key?.toLowerCase()];
+      if (!direction) return;
+      keysRef.current.delete(direction);
+    };
+    const clearKeys = () => keysRef.current.clear();
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    window.addEventListener('blur', clearKeys);
+    return () => {
+      window.removeEventListener('keydown', onDown);
+      window.removeEventListener('keyup', onUp);
+      window.removeEventListener('blur', clearKeys);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -243,7 +311,9 @@ export default function WorldScene({
       return;
     }
     if (!mine) return;
-    stepTo(toPercent(event));
+    const point = toPercent(event);
+    walkRef.current = { x: point.x, y: clamp(point.y, 14, 94) };
+    pendingOfferRef.current = null;
   };
 
   const knock = (resident, spot) => {
@@ -255,6 +325,13 @@ export default function WorldScene({
 
   const openOffer = (resident, spot) => {
     if (!seat || !run) return;
+    const distance = distanceTo(spot, meRef.current);
+    if (distance !== null && distance > REACH_PX) {
+      walkRef.current = { x: clamp(spot.x, 4, 96), y: clamp(spot.y + 6, 14, 94) };
+      pendingOfferRef.current = { resident, spot };
+      say(myKey, 'Coming over…');
+      return;
+    }
     setOfferError('');
     setOfferAmount(String(Math.max(1, Math.round(spot.price ?? 20))));
     setOfferTarget({
@@ -267,6 +344,8 @@ export default function WorldScene({
       price: spot.price ?? 0,
     });
   };
+
+  openOfferRef.current = openOffer;
 
   const sendOffer = async () => {
     if (!offerTarget || !run) return;
@@ -302,6 +381,19 @@ export default function WorldScene({
     honk(targetSeat || 0);
   };
 
+  const submitScore = useCallback(
+    async (event, score) => {
+      if (!run) return;
+      try {
+        const data = await run({ action: 'submitScore', event, score });
+        if (data?.boards) onBoards?.(data.boards);
+      } catch (err) {
+        /* the event still ends even if the standings cannot be reached */
+      }
+    },
+    [run, onBoards]
+  );
+
   const live = people.filter((person) => person.seat !== seat);
 
   return (
@@ -312,8 +404,8 @@ export default function WorldScene({
       onPointerUp={endDrag}
       onPointerLeave={endDrag}
       onClick={handleClick}
-      style={{ left: `-${shift}%` }}
-      className={`absolute inset-y-0 h-full w-[220%] min-w-[1400px] touch-none overflow-hidden bg-secondary/40 ${
+      style={{ transform: `translateX(${-camera}px)`, transition: 'transform 260ms ease-out' }}
+      className={`absolute inset-y-0 left-0 h-full w-[220%] min-w-[1400px] touch-none overflow-hidden bg-secondary/40 ${
         placing ? 'cursor-crosshair ring-1 ring-inset ring-primary/50' : ''
       }`}
     >
@@ -350,6 +442,8 @@ export default function WorldScene({
             const x = dragging ? drag.x : spot.x;
             const y = dragging ? drag.y : spot.y;
             const bubble = bubbles[`house:${spot.item_id}`]?.text;
+            const distance = resident.is_me ? null : distanceTo(spot, me);
+            const reachable = distance !== null && distance <= REACH_PX;
             return (
               <button
                 key={spot.item_id}
@@ -368,7 +462,7 @@ export default function WorldScene({
                 style={{ left: `${x}%`, top: `${y}%` }}
                 className={`absolute z-10 -translate-x-1/2 -translate-y-[88%] ${
                   resident.is_me && !placing ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-                }`}
+                } ${reachable ? 'rounded-md bg-primary/10 ring-1 ring-primary/40' : ''}`}
               >
                 {bubble && <WorldBubble text={bubble} />}
                 <HouseSprite
@@ -491,7 +585,7 @@ export default function WorldScene({
           face={me.face}
           isMe
           bubble={bubbles[myKey]?.text}
-          speed="0.45s"
+          speed="0.16s"
           onPoke={() => {
             say(myKey, 'HONK!');
             honk(0);
@@ -530,8 +624,8 @@ export default function WorldScene({
       )}
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex items-end justify-between gap-2 p-2">
-        <p className="max-w-[46%] rounded-sm border border-border/70 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
-          Tap to walk · drag your plot · pan with the arrows
+        <p className="max-w-[52%] rounded-sm border border-border/70 bg-card/90 px-2 py-1 font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
+          Tap to walk · hold WASD to roam · tap a home nearby to trade
         </p>
         <div className="pointer-events-auto flex items-center gap-1.5">
           {connected && (
@@ -539,22 +633,6 @@ export default function WorldScene({
               {people.length} wandering now
             </span>
           )}
-          <button
-            type="button"
-            onClick={() => pan(-1)}
-            aria-label="Pan the meadow left"
-            className="rounded-sm border border-border bg-card/90 p-1.5 text-muted-foreground hover:text-primary"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => pan(1)}
-            aria-label="Pan the meadow right"
-            className="rounded-sm border border-border bg-card/90 p-1.5 text-muted-foreground hover:text-primary"
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
         </div>
       </div>
 
@@ -564,13 +642,36 @@ export default function WorldScene({
         </div>
       )}
 
-      {sport === 'choir' && <ChoirGame onClose={() => setSport('')} />}
-      {sport === 'guard' && <NestGuard onClose={() => setSport('')} />}
+      {sport === 'choir' && (
+        <ChoirGame onClose={() => setSport('')} onFinish={(score) => submitScore('choir', score)} />
+      )}
+      {sport === 'guard' && (
+        <NestGuard onClose={() => setSport('')} onFinish={(score) => submitScore('guard', score)} />
+      )}
+      {sport === 'archery' && (
+        <ArcheryGame
+          onClose={() => setSport('')}
+          onFinish={(score) => submitScore('archery', score)}
+        />
+      )}
+      {sport === 'race' && (
+        <RaceGame
+          species={profile?.species}
+          onClose={() => setSport('')}
+          onFinish={(score) => submitScore('race', score)}
+        />
+      )}
 
       {sport === 'sprint' && (
-        <SprintGame species={profile?.species} onClose={() => setSport('')} />
+        <SprintGame
+          species={profile?.species}
+          onClose={() => setSport('')}
+          onFinish={(score) => submitScore('sprint', score)}
+        />
       )}
-      {sport === 'toss' && <BreadToss onClose={() => setSport('')} />}
+      {sport === 'toss' && (
+        <BreadToss onClose={() => setSport('')} onFinish={(score) => submitScore('toss', score)} />
+      )}
 
       <NeighbourDialog
         target={offerTarget}
