@@ -15,7 +15,9 @@ import ArcheryGame from '@/components/world/ArcheryGame';
 import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
 import SportVenue from '@/components/world/SportVenue';
+import Areas from '@/components/world/areas/Areas';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
+import { areaAt } from '@/lib/commonsAreas';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 
@@ -30,10 +32,8 @@ const MOVE_SPEED = 165;
 
 export default function WorldScene({
   residents,
-  onMove,
   placing,
   onPlace,
-  onCancelPlace,
   profile,
   run,
   onOffersChanged,
@@ -43,9 +43,6 @@ export default function WorldScene({
   const boxRef = useRef(null);
   const [camera, setCamera] = useState(0);
   const [viewTick, setViewTick] = useState(0);
-  const [drag, setDrag] = useState(null);
-  const [ghost, setGhost] = useState(null);
-  const draggedRef = useRef(false);
   const [bubbles, setBubbles] = useState({});
   const [wander, setWander] = useState({});
 
@@ -58,11 +55,7 @@ export default function WorldScene({
   });
   const meRef = useRef(me);
   const keysRef = useRef(new Set());
-  const walkRef = useRef(null);
-  const pendingOfferRef = useRef(null);
-  const openOfferRef = useRef(null);
-  const pendingSportRef = useRef(null);
-  const openSportRef = useRef(null);
+  const placedRef = useRef('');
   const lastPublishRef = useRef(0);
 
   const say = useCallback((key, text) => {
@@ -141,22 +134,8 @@ export default function WorldScene({
       const width = box.offsetWidth || 1;
       const height = box.offsetHeight || 1;
       const keys = keysRef.current;
-      let vx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
-      let vy = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
-      if (vx || vy) {
-        walkRef.current = null;
-      } else if (walkRef.current) {
-        const goal = walkRef.current;
-        const gx = ((goal.x - meRef.current.x) / 100) * width;
-        const gy = ((goal.y - meRef.current.y) / 100) * height;
-        const distance = Math.hypot(gx, gy);
-        if (distance < 6) {
-          walkRef.current = null;
-          return;
-        }
-        vx = gx / distance;
-        vy = gy / distance;
-      }
+      const vx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
+      const vy = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
       if (!vx && !vy) return;
 
       const length = Math.hypot(vx, vy) || 1;
@@ -174,31 +153,10 @@ export default function WorldScene({
         setMe(next);
         move(next.x, next.y, next.face);
       }
-
-      const pending = pendingOfferRef.current;
-      if (pending) {
-        const reach = distanceTo(pending.spot, next);
-        if (reach !== null && reach <= REACH_PX) {
-          pendingOfferRef.current = null;
-          walkRef.current = null;
-          openOfferRef.current?.(pending.resident, pending.spot);
-        }
-      }
-
-      const pendingVenue = pendingSportRef.current;
-      if (pendingVenue) {
-        const venue = VENUE_BY_ID[pendingVenue];
-        const reach = venue ? distanceTo(venue, next) : null;
-        if (reach !== null && reach <= REACH_PX) {
-          pendingSportRef.current = null;
-          walkRef.current = null;
-          openSportRef.current?.(pendingVenue);
-        }
-      }
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [mine, placing, move, distanceTo]);
+  }, [mine, placing, move]);
 
   useEffect(() => {
     const KEYS = {
@@ -284,71 +242,16 @@ export default function WorldScene({
     return () => clearInterval(timer);
   }, []);
 
-  const toPercent = (event) => {
-    const rect = boxRef.current.getBoundingClientRect();
-    return {
-      x: clamp(((event.clientX - rect.left) / rect.width) * 100),
-      y: clamp(((event.clientY - rect.top) / rect.height) * 100),
-    };
-  };
-
-  const startDrag = (event, spot) => {
-    if (placing) return;
-    event.preventDefault();
-    draggedRef.current = false;
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    setDrag({ item_id: spot.item_id, x: spot.x, y: spot.y });
-  };
-
-  const handlePointerMove = (event) => {
-    if (placing) {
-      setGhost(toPercent(event));
-      return;
-    }
-    if (!drag || !boxRef.current) return;
-    const next = toPercent(event);
-    draggedRef.current = true;
-    setDrag((current) => (current ? { ...current, ...next } : current));
-  };
-
-  const endDrag = () => {
-    if (!drag) return;
-    onMove(drag.item_id, drag.x, drag.y);
-    setDrag(null);
-  };
-
-  const handleClick = (event) => {
-    if (placing) {
-      const spot = toPercent(event);
-      onPlace(spot.x, spot.y);
-      return;
-    }
-    if (draggedRef.current) {
-      draggedRef.current = false;
-      return;
-    }
-    if (!mine) return;
-    const point = toPercent(event);
-    walkRef.current = { x: point.x, y: clamp(point.y, 14, 94) };
-    pendingOfferRef.current = null;
-    pendingSportRef.current = null;
-  };
-
   const openVenue = (id) => {
     const venue = VENUE_BY_ID[id];
     if (!venue) return;
     const distance = distanceTo(venue, meRef.current);
     if (distance !== null && distance > REACH_PX) {
-      walkRef.current = { x: clamp(venue.x, 4, 96), y: clamp(venue.y + 5, 14, 94) };
-      pendingSportRef.current = id;
-      say(myKey, `Walking to the ${venue.name}…`);
+      say(myKey, `Walk closer to the ${venue.name} to compete.`);
       return;
     }
-    walkRef.current = null;
     setSport(id);
   };
-
-  openSportRef.current = setSport;
 
   const knock = (resident, spot) => {
     say(`house:${spot.item_id}`, pick(KNOCKS));
@@ -361,9 +264,7 @@ export default function WorldScene({
     if (!seat || !run) return;
     const distance = distanceTo(spot, meRef.current);
     if (distance !== null && distance > REACH_PX) {
-      walkRef.current = { x: clamp(spot.x, 4, 96), y: clamp(spot.y + 6, 14, 94) };
-      pendingOfferRef.current = { resident, spot };
-      say(myKey, 'Coming over…');
+      say(myKey, 'Walk closer to trade.');
       return;
     }
     setOfferError('');
@@ -378,8 +279,6 @@ export default function WorldScene({
       price: spot.price ?? 0,
     });
   };
-
-  openOfferRef.current = openOffer;
 
   const sendOffer = async () => {
     if (!offerTarget || !run) return;
@@ -433,24 +332,32 @@ export default function WorldScene({
     return distance !== null && distance <= REACH_PX;
   });
 
+  const activeArea = areaAt(me);
+
+  useEffect(() => {
+    if (!placing) {
+      placedRef.current = '';
+      return;
+    }
+    if (placedRef.current === placing.item_id) return;
+    placedRef.current = placing.item_id;
+    onPlace(clamp(meRef.current.x + 2, 2, 98), clamp(meRef.current.y + 3, 6, 94));
+  }, [placing, onPlace]);
+
   const live = people.filter((person) => person.seat !== seat);
 
   return (
     <div className="relative h-full w-full">
       <div
       ref={boxRef}
-      onPointerMove={handlePointerMove}
-      onPointerUp={endDrag}
-      onPointerLeave={endDrag}
-      onClick={handleClick}
       style={{ transform: `translateX(${-camera}px)`, transition: 'transform 260ms ease-out' }}
-      className={`absolute inset-y-0 left-0 h-full w-[420%] min-w-[3200px] touch-none overflow-hidden bg-secondary/40 ${
-        placing ? 'cursor-crosshair ring-1 ring-inset ring-primary/50' : ''
-      }`}
+      className="absolute inset-y-0 left-0 h-full w-[420%] min-w-[3200px] overflow-hidden bg-secondary/40"
     >
       <MeadowGround />
 
       <Places />
+
+      <Areas activeId={activeArea?.id || ''} />
 
       <Realms />
 
@@ -466,21 +373,6 @@ export default function WorldScene({
         );
       })}
 
-      {placing && ghost && (
-        <div
-          style={{ left: `${ghost.x}%`, top: `${ghost.y}%` }}
-          className="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-[88%] opacity-70"
-        >
-          {placing.category === 'home' ? (
-            <HouseSprite name={placing.name} className="w-[74px] sm:w-[86px]" />
-          ) : (
-            <span className="block text-3xl" aria-hidden="true">
-              {placing.emoji}
-            </span>
-          )}
-        </div>
-      )}
-
       {residents.length === 0 && (
         <p className="absolute left-0 top-0 z-30 flex h-full w-[45%] items-center justify-center px-6 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           The Commons are empty. Be the first to build here.
@@ -491,9 +383,8 @@ export default function WorldScene({
         resident.spots
           .filter((spot) => spot.category === 'home')
           .map((spot) => {
-            const dragging = resident.is_me && drag?.item_id === spot.item_id;
-            const x = dragging ? drag.x : spot.x;
-            const y = dragging ? drag.y : spot.y;
+            const x = spot.x;
+            const y = spot.y;
             const bubble = bubbles[`house:${spot.item_id}`]?.text;
             const distance = resident.is_me ? null : distanceTo(spot, me);
             const reachable = distance !== null && distance <= REACH_PX;
@@ -502,19 +393,14 @@ export default function WorldScene({
                 key={spot.item_id}
                 type="button"
                 aria-label={`${spot.name}, ${resident.is_me ? 'your home' : `${resident.name}'s home`}`}
-                onPointerDown={resident.is_me ? (event) => startDrag(event, spot) : undefined}
                 onClick={(event) => {
                   event.stopPropagation();
-                  if (draggedRef.current) {
-                    draggedRef.current = false;
-                    return;
-                  }
                   if (resident.is_me) return;
                   openOffer(resident, spot);
                 }}
                 style={{ left: `${x}%`, top: `${y}%` }}
                 className={`absolute z-10 -translate-x-1/2 -translate-y-[88%] ${
-                  resident.is_me && !placing ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+                  resident.is_me ? 'cursor-default' : 'cursor-pointer'
                 } ${reachable ? 'rounded-md bg-primary/10 ring-1 ring-primary/40' : ''}`}
               >
                 {bubble && <WorldBubble text={bubble} />}
@@ -534,33 +420,25 @@ export default function WorldScene({
         resident.spots
           .filter((spot) => spot.category !== 'home')
           .map((spot) => {
-            const dragging = resident.is_me && drag?.item_id === spot.item_id;
             const isPet = spot.category === 'pet';
             const drift = isPet ? wander[spot.item_id] : null;
-            const x = dragging ? drag.x : drift ? drift.x : spot.x;
-            const y = dragging ? drag.y : drift ? drift.y : spot.y;
+            const x = drift ? drift.x : spot.x;
+            const y = drift ? drift.y : spot.y;
             return (
               <div
                 key={spot.item_id}
                 title={spot.name}
-                onPointerDown={resident.is_me ? (event) => startDrag(event, spot) : undefined}
                 onClick={(event) => {
                   event.stopPropagation();
-                  if (draggedRef.current) {
-                    draggedRef.current = false;
-                    return;
-                  }
                   if (!resident.is_me) openOffer(resident, spot);
                 }}
                 style={{
                   left: `${x}%`,
                   top: `${y}%`,
-                  transition: dragging ? 'none' : 'left 2.6s linear, top 2.6s linear',
+                  transition: 'left 2.6s linear, top 2.6s linear',
                 }}
                 className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 select-none text-center leading-none ${
-                  resident.is_me && !placing
-                    ? 'cursor-grab active:cursor-grabbing'
-                    : 'pointer-events-none'
+                  resident.is_me ? 'cursor-default' : 'pointer-events-none'
                 }`}
               >
                 <span
@@ -568,7 +446,7 @@ export default function WorldScene({
                   style={{ transform: drift?.face === -1 ? 'scaleX(-1)' : undefined }}
                   aria-hidden="true"
                 >
-                  <span className={`block ${isPet ? 'meadow-bob' : ''} ${dragging ? 'text-4xl' : 'text-3xl'}`}>
+                  <span className={`block text-3xl ${isPet ? 'meadow-bob' : ''}`}>
                     {spot.emoji}
                   </span>
                 </span>
@@ -648,18 +526,9 @@ export default function WorldScene({
 
       </div>
 
-      {placing && (
-        <div className="absolute left-2 top-2 z-40 flex items-center gap-2 rounded-sm border border-primary/50 bg-card/95 px-2.5 py-1.5">
-          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
-            Tap the meadow to place {placing.name}
-          </span>
-          <button
-            type="button"
-            onClick={onCancelPlace}
-            className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
-          >
-            Cancel
-          </button>
+      {activeArea && (
+        <div className="pointer-events-none absolute left-1/2 top-3 z-40 -translate-x-1/2 rounded-sm border border-primary/40 bg-card/85 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.24em] text-primary">
+          {activeArea.name}
         </div>
       )}
 

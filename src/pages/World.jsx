@@ -128,8 +128,8 @@ export default function World() {
           </span>
           <h1 className="truncate font-display text-lg font-bold">The Honk Commons</h1>
           {world && (
-            <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground xl:inline">
-              walk up to a neighbour's home to offer bread
+            <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground md:inline">
+              walk with W A S D or the arrow keys
             </span>
           )}
         </div>
@@ -207,10 +207,8 @@ export default function World() {
         ) : (
           <WorldScene
             residents={world.residents}
-            onMove={move}
             placing={placing}
             onPlace={place}
-            onCancelPlace={() => setPlacing(null)}
             run={run}
             onOffersChanged={setOffers}
             onBoards={setBoards}

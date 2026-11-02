@@ -61,8 +61,8 @@ export default function CommonsPalette({ items, placingId, onPlace, onCancel }) 
       )}
 
       <p className="mt-4 font-mono text-[9px] uppercase leading-relaxed tracking-[0.14em] text-muted-foreground">
-        Tap Place, then tap the meadow to set your home down. You can also drag anything you own on
-        the map. Everything else is fixed.
+        Walk to the spot you want, then tap Place — it lands at your feet. Everything else in the
+        meadow stays where it belongs.
       </p>
     </section>
   );
