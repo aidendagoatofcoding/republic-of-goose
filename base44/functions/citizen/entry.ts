@@ -428,8 +428,8 @@ export default async function (req) {
           ...spots,
           {
             item_id: item.id,
-            x: clampSpot(50 + (spots.length % 5) * 6 - 12, 2, 98),
-            y: clampSpot(62 + (spots.length % 4) * 6, 6, 94),
+            x: clampSpot(24 + (spots.length % 4) * 18, 2, 98),
+            y: clampSpot(52 + (Math.floor(spots.length / 4) % 3) * 15, 6, 94),
           },
         ];
       }

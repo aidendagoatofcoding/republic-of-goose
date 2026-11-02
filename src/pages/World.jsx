@@ -54,10 +54,10 @@ export default function World() {
             <span className="meta-label">Community Land</span>
             <h2 className="display-title mt-3 text-3xl md:text-4xl">The Honk Commons</h2>
             <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-foreground/75">
-              One shared meadow where every citizen may build. Buy a home, a vehicle or a pet in the
-              E-Shop, then drag them around your plot and see where the rest of the Republic lives.
-            </p>
-          </div>
+              One meadow, everyone in it. Walk your animal with the arrow keys or by tapping the
+              grass, honk at neighbours you meet, knock on their doors, and drag your own house,
+              vehicles and pets anywhere on the map. Other citizens appear here live as they wander.
+            </p>          </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -106,6 +106,11 @@ export default function World() {
             placing={placing}
             onPlace={place}
             onCancelPlace={() => setPlacing(null)}
+            profile={{
+              name: citizen?.goose_name || citizen?.full_name || 'You',
+              species: citizen?.species || 'goose',
+              worn: citizen?.worn || [],
+            }}
           />
         )}
 
