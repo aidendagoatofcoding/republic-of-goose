@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import {
   Board,
   Benches,
@@ -38,7 +39,7 @@ const DUST = Array.from({ length: 16 }, (_, i) => ({
   size: i % 3 === 0 ? 2 : 1,
 }));
 
-export default function InteriorRoom({ place }) {
+function InteriorRoom({ place }) {
   const accent = place.accent || '#f2c96b';
 
   return (
@@ -142,3 +143,5 @@ export default function InteriorRoom({ place }) {
     </div>
   );
 }
+
+export default memo(InteriorRoom);
