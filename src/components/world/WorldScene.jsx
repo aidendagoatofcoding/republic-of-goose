@@ -21,6 +21,7 @@ import { nearestRoad, pointOnRoad, spotOnRoadNear } from '@/lib/roads';
 import SportVenue from '@/components/world/SportVenue';
 import Areas from '@/components/world/areas/Areas';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
+import CivicBuilding from '@/components/world/areas/CivicBuilding';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
 import { placeFor } from '@/lib/places';
 import RealmScene from '@/components/world/RealmScene';
@@ -46,6 +47,9 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 const REACH_PX = 190;
 const MOVE_SPEED = 165;
+
+// The National Bakery stands on the meadow next to the spawn point, so the goose games are a short walk away.
+const BAKERY = { id: 'bakery', name: 'The National Bakery', variant: 'cottage', x: 51, y: 60, place: 'bakery' };
 
 export default function WorldScene({
   residents,
@@ -412,6 +416,9 @@ export default function WorldScene({
     [run, onBoards]
   );
 
+  const bakeryDistance = distanceTo(BAKERY, me);
+  const nearBakery = bakeryDistance !== null && bakeryDistance <= REACH_PX;
+
   const nearVenue = VENUES.find((venue) => {
     const distance = distanceTo(venue, me);
     return distance !== null && distance <= REACH_PX;
@@ -433,7 +440,9 @@ export default function WorldScene({
     .filter((entry) => entry.distance !== null && entry.distance <= REACH_PX)
     .sort((a, b) => a.distance - b.distance)[0];
 
-  const enterTarget = nearVenue
+  const enterTarget = nearBakery
+    ? { kind: 'place', id: 'bakery', place: 'bakery', name: `Enter ${BAKERY.name}` }
+    : nearVenue
     ? { kind: 'sport', id: nearVenue.id, name: `Enter the ${nearVenue.name}` }
     : nearPortal
       ? { kind: 'realm', id: nearPortal.id, name: `Enter ${nearPortal.name}` }
@@ -486,6 +495,8 @@ export default function WorldScene({
       <NeighbourHouses />
 
       <Realms onEnter={setRealm} activeId={nearPortal?.id || ''} />
+
+      <CivicBuilding building={BAKERY} reachable={nearBakery} onEnter={setInside} />
 
       {VENUES.map((venue) => {
         const distance = distanceTo(venue, me);
