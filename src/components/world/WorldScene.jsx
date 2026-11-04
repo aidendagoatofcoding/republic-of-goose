@@ -36,6 +36,7 @@ import { HIDDEN } from '@/lib/hidden';
 
 import HiddenSpot from '@/components/world/HiddenSpot';
 import ZeldaDialog from '@/components/world/ZeldaDialog';
+import { questFor } from '@/lib/dialogues';
 import InventoryBar from '@/components/world/InventoryBar';
 import SceneBoundary from '@/components/world/SceneBoundary';
 import EdgeWarden, { EDGE_WARDEN } from '@/components/world/EdgeWarden';
@@ -53,6 +54,13 @@ const NPC_LINES = [
   'The Bank pays better than it used to.',
 ];
 const KNOCKS = ['Come in!', 'Who honks there?', 'Door is open.', 'Wipe your webbed feet.'];
+const NOTHING = [
+  'Damp leaves and a beetle. Nothing else.',
+  'Roots, and one very put-upon snail.',
+  'Empty. Somebody got here first.',
+  'Just grit and an old feather.',
+  'Nothing worth carrying home.',
+];
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 const REACH_PX = 190;
@@ -88,7 +96,6 @@ export default function WorldScene({
   const placedRef = useRef('');
   const lastPublishRef = useRef(0);
   const dirtyRef = useRef(false);
-  const centeredRef = useRef(false);
   const enterRef = useRef(null);
 
   const say = useCallback((key, text) => {
@@ -139,6 +146,7 @@ export default function WorldScene({
   const talkRef = useRef(null);
   talkRef.current = talk;
   const [revealed, setRevealed] = useState([]);
+  const [searched, setSearched] = useState([]);
 
   // The sky turns over on its own while you wander.
   const weather = useWeather();
@@ -162,6 +170,12 @@ export default function WorldScene({
       if (!spot) return;
       if (!run) {
         say(myKey, 'Only citizens of the Republic may search out here.');
+        return;
+      }
+      // Not everything out here is worth digging through.
+      if (spot.empty) {
+        setSearched((current) => (current.includes(spot.id) ? current : [...current, spot.id]));
+        say(myKey, pick(NOTHING));
         return;
       }
       if (!revealed.includes(spot.id)) {
@@ -219,15 +233,9 @@ export default function WorldScene({
     const viewWidth = view.clientWidth;
     if (!worldWidth || !viewWidth) return;
     const playerPx = (me.x / 100) * worldWidth;
-    const margin = Math.min(viewWidth * 0.34, 260);
     const limit = Math.max(0, worldWidth - viewWidth);
-    setCamera((current) => {
-      let next = centeredRef.current ? current : playerPx - viewWidth / 2;
-      centeredRef.current = true;
-      if (playerPx - next < margin) next = playerPx - margin;
-      if (playerPx - next > viewWidth - margin) next = playerPx - viewWidth + margin;
-      return Math.max(0, Math.min(limit, next));
-    });
+    // One clamped target per frame: the view chases the goose and simply stops at the edge.
+    setCamera(Math.round(Math.max(0, Math.min(limit, playerPx - viewWidth / 2))));
   }, [me.x, viewTick]);
 
   useEffect(() => {
@@ -238,12 +246,8 @@ export default function WorldScene({
     const viewHeight = view.clientHeight;
     if (!worldHeight || !viewHeight) return;
     const playerPy = (me.y / 100) * worldHeight;
-    const margin = Math.min(viewHeight * 0.3, 200);
     const limit = Math.max(0, worldHeight - viewHeight);
-    let next = playerPy - viewHeight / 2;
-    if (playerPy - next < margin) next = playerPy - margin;
-    if (playerPy - next > viewHeight - margin) next = playerPy - viewHeight + margin;
-    setCamY(Math.max(0, Math.min(limit, next)));
+    setCamY(Math.round(Math.max(0, Math.min(limit, playerPy - viewHeight / 2))));
   }, [me.y, viewTick]);
 
   useEffect(() => {
@@ -294,7 +298,7 @@ export default function WorldScene({
       };
       meRef.current = next;
       dirtyRef.current = true;
-      if (now - lastPublishRef.current > 24) {
+      if (now - lastPublishRef.current > 16) {
         lastPublishRef.current = now;
         dirtyRef.current = false;
         setMe(next);
@@ -535,8 +539,11 @@ export default function WorldScene({
   });
 
   const collected = profile?.finds ?? [];
+  const doneQuests = profile?.quests ?? [];
 
-  const nearHidden = HIDDEN.filter((spot) => !collected.includes(spot.id)).find((spot) => {
+  const nearHidden = HIDDEN.filter(
+    (spot) => !collected.includes(spot.id) && !(spot.empty && searched.includes(spot.id))
+  ).find((spot) => {
     const distance = distanceTo(spot, me);
     return distance !== null && distance <= 132;
   });
@@ -570,7 +577,13 @@ export default function WorldScene({
       kind: 'giver',
       id: 'edge',
       name: 'Speak to the Edge Warden',
-      talk: { key: 'edge-warden', name: 'The Edge Warden', species: 'fox', questId: 'edge-lamp' },
+      talk: {
+        key: 'edge-warden',
+        name: 'The Edge Warden',
+        species: 'fox',
+        questId: 'edge-lamp',
+        questDone: doneQuests.includes('edge-lamp'),
+      },
     }
     : nearOwnHome !== null && nearOwnHome <= REACH_PX
     ? { kind: 'home', id: 'home', name: 'Enter your home' }
@@ -583,9 +596,10 @@ export default function WorldScene({
           kind: 'hidden',
           id: nearHidden.id,
           spot: nearHidden,
-          name: revealed.includes(nearHidden.id)
-            ? `Take ${nearHidden.name}`
-            : `Search the ${nearHidden.kind === 'rock' ? 'boulder' : 'tree'}`,
+          name:
+            !nearHidden.empty && revealed.includes(nearHidden.id)
+              ? `Take ${nearHidden.name}`
+              : `Search the ${nearHidden.kind === 'rock' ? 'boulder' : 'tree'}`,
         }
         : nearFind
         ? { kind: 'find', id: nearFind.id, name: `Pick up ${nearFind.name}` }
@@ -598,6 +612,8 @@ export default function WorldScene({
             key: nearNeighbour.resident.key,
             name: nearNeighbour.resident.name,
             species: nearNeighbour.resident.species,
+            questId: questFor({ key: nearNeighbour.resident.key })?.id || null,
+            questDone: doneQuests.includes(questFor({ key: nearNeighbour.resident.key })?.id),
           },
         }
         : null;
@@ -623,7 +639,6 @@ export default function WorldScene({
       ref={boxRef}
       style={{
         transform: `translate(${-camera}px, ${-camY}px)`,
-        transition: 'transform 110ms linear',
       }}
       className="absolute left-0 top-0 h-[180%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
     >
@@ -631,12 +646,14 @@ export default function WorldScene({
 
       <EdgeWarden
         near={wardenNear}
+        hasQuest={!doneQuests.includes('edge-lamp')}
         onOpen={() =>
           setTalk({
             key: 'edge-warden',
             name: 'The Edge Warden',
             species: 'fox',
             questId: 'edge-lamp',
+            questDone: doneQuests.includes('edge-lamp'),
           })
         }
       />
@@ -680,7 +697,7 @@ export default function WorldScene({
           spot={spot}
           near={nearHidden?.id === spot.id}
           revealed={revealed.includes(spot.id)}
-          collected={false}
+          collected={Boolean(spot.empty && searched.includes(spot.id))}
           onSearch={searchSpot}
         />
       ))}
@@ -823,6 +840,8 @@ export default function WorldScene({
             y: streetStart.y,
             face: 1,
           };
+          // A goose with a favour still to grant wears a marker, so you can spot them across the meadow.
+          const offered = questFor({ key: resident.key });
           return (
             <Walker
               key={resident.key}
@@ -835,6 +854,7 @@ export default function WorldScene({
               face={
                 talk?.key === resident.key ? (me.x < position.x ? -1 : 1) : position.face
               }
+              hasQuest={Boolean(offered) && !doneQuests.includes(offered.id)}
               bubble={bubbles[resident.key]?.text}
               speed="2.6s"
               onPoke={() => {
@@ -842,6 +862,8 @@ export default function WorldScene({
                   key: resident.key,
                   name: resident.name,
                   species: resident.species,
+                  questId: offered?.id || null,
+                  questDone: Boolean(offered) && doneQuests.includes(offered.id),
                 });
                 honkAt(0);
               }}

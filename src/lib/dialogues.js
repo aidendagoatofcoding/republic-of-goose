@@ -1,5 +1,6 @@
 // Conversations in the Commons.
-// A goose greets you, answers, sometimes asks something back, and almost always wants a favour.
+// A goose greets you, talks for a moment, sometimes asks something back, and often wants a favour.
+// The chatter changes from visit to visit; the favour a goose wants stays the same.
 
 import { QUESTS } from '@/lib/quests';
 
@@ -28,6 +29,15 @@ const OPENERS = [
     'The lamp on the corner burned out a week ago and nobody has been up that ladder.',
   ],
   ['Do not take the south road after dark.', 'Not because of anything out there. The ruts will break a wheel.'],
+  ['Saw the harbour master counting gulls this morning.', 'He writes the number down and then argues with it.'],
+  ['My neighbour has painted his door three times this month.', 'Each time a slightly different green.'],
+  ['There is a goose up on the granary roof and nobody will admit to it being theirs.'],
+];
+
+const ASIDES = [
+  'Anyway. You did not come here for the weather report.',
+  'That is the whole news from this end of the meadow.',
+  'I have been standing here since the last bell, so take that as you like.',
 ];
 
 const QUESTIONS = [
@@ -143,6 +153,7 @@ const SIGNOFFS = [
   'Good honking to you.',
   'Watch the loose cobble by the fountain.',
   'Come and find me when the lamps are lit.',
+  'I will be here. I am always here.',
 ];
 
 const ASKS = [
@@ -152,26 +163,48 @@ const ASKS = [
   'Do me this favour and I will not forget it.',
 ];
 
+const THANKS = [
+  'That business you settled for me — I have not forgotten it.',
+  'You did me a good turn once. Ask me for one and it is yours.',
+  'Still in your debt, and glad of it.',
+];
+
 const OFFERABLE = QUESTS.filter((quest) => quest.id !== 'bank-heist');
 
-export function conversationFor({ key = 'a-goose', name = 'A goose', species = 'goose', questId = null } = {}) {
-  const seed = hashOf(key);
+// The favour a goose wants is fixed, so the marker over their head never lies.
+export function questFor({ key = '', questId = null } = {}) {
+  if (questId) return QUESTS.find((quest) => quest.id === questId) || null;
+  return pick(OFFERABLE, hashOf(key) >> 5) || null;
+}
+
+export function conversationFor({
+  key = 'a-goose',
+  name = 'A goose',
+  species = 'goose',
+  questId = null,
+  questDone = false,
+} = {}) {
+  // Chatter is rolled fresh each visit, so the same goose does not repeat itself word for word.
+  const seed = Math.floor(Math.random() * 100000);
   const beats = [];
 
   pick(OPENERS, seed).forEach((line) => beats.push({ text: line }));
 
-  // Not every goose has a question for you. Some simply want to be talked at.
+  // Some visits are questions, some are just talk, and some never get to the point at all.
   if (seed % 3 !== 0) {
-    const question = pick(QUESTIONS, seed >> 2);
+    beats.push({ text: pick(ASIDES, seed >> 4) });
+  }
+  if (seed % 5 < 3) {
+    const question = pick(QUESTIONS, seed >> 3);
     beats.push({ prompt: question.prompt, options: question.options });
-    beats.push({ text: pick(SIGNOFFS, seed >> 7) });
   }
 
-  const quest = questId
-    ? QUESTS.find((entry) => entry.id === questId) || null
-    : pick(OFFERABLE, seed >> 5);
+  beats.push({ text: pick(SIGNOFFS, seed >> 7) });
 
-  if (quest) {
+  const quest = questFor({ key, questId });
+  if (quest && questDone) {
+    beats.push({ text: pick(THANKS, seed >> 11) });
+  } else if (quest) {
     beats.push({ text: pick(ASKS, seed >> 9) });
     beats.push({ quest: quest.id });
   }

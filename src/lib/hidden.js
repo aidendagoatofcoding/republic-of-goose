@@ -15,6 +15,18 @@ export const HIDDEN = [
   { id: 'shard-7', kind: 'rock', x: 33, y: 74, name: 'Sift shard', glow: '#ff9ad5' },
   { id: 'shard-8', kind: 'tree', x: 17, y: 84, name: 'Sift shard', glow: '#ff9ad5' },
   { id: 'shard-9', kind: 'rock', x: 89, y: 84, name: 'Sift shard', glow: '#ff9ad5' },
+
+  // Most trunks and boulders out here hold nothing but damp leaves and a beetle.
+  { id: 'empty-1', kind: 'tree', x: 8, y: 30, name: 'A hollow trunk', empty: true },
+  { id: 'empty-2', kind: 'rock', x: 20, y: 12, name: 'A mossy boulder', empty: true },
+  { id: 'empty-3', kind: 'tree', x: 47, y: 18, name: 'An old pine', empty: true },
+  { id: 'empty-4', kind: 'rock', x: 74, y: 12, name: 'A cracked boulder', empty: true },
+  { id: 'empty-5', kind: 'tree', x: 93, y: 38, name: 'A leaning birch', empty: true },
+  { id: 'empty-6', kind: 'rock', x: 5, y: 48, name: 'A flat stone', empty: true },
+  { id: 'empty-7', kind: 'tree', x: 51, y: 50, name: 'A dead trunk', empty: true },
+  { id: 'empty-8', kind: 'rock', x: 96, y: 70, name: 'A grey boulder', empty: true },
+  { id: 'empty-9', kind: 'tree', x: 30, y: 94, name: 'A hedgerow tree', empty: true },
+  { id: 'empty-10', kind: 'rock', x: 59, y: 97, name: 'A sunken rock', empty: true },
 ];
 
 export const SIFT_SHARDS = [

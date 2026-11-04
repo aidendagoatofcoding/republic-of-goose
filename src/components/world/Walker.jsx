@@ -9,6 +9,7 @@ export default function Walker({
   y,
   face = 1,
   isMe = false,
+  hasQuest = false,
   bubble,
   speed = '2.4s',
   lift = 0,
@@ -30,6 +31,16 @@ export default function Walker({
       className="absolute z-30 flex -translate-x-1/2 -translate-y-full flex-col items-center focus:outline-none"
     >
       {bubble && <WorldBubble text={bubble} />}
+      {hasQuest && !bubble && (
+        <span
+          className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full"
+          title="Has a favour to ask"
+        >
+          <span className="meadow-bob block rounded-full border border-[#D4AF37] bg-[#0A0F0D]/95 px-1.5 py-0.5 font-display text-[13px] font-bold leading-none text-[#D4AF37] shadow-[0_2px_8px_rgba(0,0,0,0.75)]">
+            !
+          </span>
+        </span>
+      )}
       <span
         className="block"
         style={{ transform: face === -1 ? 'scaleX(-1)' : undefined }}

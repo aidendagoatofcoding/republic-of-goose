@@ -48,6 +48,9 @@ export default function QuestPanel({ placeId, questId }) {
         const wanted = (quest.finds ?? []).length;
         const caught = Math.min(quest.fish ?? 0, fish);
         const complete = paid || (found === wanted && caught === (quest.fish ?? 0));
+        const steps = found + caught;
+        const total = wanted + (quest.fish ?? 0);
+        const percent = paid ? 100 : total ? Math.round((steps / total) * 100) : 0;
         return (
           <div key={quest.id} className="rounded-sm border border-border/70 p-3">
             <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-primary">
@@ -55,6 +58,22 @@ export default function QuestPanel({ placeId, questId }) {
             </p>
             <h4 className="mt-1 font-display text-lg leading-tight">{quest.title}</h4>
             <p className="mt-1 text-[14px] leading-relaxed text-foreground/70">{quest.brief}</p>
+
+            <div className="mt-2">
+              <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                <span>Progress</span>
+                <span className={percent === 100 ? 'text-primary' : 'text-[#D4AF37]'}>{percent}%</span>
+              </div>
+              <span className="mt-1 block h-1.5 overflow-hidden rounded-full border border-border/70 bg-black/50">
+                <span
+                  className="block h-full transition-[width] duration-300"
+                  style={{
+                    width: `${percent}%`,
+                    background: percent === 100 ? 'hsl(var(--primary))' : '#D4AF37',
+                  }}
+                />
+              </span>
+            </div>
 
             <ul className="mt-2 space-y-1">
               {(quest.finds ?? []).map((id) => {

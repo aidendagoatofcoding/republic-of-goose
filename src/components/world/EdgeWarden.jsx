@@ -3,16 +3,20 @@ import Walker from '@/components/world/Walker';
 // The last lamp of the Republic, and the warden who keeps it at the far edge of the Commons.
 export const EDGE_WARDEN = { x: 96, y: 54 };
 
-export default function EdgeWarden({ near = false, onOpen }) {
+export default function EdgeWarden({ near = false, onOpen, hasQuest = true }) {
   return (
     <>
-      <span
-        style={{ left: `${EDGE_WARDEN.x}%`, top: `${EDGE_WARDEN.y - 6}%` }}
-        className="pointer-events-none absolute z-30 -translate-x-1/2 font-display text-2xl font-bold text-primary drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
-        aria-hidden="true"
-      >
-        !
-      </span>
+      {hasQuest && (
+        <span
+          style={{ left: `${EDGE_WARDEN.x}%`, top: `${EDGE_WARDEN.y - 8}%` }}
+          className="pointer-events-none absolute z-30 -translate-x-1/2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+          aria-hidden="true"
+        >
+          <span className="meadow-bob block rounded-full border border-[#D4AF37] bg-[#0A0F0D]/95 px-1.5 py-0.5 font-display text-[13px] font-bold leading-none text-[#D4AF37]">
+            !
+          </span>
+        </span>
+      )}
 
       <span
         style={{ left: `${EDGE_WARDEN.x + 2.4}%`, top: `${EDGE_WARDEN.y + 4}%` }}
