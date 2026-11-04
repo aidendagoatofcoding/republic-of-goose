@@ -17,7 +17,7 @@ import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
 import Roads from '@/components/world/Roads';
 import NeighbourHouses from '@/components/world/NeighbourHouses';
-import { nearestRoad, pointOnRoad, spotOnRoadNear } from '@/lib/roads';
+import { spotOnRoadNear } from '@/lib/roads';
 import SportVenue from '@/components/world/SportVenue';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
 import PetPanel from '@/components/world/PetPanel';
@@ -26,7 +26,7 @@ import CivicBuilding from '@/components/world/areas/CivicBuilding';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
 import { placeFor } from '@/lib/places';
 import RealmScene from '@/components/world/RealmScene';
-import { REALMS } from '@/lib/realms';
+import { REALMS, realmFor } from '@/lib/realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 import SpawnCircle from '@/components/world/SpawnCircle';
@@ -35,6 +35,11 @@ import GameStage from '@/components/world/GameStage';
 import CommonsChat from '@/components/world/CommonsChat';
 import { SPAWN, PORTAL_RING_RADIUS } from '@/lib/spawn';
 import { FINDS } from '@/lib/quests';
+import { HIDDEN } from '@/lib/hidden';
+import { dialogueFor } from '@/lib/dialogues';
+import HiddenSpot from '@/components/world/HiddenSpot';
+import NpcDialog from '@/components/world/NpcDialog';
+import InventoryBar from '@/components/world/InventoryBar';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
 
@@ -137,6 +142,26 @@ export default function WorldScene({
   const myKey = seat ? `seat:${seat}` : 'me';
 
   const [talk, setTalk] = useState(null);
+  const [revealed, setRevealed] = useState([]);
+
+  // First search uncovers what is under the stone or in the trunk; the second picks it up.
+  const searchSpot = useCallback(
+    (spot) => {
+      if (!spot) return;
+      if (!run) {
+        say(myKey, 'Only citizens of the Republic may search out here.');
+        return;
+      }
+      if (!revealed.includes(spot.id)) {
+        setRevealed((current) => [...current, spot.id]);
+        say(myKey, `Something glints under the ${spot.kind === 'rock' ? 'boulder' : 'roots'}.`);
+        return;
+      }
+      run({ action: 'collectFind', find_id: spot.id }).catch(() => {});
+      say(myKey, `You take the ${spot.name.toLowerCase()}.`);
+    },
+    [run, say, myKey, revealed]
+  );
   const [offerTarget, setOfferTarget] = useState(null);
   const [offerAmount, setOfferAmount] = useState('');
   const [offerBusy, setOfferBusy] = useState(false);
@@ -288,16 +313,17 @@ export default function WorldScene({
       else if (target.kind === 'find') {
         run?.({ action: 'collectFind', find_id: target.id }).catch(() => {});
         say(myKey, 'Picked that up.');
+      } else if (target.kind === 'hidden') {
+        searchSpot(target.spot);
       } else if (target.kind === 'npc') {
-        const line = pick(NPC_LINES);
-        say(target.id, line);
-        setTalk({ ...target.talk, line });
+        say(target.id, pick(NPC_LINES));
+        setTalk(target.talk);
       }
       else setInside(target.place);
     };
     window.addEventListener('keydown', onEnter);
     return () => window.removeEventListener('keydown', onEnter);
-  }, [say, run, myKey]);
+  }, [say, run, myKey, searchSpot]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -307,11 +333,14 @@ export default function WorldScene({
           if (resident.is_me) return;
           const home = resident.spots.find((spot) => spot.category === 'home');
           const base = home || { x: 24 + ((index * 19) % 56), y: 46 + ((index * 13) % 32) };
-          const street = nearestRoad(base);
-          if (Math.random() < 0.55 && street) {
-            const t = Math.min(0.97, Math.max(0.03, street.t + (Math.random() - 0.5) * 0.12));
-            const spot = pointOnRoad(street.road, t);
-            next[resident.key] = { x: spot.x, y: spot.y, face: Math.random() > 0.5 ? 1 : -1 };
+          // Small, unhurried steps around their own door — no teleporting across the meadow.
+          const from = current[resident.key] || base;
+          if (Math.random() < 0.5) {
+            next[resident.key] = {
+              x: clamp(from.x + (Math.random() - 0.5) * 5, 6, 94),
+              y: clamp(from.y + (Math.random() - 0.5) * 4, 18, 92),
+              face: Math.random() > 0.5 ? 1 : -1,
+            };
           }
           resident.spots
             .filter((spot) => spot.category === 'pet')
@@ -450,7 +479,13 @@ export default function WorldScene({
     const py = (SPAWN.y / 100) * box.offsetHeight + Math.sin(rad) * PORTAL_RING_RADIUS;
     const mx = (me.x / 100) * box.offsetWidth;
     const my = (me.y / 100) * box.offsetHeight;
-    return Math.hypot(mx - px, my - py) <= REACH_PX * 0.8;
+    // A portal only answers when you are standing on it.
+    return Math.hypot(mx - px, my - py) <= 46;
+  });
+
+  const nearHidden = HIDDEN.filter((spot) => !collected.includes(spot.id)).find((spot) => {
+    const distance = distanceTo(spot, me);
+    return distance !== null && distance <= 132;
   });
 
   const collected = profile?.finds ?? [];
@@ -482,7 +517,16 @@ export default function WorldScene({
     ? { kind: 'sport', id: nearVenue.id, name: `Enter the ${nearVenue.name}` }
     : nearPortal
       ? { kind: 'realm', id: nearPortal.id, name: `Enter ${nearPortal.name}` }
-      : nearFind
+      : nearHidden
+        ? {
+          kind: 'hidden',
+          id: nearHidden.id,
+          spot: nearHidden,
+          name: revealed.includes(nearHidden.id)
+            ? `Take ${nearHidden.name}`
+            : `Search the ${nearHidden.kind === 'rock' ? 'boulder' : 'tree'}`,
+        }
+        : nearFind
         ? { kind: 'find', id: nearFind.id, name: `Pick up ${nearFind.name}` }
         : nearNeighbour
         ? {
@@ -491,7 +535,13 @@ export default function WorldScene({
           name: `Talk to ${String(nearNeighbour.resident.name).split(' ')[0]}`,
           talk: {
             name: nearNeighbour.resident.name,
-            species: nearNeighbour.resident.species,
+            dialogue: dialogueFor(
+              nearNeighbour.resident.key.length % 3 === 0
+                ? 'worker'
+                : nearNeighbour.resident.key.length % 3 === 1
+                  ? 'witch'
+                  : 'gossip'
+            ),
           },
         }
         : null;
