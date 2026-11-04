@@ -137,6 +137,18 @@ export default async function (req) {
       return Response.json({ ok: true, citizens: page?.items ?? [] });
     }
 
+    if (action === 'adjustBread') {
+      const amount = Math.round(Number(body.amount));
+      if (!body.id || !Number.isFinite(amount) || amount === 0) {
+        return Response.json({ error: 'Citizen and a bread amount are required.' }, { status: 400 });
+      }
+      const citizen = await admin.entities.Citizen.get(body.id);
+      if (!citizen) return Response.json({ error: 'Citizen not found.' }, { status: 404 });
+      const next = Math.max(0, Math.round(Number(citizen.bread || 0) + amount));
+      await admin.entities.Citizen.update(body.id, { bread: next });
+      return Response.json({ ok: true, bread: next });
+    }
+
     if (action === 'deleteCitizen') {
       if (!body.id) {
         return Response.json({ error: 'Citizen id required.' }, { status: 400 });
