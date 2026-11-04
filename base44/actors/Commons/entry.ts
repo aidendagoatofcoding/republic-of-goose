@@ -120,6 +120,13 @@ export default class Commons extends Actor {
       return;
     }
 
+    if (msg.type === 'arena_revive') {
+      const to = Number(msg.to);
+      if (!Number.isFinite(to) || to === user.seat) return;
+      this.broadcast({ type: 'arena_revive', from: user.seat, to, name: user.name });
+      return;
+    }
+
     if (PONG_TYPES.has(msg.type)) {
       const num = (key) => {
         const value = Number(msg[key]);

@@ -29,6 +29,7 @@ export default function ArenaHud({
   onParry,
   onDodge,
   onBlock,
+  onHelp,
 }) {
   const blade = swordFor(tier);
   const progress = levelProgress(xp);
@@ -118,8 +119,15 @@ export default function ArenaHud({
             >
               Raise guard <span className="text-[#c2ff85]">[Shift]</span>
             </button>
+            <button
+              type="button"
+              onClick={onHelp}
+              className="rounded-sm border border-[#c2ff85]/50 bg-black/55 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-[#c2ff85] active:bg-[#c2ff85]/20"
+            >
+              Help a fallen goose <span className="text-[#f6ecc9]">[R]</span>
+            </button>
             <span className="ml-auto font-mono text-[8px] uppercase tracking-[0.14em] text-[#e8d9b0]/50">
-              WASD to move
+              WASD to move · R to help
             </span>
           </div>
         </div>
@@ -131,6 +139,9 @@ export default function ArenaHud({
           <p className="text-[14px] text-[#e8d9b0]/80">
             {kills} duck{kills === 1 ? '' : 's'} and {duels} duel{duels === 1 ? '' : 's'} before the line
             took you.
+          </p>
+          <p className="max-w-sm text-[13px] text-[#c2ff85]/80">
+            Hold on — a comrade nearby can drag you back onto your feet.
           </p>
           <button
             type="button"

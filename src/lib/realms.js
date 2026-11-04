@@ -1,6 +1,18 @@
 // The realms beyond the Commons portals. Each is its own city scene with buildings you walk into.
-// Every portal stands on a tight ring around the Commons spawn circle.
-export const REALMS = [
+import { SPAWN } from '@/lib/spawn';
+
+// Every realm portal closes in on the fountain: a tight ring just outside the cobbles.
+const PORTAL_RING = { rx: 5.6, ry: 15.5 };
+
+const ringSpot = (index, total) => {
+  const angle = ((-90 + (360 / total) * index) * Math.PI) / 180;
+  return {
+    x: Number((SPAWN.x + Math.cos(angle) * PORTAL_RING.rx).toFixed(2)),
+    y: Number((SPAWN.y + Math.sin(angle) * PORTAL_RING.ry).toFixed(2)),
+  };
+};
+
+const REALM_DATA = [
   {
     id: 'capital',
     name: 'The Capital of Honkton',
@@ -139,7 +151,12 @@ export const REALMS = [
       { emoji: '✨', x: 58, y: 70, size: 12 },
     ],
     buildings: [
-      { id: 'glade', name: "Forester's Glade", variant: 'cottage', x: 50, y: 54, place: 'forest' },
+      { id: 'witch', name: "The Witch's House", variant: 'cottage', x: 22, y: 56, place: 'witch' },
+      { id: 'glade', name: "Forester's Glade", variant: 'cottage', x: 50, y: 50, place: 'forest' },
+      { id: 'inn', name: 'The Hollow Oak Inn', variant: 'cottage', x: 78, y: 56, place: 'inn' },
+      { id: 'tower', name: 'The Owl Tower', variant: 'tower', x: 24, y: 76, place: 'owl-tower' },
+      { id: 'shrine', name: 'Moss Shrine', variant: 'temple', x: 52, y: 78, place: 'shrine' },
+      { id: 'den', name: 'The Brushwood Den', variant: 'cottage', x: 80, y: 78, place: 'den' },
     ],
   },
   {
@@ -165,7 +182,32 @@ export const REALMS = [
     ],
     buildings: [],
   },
+  {
+    id: 'duelling',
+    name: 'The Duelling Ring',
+    plazaName: 'Duelling Ring',
+    portalLabel: 'Duelling Ring',
+    glyph: '🤺',
+    honkish: 'HONK! HONK! HOOONKK!',
+    blurb: 'A ring of packed earth where geese settle arguments blade to blade, side by side.',
+    accent: '#ff8a6b',
+    portal: { x: 50, y: 68 },
+    plaza: { x: 50, y: 68, rx: 6, ry: 3.5 },
+    scenery: [
+      { emoji: '🔥', x: 16, y: 64, size: 24 },
+      { emoji: '🔥', x: 84, y: 64, size: 24 },
+      { emoji: '🪶', x: 30, y: 84, size: 16 },
+      { emoji: '🪶', x: 70, y: 84, size: 16 },
+    ],
+    buildings: [],
+  },
 ];
+
+// The portals themselves are laid out on the ring, not where each realm's own objects sit.
+export const REALMS = REALM_DATA.map((realm, index) => ({
+  ...realm,
+  portal: ringSpot(index, REALM_DATA.length),
+}));
 
 export const REALM_BY_ID = Object.fromEntries(REALMS.map((realm) => [realm.id, realm]));
 export const realmFor = (id) => REALM_BY_ID[id] || null;

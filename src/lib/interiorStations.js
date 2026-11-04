@@ -34,6 +34,11 @@ export const STATIONS = {
   herald: [
     { id: 'editor', name: 'The editor', x: 38, y: 86, content: 'herald' },
   ],
+  witch: [{ id: 'brew', name: 'The brewing pot', x: 46, y: 62, content: 'witch-brew' }],
+  inn: [{ id: 'bar', name: 'The inn bar', x: 74, y: 74, content: 'inn-bar' }],
+  'owl-tower': [{ id: 'watch', name: 'The watch desk', x: 50, y: 74, content: 'owl-watch' }],
+  shrine: [{ id: 'stone', name: 'The mossy stone', x: 50, y: 62, content: 'shrine-stone' }],
+  den: [{ id: 'table', name: 'The card table', x: 72, y: 68, content: 'den-table' }],
   bakery: [
     {
       id: 'oven',

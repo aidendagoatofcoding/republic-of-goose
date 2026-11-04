@@ -64,6 +64,38 @@ export const SWORDS = [
     tint: '#ffffff',
     blurb: 'The last edge the smith will ever hammer. It ends arguments.',
   },
+  {
+    name: 'Obsidian Talon',
+    cost: 6800,
+    power: 3.6,
+    emoji: '🖤',
+    tint: '#8a7fb0',
+    blurb: 'Hammered from marsh glass. It drinks the light and gives nothing back.',
+  },
+  {
+    name: 'Frostfeather Glaive',
+    cost: 8800,
+    power: 4,
+    emoji: '❄️',
+    tint: '#bfe9ff',
+    blurb: 'Quenched in the glacier melt. Ducks steam when it touches them.',
+  },
+  {
+    name: 'Emberhonk Cleaver',
+    cost: 11500,
+    power: 4.5,
+    emoji: '🔥',
+    tint: '#ffb347',
+    blurb: 'Forged in the bakery ovens, which is why the crust never tastes quite the same.',
+  },
+  {
+    name: 'The First Honk',
+    cost: 15000,
+    power: 5,
+    emoji: '👑',
+    tint: '#ffe9a8',
+    blurb: 'The blade carried out of the first egg. The Republic has never needed it twice.',
+  },
 ];
 
 const clampTier = (tier) => {

@@ -132,6 +132,61 @@ export default async function (req) {
       return Response.json({ ok: true });
     }
 
+    if (action === 'saveNews') {
+      const story = body.story || {};
+      const headline = String(story.headline ?? '').trim().slice(0, 200);
+      const standfirst = String(story.standfirst ?? '').trim().slice(0, 400);
+      const category = String(story.category ?? '').trim().slice(0, 60) || 'National';
+      const byline = String(story.byline ?? '').trim().slice(0, 80) || 'By THE HONK HERALD';
+      const lines = Array.isArray(story.body) ? story.body : String(story.body ?? '').split('\n\n');
+      const paragraphs = lines
+        .map((line) => String(line).trim())
+        .filter(Boolean)
+        .slice(0, 20);
+
+      if (!headline || !standfirst) {
+        return Response.json(
+          { error: 'A story needs a headline and a standfirst.' },
+          { status: 400 }
+        );
+      }
+
+      const fields = {
+        headline,
+        standfirst,
+        category,
+        byline,
+        body: paragraphs,
+        date: new Date().toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }),
+      };
+
+      if (story.id) {
+        const existing = await admin.entities.NewsStory
+          .get(story.id)
+          .catch((e) => (e.status === 404 ? null : Promise.reject(e)));
+        if (!existing) {
+          return Response.json({ error: 'That story is no longer in the archive.' }, { status: 404 });
+        }
+        const updated = await admin.entities.NewsStory.update(story.id, fields);
+        return Response.json({ ok: true, story: updated });
+      }
+
+      const created = await admin.entities.NewsStory.create(fields);
+      return Response.json({ ok: true, story: created });
+    }
+
+    if (action === 'deleteNews') {
+      if (!body.id) {
+        return Response.json({ error: 'Story id required.' }, { status: 400 });
+      }
+      await admin.entities.NewsStory.delete(body.id);
+      return Response.json({ ok: true });
+    }
+
     if (action === 'listCitizens') {
       const page = await admin.entities.Citizen.list({ sort: '-created_date', limit: 300 });
       return Response.json({ ok: true, citizens: page?.items ?? [] });

@@ -11,6 +11,8 @@ export const ARENA = {
   maxAlive: 7,
   spawnMs: 1500,
   strikeRange: 18,
+  reviveRange: 24,
+  reviveHp: 55,
 };
 
 export const ARENA_ATTACKS = {

@@ -1,8 +1,37 @@
+import { useEffect, useState } from 'react';
 import Panel from '@/components/Panel';
+import { base44 } from '@/api/base44Client';
 import { ARTICLES } from '@/lib/news';
 
+const asArticle = (story) => ({
+  id: story.id,
+  category: story.category || 'National',
+  headline: story.headline,
+  standfirst: story.standfirst,
+  byline: story.byline || 'By THE HONK HERALD',
+  date: story.date || '',
+  body: Array.isArray(story.body) ? story.body : [],
+});
+
 export default function News() {
-  const [lead, ...rest] = ARTICLES;
+  const [filed, setFiled] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    base44.entities.NewsStory
+      .list({ sort: '-created_date', limit: 30 })
+      .then((page) => {
+        if (alive) setFiled((page?.items ?? []).map(asArticle));
+      })
+      .catch(() => {
+        /* the printed edition still stands */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const [lead, ...rest] = [...filed, ...ARTICLES];
 
   return (
     <div className="mx-auto max-w-6xl space-y-4">

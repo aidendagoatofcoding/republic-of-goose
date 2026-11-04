@@ -1,0 +1,55 @@
+{
+  "name": "NewsStory",
+  "type": "object",
+  "properties": {
+    "headline": {
+      "type": "string",
+      "description": "Headline of the story as it appears in the Goose Gazette"
+    },
+    "category": {
+      "type": "string",
+      "description": "Desk the story belongs to, e.g. Front Page, Economy, Politics, Society"
+    },
+    "standfirst": {
+      "type": "string",
+      "description": "One-sentence summary printed under the headline"
+    },
+    "body": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Paragraphs of the story, in order"
+    },
+    "byline": {
+      "type": "string",
+      "description": "Reporter credited with the story"
+    },
+    "date": {
+      "type": "string",
+      "description": "Date the story was filed, as printed in the paper"
+    }
+  },
+  "required": [
+    "headline",
+    "standfirst"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

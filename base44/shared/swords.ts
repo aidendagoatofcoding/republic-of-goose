@@ -9,6 +9,10 @@ export const SWORDS = [
   { name: 'Stormbeak Sabre', cost: 2600, power: 2.5 },
   { name: 'Crested Warblade', cost: 3600, power: 2.85 },
   { name: 'Dawnpiercer, Blade of the Republic', cost: 5000, power: 3.2 },
+  { name: 'Obsidian Talon', cost: 6800, power: 3.6 },
+  { name: 'Frostfeather Glaive', cost: 8800, power: 4 },
+  { name: 'Emberhonk Cleaver', cost: 11500, power: 4.5 },
+  { name: 'The First Honk', cost: 15000, power: 5 },
 ];
 
 export const XP_PER_LEVEL = 120;

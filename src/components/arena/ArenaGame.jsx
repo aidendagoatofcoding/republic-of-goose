@@ -53,6 +53,13 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
     if (player.hp <= 0) {
       phaseRef.current = 'down';
       setStatus({ phase: 'down', kills: killsRef.current, duels: duelsRef.current });
+      busRef.current?.send?.({
+        type: 'arena_pos',
+        x: player.x,
+        y: player.y,
+        hp: 0,
+        down: true,
+      });
     }
   }, []);
 
@@ -132,6 +139,27 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
     player.dashUntil = now + ARENA.dashMs;
     player.dashX = player.aimX;
     player.dashY = player.aimY;
+  }, []);
+
+  // Pull a comrade back onto their feet. Helping counts as a duel won in the Republic's books.
+  const revive = useCallback(() => {
+    const player = playerRef.current;
+    if (!player || phaseRef.current !== 'fight') return;
+    const room = busRef.current;
+    const now = performance.now();
+    let helped = 0;
+    remotesRef.current.forEach((remote, key) => {
+      if (!remote.down) return;
+      const dist = Math.hypot(remote.x - player.x, (remote.y - player.y) * 0.62);
+      if (dist > ARENA.reviveRange) return;
+      room?.send?.({ type: 'arena_revive', to: key });
+      effectsRef.current.push({ id: nextId(), x: remote.x, y: remote.y, kind: 'parry', until: now + 420 });
+      helped += 1;
+    });
+    if (helped > 0) {
+      duelsRef.current += helped;
+      setStatus((current) => ({ ...current, duels: duelsRef.current }));
+    }
   }, []);
 
   const restart = useCallback(() => {
@@ -265,6 +293,10 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
         parry();
         return;
       }
+      if (key === 'r') {
+        revive();
+        return;
+      }
       if (key === ' ') {
         event.preventDefault();
         dodge();
@@ -298,7 +330,7 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
       window.removeEventListener('keyup', onUp);
       window.removeEventListener('blur', clear);
     };
-  }, [attack, parry, dodge]);
+  }, [attack, parry, dodge, revive]);
 
   // Blows from other fighters land here.
   useEffect(() => {
@@ -320,8 +352,17 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
           x: msg.x,
           y: msg.y,
           hp: msg.hp,
+          down: Boolean(msg.down),
           at: performance.now(),
         });
+      } else if (msg.type === 'arena_revive' && msg.to === bus.seat) {
+        const player = playerRef.current;
+        if (player && phaseRef.current === 'down') {
+          player.hp = ARENA.reviveHp;
+          phaseRef.current = 'fight';
+          setStatus((current) => ({ ...current, phase: 'fight' }));
+          busRef.current?.send?.({ type: 'arena_pos', x: player.x, y: player.y, hp: player.hp });
+        }
       } else if (msg.type === 'arena_leave') {
         remotesRef.current.delete(msg.from);
       }
@@ -366,6 +407,7 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
         onAttack={attack}
         onParry={parry}
         onDodge={dodge}
+        onHelp={revive}
         onBlock={() => {
           const player = playerRef.current;
           player.block = !player.block;

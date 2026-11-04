@@ -71,9 +71,9 @@ export default function Market() {
             </div>
             <h2 className="display-title mt-3 text-3xl md:text-4xl">The Goose Stock Market</h2>
             <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-foreground/75">
-              {market ? market.stocks.filter((stock) => stock.kind !== 'crypto').length : 'Eighteen'} goose
+              {market ? market.stocks.filter((stock) => stock.kind !== 'crypto').length : 'Twenty-seven'} goose
               listings and{' '}
-              {market ? market.stocks.filter((stock) => stock.kind === 'crypto').length : 'six'} coins.
+              {market ? market.stocks.filter((stock) => stock.kind === 'crypto').length : 'twelve'} coins.
               Prices move once a minute for every citizen at the same time, so what you see is what
               the whole Republic sees.
             </p>

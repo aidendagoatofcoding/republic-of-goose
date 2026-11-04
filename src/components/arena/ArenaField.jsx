@@ -55,13 +55,19 @@ export default function ArenaField({ player, ducks, remotes, effects, tier }) {
           style={{ left: `${remote.x}%`, top: `${remote.y}%` }}
           className="absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center"
         >
-          <span className="block text-3xl drop-shadow-[0_6px_8px_rgba(0,0,0,0.7)]" aria-hidden="true">
-            🦢
+          <span
+            className={`block text-3xl drop-shadow-[0_6px_8px_rgba(0,0,0,0.7)] ${
+              remote.down ? 'opacity-50 grayscale' : ''
+            }`}
+            aria-hidden="true"
+          >
+            {remote.down ? '🪶' : '🦢'}
           </span>
           <span className="mt-0.5 block whitespace-nowrap font-mono text-[8px] uppercase tracking-[0.12em] text-[#ffb9a5]">
             {String(remote.name || 'A goose').split(' ')[0]}
+            {remote.down ? ' · down' : ''}
           </span>
-          <Health value={remote.hp ?? 100} tint="#e0664a" />
+          <Health value={remote.down ? 0 : remote.hp ?? 100} tint="#e0664a" />
         </div>
       ))}
 

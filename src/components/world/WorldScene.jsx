@@ -857,7 +857,7 @@ export default function WorldScene({
         />
       )}
 
-      {realm === 'warzone' ? (
+      {realm === 'warzone' || realm === 'duelling' ? (
         <WarzoneBattle bus={arenaBus} onExit={() => setRealm('')} />
       ) : realm ? (
         <RealmScene
