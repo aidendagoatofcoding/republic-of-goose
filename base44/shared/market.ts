@@ -1,23 +1,35 @@
-// The national goose stock market.
+// The national goose stock market and the Honkton coin exchange.
 // Prices are derived from the current minute, so every visitor in the Republic
-// sees the same price for the same stock at the same time, with no scheduled job.
+// sees the same price for the same listing at the same time, with no scheduled job.
 
 export const TICK_MS = 60 * 1000;
 const WALK_LENGTH = 24;
 
 export const MARKET = [
-  { symbol: 'BRD', name: 'Bread Holdings', base: 120, vol: 0.05 },
-  { symbol: 'HONK', name: 'Honkish Telecom', base: 88, vol: 0.07 },
-  { symbol: 'FTHR', name: 'Feather & Wing', base: 46, vol: 0.1 },
-  { symbol: 'POND', name: 'Pond Realty', base: 210, vol: 0.04 },
-  { symbol: 'DUCK', name: 'Duck Defence Systems', base: 34, vol: 0.14 },
-  { symbol: 'MIGR', name: 'Migration Airways', base: 158, vol: 0.06 },
-  { symbol: 'NEST', name: 'Nest & Twig Co.', base: 72, vol: 0.09 },
-  { symbol: 'MOSS', name: 'Moss & Marsh Fertiliser', base: 58, vol: 0.07 },
-  { symbol: 'GULL', name: 'Gull Shipping Lines', base: 96, vol: 0.09 },
-  { symbol: 'SYLP', name: 'Sylph Pharmaceuticals', base: 142, vol: 0.06 },
-  { symbol: 'REED', name: 'Reed & Rush Paper', base: 43, vol: 0.12 },
-  { symbol: 'COMB', name: 'Comb Capital', base: 176, vol: 0.05 },
+  { symbol: 'BRD', name: 'Bread Holdings', base: 120, vol: 0.05, kind: 'stock' },
+  { symbol: 'HONK', name: 'Honkish Telecom', base: 88, vol: 0.07, kind: 'stock' },
+  { symbol: 'FTHR', name: 'Feather & Wing', base: 46, vol: 0.1, kind: 'stock' },
+  { symbol: 'POND', name: 'Pond Realty', base: 210, vol: 0.04, kind: 'stock' },
+  { symbol: 'DUCK', name: 'Duck Defence Systems', base: 34, vol: 0.14, kind: 'stock' },
+  { symbol: 'MIGR', name: 'Migration Airways', base: 158, vol: 0.06, kind: 'stock' },
+  { symbol: 'NEST', name: 'Nest & Twig Co.', base: 72, vol: 0.09, kind: 'stock' },
+  { symbol: 'MOSS', name: 'Moss & Marsh Fertiliser', base: 58, vol: 0.07, kind: 'stock' },
+  { symbol: 'GULL', name: 'Gull Shipping Lines', base: 96, vol: 0.09, kind: 'stock' },
+  { symbol: 'SYLP', name: 'Sylph Pharmaceuticals', base: 142, vol: 0.06, kind: 'stock' },
+  { symbol: 'REED', name: 'Reed & Rush Paper', base: 43, vol: 0.12, kind: 'stock' },
+  { symbol: 'COMB', name: 'Comb Capital', base: 176, vol: 0.05, kind: 'stock' },
+  { symbol: 'SAGE', name: 'Sage & Sons Herbalists', base: 64, vol: 0.08, kind: 'stock' },
+  { symbol: 'PLUM', name: 'Plume & Quill Publishing', base: 51, vol: 0.11, kind: 'stock' },
+  { symbol: 'TIDE', name: 'Tidewater Ferries', base: 132, vol: 0.07, kind: 'stock' },
+  { symbol: 'ARCT', name: 'Arctic Wool Mills', base: 79, vol: 0.06, kind: 'stock' },
+  { symbol: 'HONE', name: 'Honeybrook Apiaries', base: 112, vol: 0.08, kind: 'stock' },
+  { symbol: 'BLDR', name: 'Boulder Quarry Works', base: 92, vol: 0.1, kind: 'stock' },
+  { symbol: 'HONKC', name: 'Honkcoin', base: 9, vol: 0.22, kind: 'crypto' },
+  { symbol: 'BEAK', name: 'Beak Token', base: 4, vol: 0.28, kind: 'crypto' },
+  { symbol: 'EGG', name: 'Golden Egg', base: 26, vol: 0.2, kind: 'crypto' },
+  { symbol: 'WING', name: 'Wingcoin', base: 14, vol: 0.25, kind: 'crypto' },
+  { symbol: 'NSTC', name: 'Nestcoin', base: 6, vol: 0.3, kind: 'crypto' },
+  { symbol: 'MGLT', name: 'Moonlight', base: 38, vol: 0.24, kind: 'crypto' },
 ];
 
 function hashString(value) {
@@ -70,6 +82,7 @@ export function marketSnapshot(now = Date.now()) {
       return {
         symbol: stock.symbol,
         name: stock.name,
+        kind: stock.kind,
         price,
         change: price - previous,
         changePct: previous ? ((price - previous) / previous) * 100 : 0,

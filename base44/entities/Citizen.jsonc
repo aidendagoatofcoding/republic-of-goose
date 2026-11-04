@@ -66,6 +66,14 @@
       "type": "number",
       "description": "Total bread earned through work, baking and chat, used to unlock better jobs"
     },
+    "xp": {
+      "type": "number",
+      "description": "Lifetime experience earned in the arena and at the Champion Isle games"
+    },
+    "sword_tier": {
+      "type": "number",
+      "description": "Which blade the citizen carries: 0 rusty through 4 Honkbringer"
+    },
     "decorations": {
       "type": "array",
       "items": {

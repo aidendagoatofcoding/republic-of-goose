@@ -19,7 +19,6 @@ export default function Realms({ onEnter, activeId = '' }) {
             className="absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center"
           >
             <span className="relative mx-auto flex h-16 w-16 items-center justify-center">
-              <span className="portal-ring absolute inset-0 rounded-full" aria-hidden="true" />
               <span
                 className={`relative flex h-11 w-11 items-center justify-center rounded-full border text-xl ${
                   active

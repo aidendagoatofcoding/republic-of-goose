@@ -12,7 +12,7 @@ import ShopShelf from '@/components/shop/ShopShelf';
 import KitchenStation from '@/components/world/interiors/KitchenStation';
 import Citizenship from '@/pages/Citizenship';
 import Grammar from '@/pages/Grammar';
-import WarzoneStation from '@/components/world/interiors/WarzoneStation';
+import WarzoneArena from '@/components/world/interiors/WarzoneArena';
 
 const ShopCatalogue = () => <ShopShelf category="all" />;
 
@@ -29,10 +29,10 @@ const CONTENT = {
   bakery: Games,
   registry: Citizenship,
   grammar: Grammar,
-  warzone: WarzoneStation,
+  warzone: WarzoneArena,
 };
 
-export default function StationContent({ station, place, onEnterPlace, onExit, onPlay }) {
+export default function StationContent({ station, place, onEnterPlace, onExit, onPlay, arenaBus }) {
   if (station.content === 'capital') {
     return <CapitalDoors onEnter={onEnterPlace} onExit={onExit} />;
   }
@@ -46,5 +46,5 @@ export default function StationContent({ station, place, onEnterPlace, onExit, o
   if (!Piece) {
     return <p className="text-[15px] leading-relaxed text-foreground/75">{place.blurb}</p>;
   }
-  return <Piece />;
+  return <Piece arenaBus={arenaBus} />;
 }

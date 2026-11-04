@@ -1,27 +1,39 @@
 import { SPAWN } from '@/lib/spawn';
 
-// The circle every goose arrives on, with the realm portals ringing it.
+// The cobbled circle every goose arrives on, ringed by the realm portals.
 export default function SpawnCircle() {
   return (
     <div
       style={{ left: `${SPAWN.x}%`, top: `${SPAWN.y}%` }}
       className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"
     >
-      <div className="relative flex h-[220px] w-[220px] items-center justify-center sm:h-[300px] sm:w-[300px]">
-        <span
-          className="absolute inset-0 rounded-full border-2 border-dashed border-primary/40"
-          aria-hidden="true"
-        />
-        <span
-          className="absolute inset-6 rounded-full border border-primary/20 bg-primary/[0.04]"
-          aria-hidden="true"
-        />
-        <span className="absolute inset-[26%] rounded-full border border-primary/30" aria-hidden="true" />
-        <span className="relative text-center">
-          <span className="block font-mono text-[8px] uppercase tracking-[0.28em] text-primary/80">
+      <div className="relative flex h-[240px] w-[240px] items-center justify-center sm:h-[320px] sm:w-[320px]">
+        <svg viewBox="0 0 200 200" className="absolute inset-0 h-full w-full" aria-hidden="true">
+          <defs>
+            <clipPath id="spawn-cobble-clip">
+              <circle cx="100" cy="100" r="96" />
+            </clipPath>
+            <pattern id="spawn-cobble" width="24" height="21" patternUnits="userSpaceOnUse">
+              <rect width="24" height="21" fill="#1b231d" />
+              <rect x="1" y="1" width="10" height="8.5" rx="2.8" fill="#3d4839" />
+              <rect x="13" y="1" width="10" height="8.5" rx="2.8" fill="#333d32" />
+              <rect x="1" y="11.5" width="10" height="8.5" rx="2.8" fill="#313b30" />
+              <rect x="13" y="11.5" width="10" height="8.5" rx="2.8" fill="#3a4537" />
+            </pattern>
+          </defs>
+          <g clipPath="url(#spawn-cobble-clip)">
+            <circle cx="100" cy="100" r="96" fill="url(#spawn-cobble)" />
+            <circle cx="100" cy="100" r="96" fill="none" stroke="#77866d" strokeWidth="3.5" />
+            <circle cx="100" cy="100" r="72" fill="none" stroke="#5c6a53" strokeWidth="1.4" opacity="0.8" />
+            <circle cx="100" cy="100" r="34" fill="#2a3327" stroke="#84937a" strokeWidth="2" />
+          </g>
+          <circle cx="100" cy="100" r="96" fill="none" stroke="#070b08" strokeWidth="6" opacity="0.55" />
+        </svg>
+        <span className="relative z-10 text-center">
+          <span className="block font-mono text-[8px] uppercase tracking-[0.24em] text-primary/80">
             You arrive here
           </span>
-          <span className="mt-1 block font-display text-base text-primary/90 sm:text-xl">
+          <span className="mt-1 block font-display text-sm leading-tight text-primary/90 sm:text-lg">
             The Spawn Circle
           </span>
         </span>

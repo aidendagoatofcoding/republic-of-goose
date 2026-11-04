@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import HouseSprite from '@/components/world/HouseSprite';
 import MeadowGround from '@/components/world/MeadowGround';
 import Places from '@/components/world/Places';
@@ -31,6 +31,8 @@ import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 import SpawnCircle from '@/components/world/SpawnCircle';
 import HomeInterior from '@/components/world/interiors/HomeInterior';
+import GameStage from '@/components/world/GameStage';
+import CommonsChat from '@/components/world/CommonsChat';
 import { SPAWN } from '@/lib/spawn';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
@@ -101,11 +103,29 @@ export default function WorldScene({
   );
 
   const pongHandler = useRef(null);
+  const arenaListeners = useRef(new Set());
+  const handleArena = useCallback((msg) => {
+    arenaListeners.current.forEach((listener) => listener(msg));
+  }, []);
   const { people, seat, connected, move, honk, send: sendRoom } = useCommonsRoom({
     profile,
     onHonk: handleHonk,
     onPong: (msg) => pongHandler.current?.(msg),
+    onArena: handleArena,
   });
+
+  const arenaBus = useMemo(
+    () => ({
+      seat,
+      people,
+      send: sendRoom,
+      subscribe: (listener) => {
+        arenaListeners.current.add(listener);
+        return () => arenaListeners.current.delete(listener);
+      },
+    }),
+    [seat, people, sendRoom]
+  );
   const pong = usePong({ seat, send: sendRoom });
   pongHandler.current = pong.handlePong;
   const [sport, setSport] = useState('');
@@ -552,10 +572,15 @@ export default function WorldScene({
                 } ${reachable ? 'rounded-md bg-primary/10 ring-1 ring-primary/40' : ''}`}
               >
                 {bubble && <WorldBubble text={bubble} />}
-                <HouseSprite
-                  name={spot.name}
-                  className="w-[68px] drop-shadow-[0_8px_10px_rgba(0,0,0,0.45)] sm:w-[84px]"
-                />
+                <span
+                  className="block"
+                  style={{ width: `${68 + Math.min(54, Math.round((spot.price ?? 0) / 9))}px` }}
+                >
+                  <HouseSprite
+                    name={spot.name}
+                    className="w-full drop-shadow-[0_8px_10px_rgba(0,0,0,0.45)]"
+                  />
+                </span>
                 <span className="mt-0.5 block max-w-[104px] truncate font-mono text-[8px] uppercase tracking-[0.1em] text-foreground/70">
                   {spot.name}
                 </span>
@@ -754,39 +779,54 @@ export default function WorldScene({
       </button>
 
       {sport === 'choir' && (
-        <ChoirGame onClose={() => setSport('')} onFinish={(score) => submitScore('choir', score)} />
+        <GameStage title="The Choir of Honkton" onClose={() => setSport('')}>
+          <ChoirGame onClose={() => setSport('')} onFinish={(score) => submitScore('choir', score)} />
+        </GameStage>
       )}
       {sport === 'guard' && (
-        <NestGuard onClose={() => setSport('')} onFinish={(score) => submitScore('guard', score)} />
+        <GameStage title="Nest Guard" onClose={() => setSport('')}>
+          <NestGuard onClose={() => setSport('')} onFinish={(score) => submitScore('guard', score)} />
+        </GameStage>
       )}
       {sport === 'archery' && (
-        <ArcheryGame
-          onClose={() => setSport('')}
-          onFinish={(score) => submitScore('archery', score)}
-        />
+        <GameStage title="The Reed Archery Range" onClose={() => setSport('')}>
+          <ArcheryGame
+            onClose={() => setSport('')}
+            onFinish={(score) => submitScore('archery', score)}
+          />
+        </GameStage>
       )}
       {sport === 'race' && (
-        <RaceGame
-          species={profile?.species}
-          onClose={() => setSport('')}
-          onFinish={(score) => submitScore('race', score)}
-        />
+        <GameStage title="The Reed Race" onClose={() => setSport('')}>
+          <RaceGame
+            species={profile?.species}
+            onClose={() => setSport('')}
+            onFinish={(score) => submitScore('race', score)}
+          />
+        </GameStage>
       )}
-
       {sport === 'sprint' && (
-        <SprintGame
-          species={profile?.species}
-          onClose={() => setSport('')}
-          onFinish={(score) => submitScore('sprint', score)}
-        />
+        <GameStage title="The Heatsprint" onClose={() => setSport('')}>
+          <SprintGame
+            species={profile?.species}
+            onClose={() => setSport('')}
+            onFinish={(score) => submitScore('sprint', score)}
+          />
+        </GameStage>
       )}
       {sport === 'toss' && (
-        <BreadToss onClose={() => setSport('')} onFinish={(score) => submitScore('toss', score)} />
+        <GameStage title="The Bread Toss" onClose={() => setSport('')}>
+          <BreadToss onClose={() => setSport('')} onFinish={(score) => submitScore('toss', score)} />
+        </GameStage>
       )}
 
       <NeighbourTalk target={talk} onClose={() => setTalk(null)} />
 
-      {homeOpen && <HomeInterior onExit={() => setHomeOpen(false)} />}
+      {homeOpen && (
+        <HomeInterior price={myHome?.price ?? 0} onExit={() => setHomeOpen(false)} />
+      )}
+
+      <CommonsChat name={profile?.name || 'A wanderer'} />
 
       <NeighbourDialog
         target={offerTarget}
@@ -826,6 +866,7 @@ export default function WorldScene({
           onEnterPlace={setInside}
           onExit={() => setInside('')}
           onPlay={setSport}
+          arenaBus={arenaBus}
         />
       )}
     </div>

@@ -6,6 +6,7 @@ import { useCitizen } from '@/hooks/useCitizen';
 import WorldScene from '@/components/world/WorldScene';
 import CommonsPalette from '@/components/world/CommonsPalette';
 import CommonsMenu from '@/components/world/CommonsMenu';
+import { levelFromXp } from '@/lib/swords';
 
 export default function World() {
   const { citizen, signedIn, run } = useCitizen();
@@ -166,6 +167,11 @@ export default function World() {
           <span className="font-mono text-[11px] font-bold text-primary">
             🍞 {signedIn ? citizen.bread : '—'}
           </span>
+          {signedIn && (
+            <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
+              Lv {levelFromXp(citizen.xp)} · {citizen.xp ?? 0} xp
+            </span>
+          )}
           {signedIn && world?.mine && (
             <button
               type="button"

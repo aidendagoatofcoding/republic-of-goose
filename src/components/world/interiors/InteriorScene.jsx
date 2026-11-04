@@ -11,7 +11,7 @@ import { stationsFor } from '@/lib/interiorStations';
 // Talking range, measured as a share of the room's longer side so it works on every screen.
 const REACH = 0.32;
 
-export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, startOpen = '', onPlay }) {
+export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, startOpen = '', onPlay, arenaBus }) {
   const { citizen } = useCitizen();
   const roomRef = useRef(null);
   const stations = stationsFor(place.id);
@@ -282,6 +282,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
               onEnterPlace={onEnterPlace}
               onExit={onExit}
               onPlay={onPlay}
+              arenaBus={arenaBus}
             />
           </div>
         </div>

@@ -2,6 +2,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { MARKET, marketSnapshot, priceAt, currentTick } from '../../shared/market.ts';
 import { hashPassword, normaliseUsername } from '../../shared/passport.ts';
 import { JOBS, jobById } from '../../shared/jobs.ts';
+import {
+  XP_PER_LEVEL,
+  MAX_ARENA_DUELS,
+  MAX_ARENA_KILLS,
+  levelFromXp,
+  nextSwordFor,
+  swordFor,
+  swordTier,
+  xpOf,
+} from '../../shared/swords.ts';
 
 const CHAT_REWARD = 5;
 const CHAT_COOLDOWN_MS = 12000;
@@ -98,8 +108,19 @@ function publicCitizen(citizen, holdings = []) {
   const possessions = Array.isArray(citizen.possessions) ? citizen.possessions : [];
   const worldSpots = Array.isArray(citizen.world_spots) ? citizen.world_spots : [];
   const workers = Math.max(0, Math.floor(citizen.workers ?? 0));
+  const xp = xpOf(citizen);
+  const tier = swordTier(citizen.sword_tier);
+  const blade = swordFor(tier);
   return {
     id: citizen.id,
+    xp,
+    level: levelFromXp(xp),
+    xp_into_level: xp % XP_PER_LEVEL,
+    xp_per_level: XP_PER_LEVEL,
+    sword_tier: tier,
+    sword_name: blade.name,
+    sword_power: blade.power,
+    next_sword: nextSwordFor(tier),
     full_name: citizen.full_name,
     goose_name: citizen.goose_name || '',
     species: citizen.species || 'goose',
@@ -366,10 +387,21 @@ export default async function (req) {
           score,
         });
       }
+      const improved = score > previousBest;
+      let scored = citizen;
+      let xpGained = 0;
+      if (improved) {
+        xpGained = 15;
+        scored = await admin.entities.Citizen.update(citizen.id, {
+          xp: xpOf(citizen) + xpGained,
+        });
+      }
       return Response.json({
         boards: await loadBoards(admin),
         best: Math.max(score, previousBest),
-        improved: score > previousBest,
+        improved,
+        xp_gained: xpGained,
+        citizen: publicCitizen(scored, holdings),
       });
     }
 
@@ -381,6 +413,42 @@ export default async function (req) {
         .filter(Boolean)
         .map((item) => item.emoji || '📦');
       return Response.json({ citizen: { ...publicCitizen(citizen, holdings), worn } });
+    }
+
+    if (action === 'arenaResult') {
+      const kills = Math.min(MAX_ARENA_KILLS, Math.max(0, Math.floor(Number(body.kills) || 0)));
+      const duels = Math.min(MAX_ARENA_DUELS, Math.max(0, Math.floor(Number(body.duels) || 0)));
+      const gain = kills * 12 + duels * 25;
+      if (gain < 1) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings), gained: 0 });
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        xp: xpOf(citizen) + gain,
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings), gained: gain });
+    }
+
+    if (action === 'upgradeSword') {
+      const tier = swordTier(citizen.sword_tier);
+      const next = nextSwordFor(tier);
+      if (!next) {
+        return Response.json(
+          { error: 'Honkbringer is already yours. There is nothing finer in the Republic.' },
+          { status: 400 }
+        );
+      }
+      const bread = Math.round(citizen.bread ?? 0);
+      if (bread < next.cost) {
+        return Response.json(
+          { error: `The smith wants 🍞 ${next.cost} for the ${next.name}.` },
+          { status: 400 }
+        );
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        bread: bread - next.cost,
+        sword_tier: tier + 1,
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
     }
 
     if (action === 'setAvatar') {

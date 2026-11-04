@@ -5,7 +5,7 @@ const ROOM = 'honk-commons';
 const CONN_KEY = 'honk-commons-conn';
 const SEND_INTERVAL_MS = 140;
 
-export default function useCommonsRoom({ profile, onHonk, onPong }) {
+export default function useCommonsRoom({ profile, onHonk, onPong, onArena }) {
   const [people, setPeople] = useState([]);
   const [seat, setSeat] = useState(null);
   const [connected, setConnected] = useState(false);
@@ -13,11 +13,13 @@ export default function useCommonsRoom({ profile, onHonk, onPong }) {
   const profileRef = useRef(profile);
   const honkRef = useRef(onHonk);
   const pongRef = useRef(onPong);
+  const arenaRef = useRef(onArena);
   const lastSent = useRef(0);
 
   profileRef.current = profile;
   honkRef.current = onHonk;
   pongRef.current = onPong;
+  arenaRef.current = onArena;
 
   useEffect(() => {
     const factory = base44.actors?.Commons;
@@ -52,6 +54,8 @@ export default function useCommonsRoom({ profile, onHonk, onPong }) {
         honkRef.current?.(msg);
       } else if (typeof msg.type === 'string' && msg.type.startsWith('pong_')) {
         pongRef.current?.(msg);
+      } else if (typeof msg.type === 'string' && msg.type.startsWith('arena_')) {
+        arenaRef.current?.(msg);
       }
     });
 

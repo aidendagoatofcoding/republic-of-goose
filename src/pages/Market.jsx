@@ -71,8 +71,11 @@ export default function Market() {
             </div>
             <h2 className="display-title mt-3 text-3xl md:text-4xl">The Goose Stock Market</h2>
             <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-foreground/75">
-              Seven goose listings. Prices move once a minute for every citizen at the same time, so
-              what you see is what the whole Republic sees.
+              {market ? market.stocks.filter((stock) => stock.kind !== 'crypto').length : 'Eighteen'} goose
+              listings and{' '}
+              {market ? market.stocks.filter((stock) => stock.kind === 'crypto').length : 'six'} coins.
+              Prices move once a minute for every citizen at the same time, so what you see is what
+              the whole Republic sees.
             </p>
           </div>
           <div className="text-right">
@@ -114,20 +117,41 @@ export default function Market() {
           <p className="font-mono text-[11px] text-muted-foreground">Opening the exchange...</p>
         </Panel>
       ) : (
-        <div className="divide-y divide-border/60 overflow-hidden rounded-md border border-border/80 bg-card">
-          {market.stocks.map((stock) => (
-            <StockRow
-              key={stock.symbol}
-              stock={stock}
-              shares={sharesOf(stock.symbol)}
-              qty={qty[stock.symbol] ?? 1}
-              onQty={setQuantity}
-              onTrade={trade}
-              busy={busy}
-              signedIn={signedIn}
-              onProfile={setProfileSymbol}
-            />
-          ))}
+        <div className="space-y-4">
+          {[
+            { key: 'stock', title: 'Listed houses' },
+            { key: 'crypto', title: 'Honkton coins' },
+          ].map((group) => {
+            const rows = market.stocks.filter((stock) =>
+              group.key === 'crypto' ? stock.kind === 'crypto' : stock.kind !== 'crypto'
+            );
+            if (rows.length === 0) return null;
+            return (
+              <div
+                key={group.key}
+                className="overflow-hidden rounded-md border border-border/80 bg-card"
+              >
+                <p className="border-b border-border/60 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                  {group.title}
+                </p>
+                <div className="divide-y divide-border/60">
+                  {rows.map((stock) => (
+                    <StockRow
+                      key={stock.symbol}
+                      stock={stock}
+                      shares={sharesOf(stock.symbol)}
+                      qty={qty[stock.symbol] ?? 1}
+                      onQty={setQuantity}
+                      onTrade={trade}
+                      busy={busy}
+                      signedIn={signedIn}
+                      onProfile={setProfileSymbol}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

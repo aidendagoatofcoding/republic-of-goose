@@ -86,6 +86,40 @@ export default class Commons extends Actor {
       return;
     }
 
+    if (msg.type === 'arena_pos') {
+      const x = Number(msg.x);
+      const y = Number(msg.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      this.broadcast({
+        type: 'arena_pos',
+        from: user.seat,
+        name: user.name,
+        x: Math.min(100, Math.max(0, x)),
+        y: Math.min(100, Math.max(0, y)),
+        hp: Math.min(100, Math.max(0, Number(msg.hp) || 0)),
+      });
+      return;
+    }
+
+    if (msg.type === 'arena_leave') {
+      this.broadcast({ type: 'arena_leave', from: user.seat });
+      return;
+    }
+
+    if (msg.type === 'arena_hit') {
+      const to = Number(msg.to);
+      if (!Number.isFinite(to) || to === user.seat) return;
+      this.broadcast({
+        type: 'arena_hit',
+        from: user.seat,
+        to,
+        name: user.name,
+        kind: String(msg.kind ?? '').slice(0, 12),
+        damage: Math.min(60, Math.max(0, Number(msg.damage) || 0)),
+      });
+      return;
+    }
+
     if (PONG_TYPES.has(msg.type)) {
       const num = (key) => {
         const value = Number(msg[key]);
