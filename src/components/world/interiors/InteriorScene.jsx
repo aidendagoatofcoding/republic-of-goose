@@ -7,6 +7,7 @@ import Walker from '@/components/world/Walker';
 import { useCitizen } from '@/hooks/useCitizen';
 import useInteriorWalk from '@/hooks/useInteriorWalk';
 import { stationsFor } from '@/lib/interiorStations';
+import { QUESTS_FOR_PLACE } from '@/lib/quests';
 
 // Talking range, measured as a share of the room's longer side so it works on every screen.
 const REACH = 0.32;
@@ -16,6 +17,24 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
   const roomRef = useRef(null);
   const stations = stationsFor(place.id);
   const [openId, setOpenId] = useState(startOpen && stations.some((s) => s.id === startOpen) ? startOpen : '');
+
+  // Every keeper in the building hands out the side quests of that building.
+  const quests = QUESTS_FOR_PLACE(place.id);
+  const allStations = useMemo(() => {
+    if (quests.length === 0) return stations;
+    const cast = place.actors || [];
+    const host = cast.find((actor) => !actor.serves) || cast[0] || { x: 50, y: 74 };
+    return [
+      ...stations,
+      {
+        id: 'side-quests',
+        name: 'Side quests',
+        x: host.x,
+        y: Math.min(94, host.y + 10),
+        content: `quests:${place.id}`,
+      },
+    ];
+  }, [stations, quests, place.actors, place.id]);
   const { pos, nudge } = useInteriorWalk({
     roomRef,
     start: { x: 50, y: 90, face: 1 },
@@ -33,16 +52,25 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
     [pos.x, pos.y]
   );
 
-  // Every person standing in the room serves the counter nearest them.
+  // Every person standing in the room serves the counter nearest them, or the side quests if they
+  // have no counter of their own.
   const keeperStation = useCallback(
-    (actor) =>
-      stations.find((station) => station.id === actor.serves) ||
-      [...stations].sort(
-        (a, b) =>
-          Math.hypot(a.x - actor.x, a.y - actor.y) - Math.hypot(b.x - actor.x, b.y - actor.y)
-      )[0] ||
-      null,
-    [stations]
+    (actor) => {
+      if (actor.serves) {
+        const named = allStations.find((station) => station.id === actor.serves);
+        if (named) return named;
+      } else {
+        const questStation = allStations.find((station) => station.id === 'side-quests');
+        if (questStation) return questStation;
+      }
+      return (
+        [...allStations].sort(
+          (a, b) =>
+            Math.hypot(a.x - actor.x, a.y - actor.y) - Math.hypot(b.x - actor.x, b.y - actor.y)
+        )[0] || null
+      );
+    },
+    [allStations]
   );
 
   // Counters a person is standing at are reached by talking to them, so their own chip is hidden.
@@ -69,7 +97,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
         };
       })
       .filter(Boolean);
-    const counters = stations
+    const counters = allStations
       .filter((station) => !servedIds.has(station.id))
       .map((station) => ({
         id: `counter-${station.id}`,
@@ -79,7 +107,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
         label: station.name,
       }));
     return [...people, ...counters];
-  }, [place.actors, stations, keeperStation, servedIds]);
+  }, [place.actors, allStations, keeperStation, servedIds]);
 
   const near =
     targets
@@ -87,7 +115,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
       .filter((target) => target.gap !== null && target.gap <= REACH)
       .sort((a, b) => a.gap - b.gap)[0] || null;
 
-  const open = stations.find((station) => station.id === openId) || null;
+  const open = allStations.find((station) => station.id === openId) || null;
 
   useEffect(() => {
     const onKey = (event) => {
@@ -143,7 +171,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
         </button>
       )}
 
-      {stations.filter((station) => !servedIds.has(station.id)).map((station) => {
+      {allStations.filter((station) => !servedIds.has(station.id)).map((station) => {
         const active = near?.stationId === station.id;
         return (
           <button

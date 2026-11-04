@@ -51,7 +51,7 @@ export default function SiftGate({ onExit }) {
       <p className="text-[13px] leading-relaxed text-muted-foreground">
         {ready
           ? 'The stone is awake. Step through and the Sift will catch you.'
-          : 'Nine shards lie under the boulders and inside the hollow trees of the Republic. The gate stays cold until you carry all of them.'}
+          : 'Nine shards lie out in the open across the Republic, unlocked and unguarded. The gate stays cold until you carry all of them.'}
       </p>
 
       <button

@@ -1,12 +1,12 @@
-import { swordFor } from '@/lib/swords';
+import Blade from '@/components/arena/Blade';
 import { speciesInfo } from '@/lib/species';
 
 const EFFECTS = {
-  slash: { glyph: '⟋', color: '#f6ecc9' },
-  stab: { glyph: '➤', color: '#ffd9a0' },
-  bow: { glyph: '➶', color: '#c2ff85' },
-  parry: { glyph: '✧', color: '#9fe0ff' },
-  hurt: { glyph: '✸', color: '#ff7a5c' },
+  slash: { glyph: '⟋', color: '#f6ecc9', scale: 1.5 },
+  stab: { glyph: '➤', color: '#ffd9a0', scale: 1.3 },
+  bow: { glyph: '➶', color: '#c2ff85', scale: 1.3 },
+  parry: { glyph: '✧', color: '#9fe0ff', scale: 1.2 },
+  hurt: { glyph: '✸', color: '#ff7a5c', scale: 1.2 },
 };
 
 function Health({ value, max = 100, tint }) {
@@ -21,7 +21,9 @@ function Health({ value, max = 100, tint }) {
 }
 
 export default function ArenaField({ player, ducks, remotes, effects, tier, species = 'goose' }) {
-  const blade = swordFor(tier);
+  const now = performance.now();
+  const aimAngle = (Math.atan2(player?.aimY ?? -1, player?.aimX ?? 0) * 180) / Math.PI + 90;
+  const swing = player && now < (player.swing?.until || 0) ? player.swing.kind : '';
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#0b120c]">
@@ -56,13 +58,20 @@ export default function ArenaField({ player, ducks, remotes, effects, tier, spec
           style={{ left: `${remote.x}%`, top: `${remote.y}%` }}
           className="absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center"
         >
-          <span
-            className={`block text-3xl drop-shadow-[0_6px_8px_rgba(0,0,0,0.7)] ${
-              remote.down ? 'opacity-50 grayscale' : ''
-            }`}
-            aria-hidden="true"
-          >
-            {remote.down ? '🪶' : speciesInfo(remote.species).emoji}
+          <span className="relative inline-block">
+            <span
+              className={`block text-3xl drop-shadow-[0_6px_8px_rgba(0,0,0,0.7)] ${
+                remote.down ? 'opacity-50 grayscale' : ''
+              }`}
+              aria-hidden="true"
+            >
+              {remote.down ? '🪶' : speciesInfo(remote.species).emoji}
+            </span>
+            {!remote.down && (
+              <span className="pointer-events-none absolute -right-4 bottom-0">
+                <Blade tier={remote.tier ?? 2} size="sm" angle={-24} dim />
+              </span>
+            )}
           </span>
           <span className="mt-0.5 block whitespace-nowrap font-mono text-[8px] uppercase tracking-[0.12em] text-[#ffb9a5]">
             {String(remote.name || 'A goose').split(' ')[0]}
@@ -77,7 +86,7 @@ export default function ArenaField({ player, ducks, remotes, effects, tier, spec
           key={duck.id}
           style={{ left: `${duck.x}%`, top: `${duck.y}%` }}
           className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center ${
-            duck.stunned > performance.now() ? 'opacity-60' : ''
+            duck.stunned > now ? 'opacity-60' : ''
           }`}
         >
           <span className="block text-2xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.7)]" aria-hidden="true">
@@ -93,18 +102,19 @@ export default function ArenaField({ player, ducks, remotes, effects, tier, spec
           className="absolute z-30 -translate-x-1/2 -translate-y-1/2 text-center"
         >
           <span
-            className={`relative block text-4xl drop-shadow-[0_8px_10px_rgba(0,0,0,0.75)] ${
-              performance.now() < player.parryUntil ? 'ring-2 ring-[#9fe0ff] rounded-full' : ''
+            className={`relative inline-block ${
+              now < player.parryUntil ? 'rounded-full ring-2 ring-[#9fe0ff]' : ''
             }`}
-            style={{ transform: player.aimX < -0.1 ? 'scaleX(-1)' : undefined }}
-            aria-hidden="true"
           >
-            {speciesInfo(species).emoji}
             <span
-              className="absolute -right-2 top-1 text-lg"
-              style={{ color: blade.tint, filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))' }}
+              className="block text-4xl drop-shadow-[0_8px_10px_rgba(0,0,0,0.75)]"
+              style={{ transform: player.aimX < -0.1 ? 'scaleX(-1)' : undefined }}
+              aria-hidden="true"
             >
-              {blade.emoji}
+              {speciesInfo(species).emoji}
+            </span>
+            <span className="pointer-events-none absolute -right-5 bottom-1">
+              <Blade tier={tier} size="lg" angle={aimAngle} swing={swing} />
             </span>
           </span>
           <span className="mt-0.5 block font-mono text-[8px] uppercase tracking-[0.16em] text-primary">
@@ -118,8 +128,14 @@ export default function ArenaField({ player, ducks, remotes, effects, tier, spec
         return (
           <span
             key={effect.id}
-            style={{ left: `${effect.x}%`, top: `${effect.y}%`, color: style.color }}
-            className="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-1/2 text-2xl"
+            style={{
+              left: `${effect.x}%`,
+              top: `${effect.y}%`,
+              color: style.color,
+              fontSize: `${Math.round(26 * style.scale)}px`,
+              textShadow: `0 0 12px ${style.color}`,
+            }}
+            className="fx-pop pointer-events-none absolute z-40 leading-none"
             aria-hidden="true"
           >
             {style.glyph}

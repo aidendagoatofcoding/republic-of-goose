@@ -1,5 +1,6 @@
 // The lost things scattered out in the Republic, and the side quests that want them back.
 // Anything with `hidden: true` is buried under a rock or a tree and must be searched for.
+// The Sift shards lie out in the open: nothing about them is hidden and nothing about them is locked.
 
 export const FINDS = [
   { id: 'lantern', name: "The witch's lantern", emoji: '🏮', x: 63, y: 29 },
@@ -10,22 +11,224 @@ export const FINDS = [
   { id: 'ledger', name: 'The harbour ledger', emoji: '📘', x: 11, y: 67 },
   { id: 'lamp-oil', name: 'A can of lamp oil', emoji: '🛢️', x: 71, y: 79 },
   { id: 'seal', name: 'The registry seal', emoji: '🔏', x: 28, y: 19 },
-  { id: 'shard-1', name: 'A sift shard', hidden: true, x: 16, y: 34 },
-  { id: 'shard-2', name: 'A sift shard', hidden: true, x: 30, y: 24 },
-  { id: 'shard-3', name: 'A sift shard', hidden: true, x: 47, y: 41 },
-  { id: 'shard-4', name: 'A sift shard', hidden: true, x: 61, y: 22 },
-  { id: 'shard-5', name: 'A sift shard', hidden: true, x: 76, y: 47 },
-  { id: 'shard-6', name: 'A sift shard', hidden: true, x: 88, y: 30 },
-  { id: 'shard-7', name: 'A sift shard', hidden: true, x: 24, y: 78 },
-  { id: 'shard-8', name: 'A sift shard', hidden: true, x: 55, y: 84 },
-  { id: 'shard-9', name: 'A sift shard', hidden: true, x: 82, y: 74 },
+  { id: 'mothkey', name: 'The brass key', emoji: '🗝️', x: 44, y: 40 },
+  { id: 'shard-1', name: 'A sift shard', emoji: '🔷', x: 22, y: 52 },
+  { id: 'shard-2', name: 'A sift shard', emoji: '🔶', x: 34, y: 32 },
+  { id: 'shard-3', name: 'A sift shard', emoji: '🔷', x: 52, y: 24 },
+  { id: 'shard-4', name: 'A sift shard', emoji: '🔶', x: 66, y: 40 },
+  { id: 'shard-5', name: 'A sift shard', emoji: '🔷', x: 78, y: 62 },
+  { id: 'shard-6', name: 'A sift shard', emoji: '🔶', x: 58, y: 57 },
+  { id: 'shard-7', name: 'A sift shard', emoji: '🔷', x: 30, y: 70 },
+  { id: 'shard-8', name: 'A sift shard', emoji: '🔶', x: 14, y: 80 },
+  { id: 'shard-9', name: 'A sift shard', emoji: '🔷', x: 86, y: 80 },
   { id: 'artifact', name: 'The Glade Artifact', hidden: true, x: 40, y: 88 },
   { id: 'strongbox', name: 'A bank strongbox', hidden: true, x: 68, y: 90 },
-  { id: 'mothkey', name: 'The brass key', hidden: true, x: 92, y: 52 },
   { id: 'mossstone', name: 'The moss stone', hidden: true, x: 12, y: 62 },
 ];
 
 export const QUESTS = [
+  // The capital, the ministries and the counting houses.
+  {
+    id: 'capital-mace',
+    place: 'capital',
+    giver: 'The Sergeant-at-Wings',
+    title: 'The Missing Mace',
+    brief:
+      'The chamber cannot open without its mace. Somebody carried it out to the meadow and set it down to eat a bun.',
+    finds: ['seal'],
+    reward: { bread: 180, xp: 60 },
+  },
+  {
+    id: 'bank-counterfeit',
+    place: 'bank',
+    giver: 'The Banker',
+    title: 'The Counterfeit Crumb',
+    brief:
+      'A bad loaf has been passed off as national bread. The Bank wants the ledger that names the baker.',
+    finds: ['ledger'],
+    reward: { bread: 190, xp: 60 },
+  },
+  {
+    id: 'parliament-act',
+    place: 'parliament',
+    giver: 'The Speaker',
+    title: 'The Unsigned Act',
+    brief:
+      'An act is law the moment the seal touches it. The seal has gone wandering, and the House is shouting about it.',
+    finds: ['letter', 'seal'],
+    reward: { bread: 210, xp: 70 },
+  },
+  {
+    id: 'government-survey',
+    place: 'government',
+    giver: 'The Clerk of Maps',
+    title: 'The District Survey',
+    brief:
+      'Government House is re-drawing the districts and the survey markers have blown away. Bring the oil and a cone.',
+    finds: ['lamp-oil', 'pinecone-a'],
+    reward: { bread: 170, xp: 55 },
+  },
+  {
+    id: 'exchange-futures',
+    place: 'exchange',
+    giver: 'The Broker',
+    title: 'Bread Futures',
+    brief:
+      'The floor is short of two things: the ledger, and something to burn in the lamps while they argue.',
+    finds: ['ledger', 'lamp-oil'],
+    reward: { bread: 200, xp: 65 },
+  },
+  {
+    id: 'guild-sample',
+    place: 'guild',
+    giver: 'The Guildmaster',
+    title: "The Shopkeeper's Sample",
+    brief:
+      'A lantern was sent out as a sample and never came back. The Guild would like it on the shelf again.',
+    finds: ['lantern'],
+    reward: { bread: 150, xp: 50 },
+  },
+  {
+    id: 'shop-stocktake',
+    place: 'shop',
+    giver: 'The Stockkeeper',
+    title: 'Stocktake',
+    brief:
+      'Two pine cones went out the back door in a goose’s beak. The till does not pay for stock it cannot count.',
+    finds: ['pinecone-b', 'pinecone-c'],
+    reward: { bread: 160, xp: 50 },
+  },
+  {
+    id: 'granary-foreman',
+    place: 'granary',
+    giver: 'The Foreman',
+    title: 'The Sacks That Walked',
+    brief:
+      'The granary has lost a sack of seed to the wind. It landed somewhere out past the market road.',
+    finds: ['pinecone-a'],
+    reward: { bread: 140, xp: 45 },
+  },
+  {
+    id: 'herald-story',
+    place: 'herald',
+    giver: 'The Editor',
+    title: 'A Story That Ran Away',
+    brief:
+      'A courier dropped the Herald’s best letter over the avenue and the printer is holding the front page.',
+    finds: ['letter'],
+    reward: { bread: 150, xp: 50 },
+  },
+  {
+    id: 'bakery-starter',
+    place: 'bakery',
+    giver: 'The Head Baker',
+    title: 'The Lost Starter',
+    brief:
+      'The oven needs oil, and the starter needs feeding. Fetch the can and the ovens keep singing.',
+    finds: ['lamp-oil'],
+    reward: { bread: 165, xp: 55 },
+  },
+  {
+    id: 'library-atlas',
+    place: 'library',
+    giver: 'The Librarian',
+    title: 'An Overdue Atlas',
+    brief:
+      'An atlas has been out since the flood and the shelves have a gap shaped like it. The ledger knows who took it.',
+    finds: ['ledger'],
+    reward: { bread: 155, xp: 50 },
+  },
+  {
+    id: 'dealership-wheel',
+    place: 'dealership',
+    giver: 'The Salesbird',
+    title: 'The Missing Wheel',
+    brief:
+      'Honk Motors sold a carriage with four wheels and delivered three. The fourth is still out on the meadow.',
+    finds: ['strongbox'],
+    reward: { bread: 175, xp: 55 },
+  },
+  {
+    id: 'warzone-blade',
+    place: 'warzone',
+    giver: 'The Captain',
+    title: 'Blade in the Mud',
+    brief:
+      'A lantern went over the ridge with the last patrol. The Captain wants it lit again before dusk.',
+    finds: ['lantern'],
+    reward: { bread: 210, xp: 75 },
+  },
+  {
+    id: 'witch-jar',
+    place: 'witch',
+    giver: 'The Witch',
+    title: 'A Jar of Fireflies',
+    brief:
+      'The witch needs a lantern to hold a summer’s worth of fireflies. Bring one and she will not turn you into anything.',
+    finds: ['lantern'],
+    reward: { bread: 190, xp: 60 },
+  },
+  {
+    id: 'chandlery-rope',
+    place: 'chandlery',
+    giver: 'The Chandler',
+    title: 'The Rope Order',
+    brief:
+      'A boat went out without its oil and came back without its order. The Chandler is out of both now.',
+    finds: ['lamp-oil'],
+    reward: { bread: 145, xp: 45 },
+  },
+  {
+    id: 'mineshaft-seam',
+    place: 'mineshaft',
+    giver: 'The Pit Boss',
+    title: 'A Rich Seam',
+    brief:
+      'The Pit Boss swears a mossy stone marks a seam richer than the deep gallery. Bring the stone and prove it.',
+    finds: ['mossstone'],
+    reward: { bread: 200, xp: 65 },
+  },
+  {
+    id: 'assay-crumb',
+    place: 'assay',
+    giver: 'The Assayer',
+    title: 'The False Crumb',
+    brief:
+      'A strongbox of suspect crumbs is missing. The Assayer needs it weighed before anyone else bites it.',
+    finds: ['strongbox'],
+    reward: { bread: 205, xp: 70 },
+  },
+
+  // The Sift.
+  {
+    id: 'sift-garden-shards',
+    place: 'sift-garden',
+    giver: 'The Gardener',
+    title: 'Shards in the Bloom',
+    brief: 'Three shards fell out of the glass garden and landed out in the Republic. Bring them back to the blooms.',
+    finds: ['shard-1', 'shard-2', 'shard-3'],
+    reward: { bread: 240, xp: 80 },
+  },
+  {
+    id: 'sift-archive-shards',
+    place: 'sift-archive',
+    giver: 'The Archivist',
+    title: 'The Recorded Honk',
+    brief: 'The archive files every honk on a shard. Three are loose in the meadow and the catalogue is furious.',
+    finds: ['shard-4', 'shard-5', 'shard-6'],
+    reward: { bread: 240, xp: 80 },
+  },
+  {
+    id: 'sift-court-shards',
+    place: 'sift-court',
+    giver: 'The Hummer',
+    title: 'The Quiet Argument',
+    brief: 'A court cannot hum without its shards. Three are lying out in the open, which the Hummer finds untidy.',
+    finds: ['shard-7', 'shard-8', 'shard-9'],
+    reward: { bread: 260, xp: 85 },
+  },
+
+  // The forest and the harbour.
   {
     id: 'glade-artifact',
     place: 'forest',

@@ -75,6 +75,7 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, species = 'goo
 
       player.stamina -= spec.cost;
       player.cooldowns[kind] = now + spec.cooldown;
+      player.swing = { kind, until: now + 240 };
       const damage = spec.damage * swordPower(tierRef.current);
 
       effectsRef.current.push({

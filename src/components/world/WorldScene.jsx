@@ -21,7 +21,8 @@ import SportVenue from '@/components/world/SportVenue';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
 import PetPanel from '@/components/world/PetPanel';
 import WarzoneBattle from '@/components/arena/WarzoneBattle';
-import CivicBuilding from '@/components/world/areas/CivicBuilding';
+import WeatherLayer from '@/components/world/WeatherLayer';
+import { weatherFor, NEXT_WEATHER, WEATHER_MS } from '@/lib/weather';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
 import { placeFor } from '@/lib/places';
 import RealmScene from '@/components/world/RealmScene';
@@ -59,12 +60,6 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const REACH_PX = 190;
 const MOVE_SPEED = 165;
 const RIDE_BOOST = 1.9;
-
-// The National Bakery stands among the stalls of the Market Square. The civic offices of the
-// Republic sit inside the Government Plaza portal.
-const CIVIC_BUILDINGS = [
-  { id: 'bakery', name: 'The National Bakery', variant: 'cottage', x: 72, y: 67, place: 'bakery' },
-];
 
 export default function WorldScene({
   residents,
@@ -143,6 +138,21 @@ export default function WorldScene({
 
   const [talk, setTalk] = useState(null);
   const [revealed, setRevealed] = useState([]);
+
+  // The sky turns over on its own while you wander.
+  const [weather, setWeather] = useState(() => weatherFor('sunny'));
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setWeather((current) => weatherFor(NEXT_WEATHER[current.id] || 'sunny'));
+    }, WEATHER_MS);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Stamina: hold Shift to run, and it comes back when you walk or stand.
+  const staminaRef = useRef(100);
+  const staminaShownRef = useRef(100);
+  const sprintRef = useRef(false);
+  const [stamina, setStamina] = useState(100);
 
   // First search uncovers what is under the stone or in the trunk; the second picks it up.
   const searchSpot = useCallback(
@@ -248,9 +258,20 @@ export default function WorldScene({
       const keys = keysRef.current;
       const vx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
       const vy = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
-      if (!vx && !vy) return;
+      const moving = Boolean(vx || vy);
+      const running = moving && sprintRef.current && staminaRef.current > 1;
+      staminaRef.current = Math.min(
+        100,
+        Math.max(0, staminaRef.current + (running ? -26 : 15) * dt)
+      );
+      const shown = Math.round(staminaRef.current);
+      if (shown !== staminaShownRef.current) {
+        staminaShownRef.current = shown;
+        setStamina(shown);
+      }
+      if (!moving) return;
 
-      const speed = MOVE_SPEED * (riding ? RIDE_BOOST : 1);
+      const speed = MOVE_SPEED * (riding ? RIDE_BOOST : 1) * (running ? 1.75 : 1);
       const length = Math.hypot(vx, vy) || 1;
       const nx = vx / length;
       const ny = vy / length;
@@ -285,17 +306,28 @@ export default function WorldScene({
     const onDown = (event) => {
       const tag = event.target?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (event.key?.toLowerCase() === 'shift') {
+        sprintRef.current = true;
+        return;
+      }
       const direction = KEYS[event.key?.toLowerCase()];
       if (!direction) return;
       event.preventDefault();
       keysRef.current.add(direction);
     };
     const onUp = (event) => {
+      if (event.key?.toLowerCase() === 'shift') {
+        sprintRef.current = false;
+        return;
+      }
       const direction = KEYS[event.key?.toLowerCase()];
       if (!direction) return;
       keysRef.current.delete(direction);
     };
-    const clearKeys = () => keysRef.current.clear();
+    const clearKeys = () => {
+      keysRef.current.clear();
+      sprintRef.current = false;
+    };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
     window.addEventListener('blur', clearKeys);
@@ -468,11 +500,6 @@ export default function WorldScene({
     [run, onBoards]
   );
 
-  const nearCivic = CIVIC_BUILDINGS.find((building) => {
-    const distance = distanceTo(building, me);
-    return distance !== null && distance <= REACH_PX;
-  });
-
   const nearVenue = VENUES.find((venue) => {
     const distance = distanceTo(venue, me);
     return distance !== null && distance <= REACH_PX;
@@ -497,7 +524,8 @@ export default function WorldScene({
     return distance !== null && distance <= 132;
   });
 
-  const nearFind = FINDS.filter((find) => !collected.includes(find.id)).find((find) => {
+  // Buried things are found by searching their rock or tree, never by walking over them.
+  const nearFind = FINDS.filter((find) => !find.hidden && !collected.includes(find.id)).find((find) => {
     const distance = distanceTo(find, me);
     return distance !== null && distance <= 140;
   });
@@ -519,8 +547,6 @@ export default function WorldScene({
     ? null
     : nearOwnHome !== null && nearOwnHome <= REACH_PX
     ? { kind: 'home', id: 'home', name: 'Enter your home' }
-    : nearCivic
-    ? { kind: 'place', id: nearCivic.id, place: nearCivic.place, name: `Enter ${nearCivic.name}` }
     : nearVenue
     ? { kind: 'sport', id: nearVenue.id, name: `Enter the ${nearVenue.name}` }
     : nearPortal
@@ -585,7 +611,7 @@ export default function WorldScene({
 
       <Roads />
 
-      {FINDS.filter((find) => !collected.includes(find.id)).map((find) => (
+      {FINDS.filter((find) => !find.hidden && !collected.includes(find.id)).map((find) => (
         <button
           key={find.id}
           type="button"
@@ -632,15 +658,6 @@ export default function WorldScene({
       <NeighbourHouses />
 
       <Realms onEnter={setRealm} activeId={nearPortal?.id || ''} />
-
-      {CIVIC_BUILDINGS.map((building) => (
-        <CivicBuilding
-          key={building.id}
-          building={building}
-          reachable={nearCivic?.id === building.id}
-          onEnter={setInside}
-        />
-      ))}
 
       {VENUES.map((venue) => {
         const distance = distanceTo(venue, me);
@@ -839,6 +856,15 @@ export default function WorldScene({
 
       </div>
 
+      <WeatherLayer weather={weather} />
+
+      <span
+        className="pointer-events-none absolute right-2 top-2 z-40 rounded-sm border border-border/70 bg-card/85 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em]"
+        style={{ color: weather.tint }}
+      >
+        {weather.emoji} {weather.name}
+      </span>
+
       {enterTarget && !sport && !placing && (
         <div className="pointer-events-none absolute bottom-14 left-1/2 z-40 -translate-x-1/2 whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary shadow-lg">
           ⏎ {enterTarget.name}
@@ -870,6 +896,26 @@ export default function WorldScene({
         >
           {riding ? `Dismount ${myRide.emoji}` : `Ride ${myRide.emoji}`}
         </button>
+      )}
+
+      {mine && !placing && (
+        <div className="pointer-events-none absolute bottom-12 right-3 z-40 flex flex-col items-end gap-0.5">
+          <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
+            Stamina {stamina}
+          </span>
+          <span className="block h-1.5 w-24 overflow-hidden rounded-full border border-border/70 bg-black/60">
+            <span
+              className="block h-full transition-[width] duration-150"
+              style={{
+                width: `${stamina}%`,
+                background: stamina > 30 ? 'hsl(var(--primary))' : '#e0664a',
+              }}
+            />
+          </span>
+          <span className="font-mono text-[7px] uppercase tracking-[0.1em] text-muted-foreground/70">
+            Shift to sprint
+          </span>
+        </div>
       )}
 
       {connected && (

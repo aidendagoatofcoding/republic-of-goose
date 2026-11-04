@@ -102,7 +102,14 @@ const REALM_DATA = [
     ],
     buildings: [
       { id: 'granary', name: 'The Granary', variant: 'cottage', x: 30, y: 56, place: 'granary' },
-      { id: 'bakery', name: 'National Bakery', variant: 'cottage', x: 70, y: 60, place: 'bakery' },
+      {
+        id: 'bakery',
+        name: 'The National Bakery',
+        variant: 'capital',
+        x: 70,
+        y: 62,
+        place: 'bakery',
+      },
     ],
   },
   {
