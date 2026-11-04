@@ -28,6 +28,7 @@ export default function WarzoneBattle({ bus, onExit }) {
         bus={bus}
         tier={tier}
         xp={citizen?.xp ?? 0}
+        species={citizen?.species || 'goose'}
         onExit={onExit}
         onFinish={record}
       />

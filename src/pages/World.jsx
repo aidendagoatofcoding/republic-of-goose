@@ -223,6 +223,8 @@ export default function World() {
               name: citizen?.goose_name || citizen?.full_name || 'You',
               species: citizen?.species || 'goose',
               worn: citizen?.worn || [],
+              finds: citizen?.finds || [],
+              quests: citizen?.quests || [],
             }}
           />
         )}

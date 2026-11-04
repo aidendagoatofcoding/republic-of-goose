@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { MARKET, marketSnapshot, priceAt, currentTick } from '../../shared/market.ts';
 import { hashPassword, normaliseUsername } from '../../shared/passport.ts';
 import { JOBS, jobById } from '../../shared/jobs.ts';
+import { isFind, questById } from '../../shared/quests.ts';
 import {
   XP_PER_LEVEL,
   MAX_ARENA_DUELS,
@@ -138,6 +139,9 @@ function publicCitizen(citizen, holdings = []) {
     workers,
     next_worker_cost: workerCost(workers),
     job: citizen.job || '',
+    finds: Array.isArray(citizen.finds) ? citizen.finds : [],
+    fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)),
+    quests: Array.isArray(citizen.quests) ? citizen.quests : [],
     created_date: citizen.created_date,
     holdings,
   };
@@ -572,6 +576,67 @@ export default async function (req) {
         last_wage: new Date(now).toISOString(),
       });
       return Response.json({ citizen: publicCitizen(updated, holdings), earned });
+    }
+
+    if (action === 'collectFind') {
+      const findId = String(body.find_id ?? '');
+      if (!isFind(findId)) {
+        return Response.json({ error: 'That is not one of the lost things.' }, { status: 400 });
+      }
+      const finds = Array.isArray(citizen.finds) ? citizen.finds : [];
+      if (finds.includes(findId)) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings) });
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        finds: [...finds, findId],
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'fishCatch') {
+      const earned = 2;
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        bread: Math.round(citizen.bread ?? 0) + earned,
+        bread_earned: earnedTotal(citizen) + earned,
+        fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)) + 1,
+      });
+      return Response.json({
+        citizen: publicCitizen(updated, holdings),
+        earned,
+        fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)) + 1,
+      });
+    }
+
+    if (action === 'claimQuest') {
+      const quest = questById(String(body.quest_id ?? ''));
+      if (!quest) {
+        return Response.json({ error: 'That is not a quest of the Republic.' }, { status: 400 });
+      }
+      const done = Array.isArray(citizen.quests) ? citizen.quests : [];
+      if (done.includes(quest.id)) {
+        return Response.json({ error: 'You have already been paid for that one.' }, { status: 400 });
+      }
+      const finds = Array.isArray(citizen.finds) ? citizen.finds : [];
+      const missing = (quest.finds ?? []).filter((id: string) => !finds.includes(id));
+      if (missing.length > 0) {
+        return Response.json({ error: 'You have not found everything yet.' }, { status: 400 });
+      }
+      if ((quest.fish ?? 0) > Math.max(0, Math.floor(citizen.fish_caught ?? 0))) {
+        return Response.json(
+          { error: `Not enough fish yet — ${quest.fish} are wanted.` },
+          { status: 400 }
+        );
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        bread: Math.round(citizen.bread ?? 0) + quest.reward.bread,
+        bread_earned: earnedTotal(citizen) + quest.reward.bread,
+        xp: xpOf(citizen) + quest.reward.xp,
+        quests: [...done, quest.id],
+      });
+      return Response.json({
+        citizen: publicCitizen(updated, holdings),
+        reward: quest.reward,
+      });
     }
 
     if (action === 'buyItem') {

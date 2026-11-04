@@ -34,11 +34,28 @@ export const STATIONS = {
   herald: [
     { id: 'editor', name: 'The editor', x: 38, y: 86, content: 'herald' },
   ],
-  witch: [{ id: 'brew', name: 'The brewing pot', x: 46, y: 62, content: 'witch-brew' }],
+  witch: [
+    { id: 'brew', name: 'The brewing pot', x: 46, y: 62, content: 'witch-brew' },
+    { id: 'witch-quest', name: 'The witch', x: 46, y: 82, content: 'quests:witch' },
+  ],
   inn: [{ id: 'bar', name: 'The inn bar', x: 74, y: 74, content: 'inn-bar' }],
-  'owl-tower': [{ id: 'watch', name: 'The watch desk', x: 50, y: 74, content: 'owl-watch' }],
+  'owl-tower': [
+    { id: 'watch', name: 'The watch desk', x: 50, y: 74, content: 'owl-watch' },
+    { id: 'owl-quest', name: 'The watchkeeper', x: 20, y: 82, content: 'quests:owl-tower' },
+  ],
   shrine: [{ id: 'stone', name: 'The mossy stone', x: 50, y: 62, content: 'shrine-stone' }],
   den: [{ id: 'table', name: 'The card table', x: 72, y: 68, content: 'den-table' }],
+  fishmarket: [
+    { id: 'slab', name: 'The fish slab', x: 50, y: 78, content: 'quests:fishmarket' },
+    { id: 'tackle', name: 'The tackle counter', x: 22, y: 84, content: 'shop-tool' },
+  ],
+  chandlery: [
+    { id: 'rods', name: 'The rod rack', x: 50, y: 84, content: 'shop-tool' },
+    { id: 'boats', name: 'Boats for the lake', x: 20, y: 84, content: 'shop-vehicle' },
+  ],
+  lighthouse: [
+    { id: 'lamp', name: 'The lamp room', x: 50, y: 82, content: 'quests:lighthouse' },
+  ],
   bakery: [
     {
       id: 'oven',
@@ -80,6 +97,7 @@ export const STATIONS = {
   ],
   registry: [
     { id: 'register', name: 'The register', x: 50, y: 80, content: 'registry' },
+    { id: 'clerk', name: 'The clerk', x: 22, y: 84, content: 'quests:registry' },
   ],
   library: [
     { id: 'stacks', name: 'The grammar shelves', x: 50, y: 80, content: 'grammar' },
@@ -92,6 +110,7 @@ export const STATIONS = {
   ],
   forest: [
     { id: 'glade', name: 'The quiet glade', x: 50, y: 84, content: 'forest' },
+    { id: 'forester', name: 'The forester', x: 24, y: 88, content: 'quests:forest' },
   ],
 };
 

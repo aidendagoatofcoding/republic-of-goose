@@ -94,6 +94,8 @@ export default class Commons extends Actor {
         type: 'arena_pos',
         from: user.seat,
         name: user.name,
+        species: user.species,
+        down: Boolean(msg.down),
         x: Math.min(100, Math.max(0, x)),
         y: Math.min(100, Math.max(0, y)),
         hp: Math.min(100, Math.max(0, Number(msg.hp) || 0)),

@@ -33,7 +33,8 @@ import SpawnCircle from '@/components/world/SpawnCircle';
 import HomeInterior from '@/components/world/interiors/HomeInterior';
 import GameStage from '@/components/world/GameStage';
 import CommonsChat from '@/components/world/CommonsChat';
-import { SPAWN } from '@/lib/spawn';
+import { SPAWN, PORTAL_RING_RADIUS } from '@/lib/spawn';
+import { FINDS } from '@/lib/quests';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
 
@@ -284,7 +285,10 @@ export default function WorldScene({
       if (target.kind === 'sport') setSport(target.id);
       else if (target.kind === 'realm') setRealm(target.id);
       else if (target.kind === 'home') setHomeOpen(true);
-      else if (target.kind === 'npc') {
+      else if (target.kind === 'find') {
+        run?.({ action: 'collectFind', find_id: target.id }).catch(() => {});
+        say(myKey, 'Picked that up.');
+      } else if (target.kind === 'npc') {
         const line = pick(NPC_LINES);
         say(target.id, line);
         setTalk({ ...target.talk, line });
@@ -293,7 +297,7 @@ export default function WorldScene({
     };
     window.addEventListener('keydown', onEnter);
     return () => window.removeEventListener('keydown', onEnter);
-  }, [say]);
+  }, [say, run, myKey]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -439,8 +443,20 @@ export default function WorldScene({
   });
 
   const nearPortal = REALMS.find((entry) => {
-    const distance = distanceTo(entry.portal, me);
-    return distance !== null && distance <= REACH_PX;
+    const box = boxRef.current;
+    if (!box) return false;
+    const rad = (entry.portalAngle * Math.PI) / 180;
+    const px = (SPAWN.x / 100) * box.offsetWidth + Math.cos(rad) * PORTAL_RING_RADIUS;
+    const py = (SPAWN.y / 100) * box.offsetHeight + Math.sin(rad) * PORTAL_RING_RADIUS;
+    const mx = (me.x / 100) * box.offsetWidth;
+    const my = (me.y / 100) * box.offsetHeight;
+    return Math.hypot(mx - px, my - py) <= REACH_PX * 0.8;
+  });
+
+  const collected = profile?.finds ?? [];
+  const nearFind = FINDS.filter((find) => !collected.includes(find.id)).find((find) => {
+    const distance = distanceTo(find, me);
+    return distance !== null && distance <= 140;
   });
 
   const nearNeighbour = residents
@@ -466,7 +482,9 @@ export default function WorldScene({
     ? { kind: 'sport', id: nearVenue.id, name: `Enter the ${nearVenue.name}` }
     : nearPortal
       ? { kind: 'realm', id: nearPortal.id, name: `Enter ${nearPortal.name}` }
-      : nearNeighbour
+      : nearFind
+        ? { kind: 'find', id: nearFind.id, name: `Pick up ${nearFind.name}` }
+        : nearNeighbour
         ? {
           kind: 'npc',
           id: nearNeighbour.resident.key,
@@ -507,6 +525,30 @@ export default function WorldScene({
       <SpawnCircle />
 
       <Roads />
+
+      {FINDS.filter((find) => !collected.includes(find.id)).map((find) => (
+        <button
+          key={find.id}
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            run?.({ action: 'collectFind', find_id: find.id }).catch(() => {});
+            say(myKey, 'Picked that up.');
+          }}
+          style={{ left: `${find.x}%`, top: `${find.y}%` }}
+          className="meadow-bob absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center"
+          title={find.name}
+        >
+          <span className="block text-2xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.65)]">
+            {find.emoji}
+          </span>
+          {nearFind?.id === find.id && (
+            <span className="mt-1 block whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-1.5 py-0.5 font-mono text-[7px] uppercase tracking-[0.1em] text-primary">
+              ⏎ {find.name}
+            </span>
+          )}
+        </button>
+      ))}
 
       <Places />
 

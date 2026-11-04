@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { DoorOpen } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { DoorOpen, Fish } from 'lucide-react';
 import CivicBuilding from '@/components/world/areas/CivicBuilding';
+import HarbourDock from '@/components/world/HarbourDock';
+import FishingGame from '@/components/world/FishingGame';
 import RealmScenery from '@/components/world/RealmScenery';
 import Walker from '@/components/world/Walker';
 import { useCitizen } from '@/hooks/useCitizen';
@@ -12,6 +14,7 @@ const EXIT = { x: 8, y: 88 };
 
 export default function RealmScene({ realm, onExit, onEnterPlace, blocked = false }) {
   const { citizen } = useCitizen();
+  const [fishing, setFishing] = useState(false);
   const boxRef = useRef(null);
   const { pos, nudge } = useInteriorWalk({
     roomRef: boxRef,
@@ -39,6 +42,11 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
     const distance = distanceTo(EXIT);
     return distance !== null && distance <= REACH;
   })();
+  const nearDock = (() => {
+    if (!realm.dock) return false;
+    const distance = distanceTo(realm.dock);
+    return distance !== null && distance <= REACH + 30;
+  })();
 
   useEffect(() => {
     const onKey = (event) => {
@@ -54,6 +62,9 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
       if (nearExit) {
         event.preventDefault();
         onExit();
+      } else if (nearDock) {
+        event.preventDefault();
+        setFishing(true);
       } else if (nearBuilding) {
         event.preventDefault();
         onEnterPlace(nearBuilding.place);
@@ -61,12 +72,37 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [blocked, nearBuilding, nearExit, onEnterPlace, onExit]);
+  }, [blocked, nearBuilding, nearDock, nearExit, onEnterPlace, onExit]);
 
   return (
     <div className="fixed inset-0 z-[45] overflow-hidden bg-[#070b08]">
       <div ref={boxRef} className="absolute inset-0">
         <RealmScenery realm={realm} />
+
+        {realm.water && <HarbourDock />}
+
+        {realm.dock && (
+          <button
+            type="button"
+            onClick={() => setFishing(true)}
+            style={{ left: `${realm.dock.x}%`, top: `${realm.dock.y}%` }}
+            title="Fish off the harbour dock"
+            className="absolute z-30 -translate-x-1/2 -translate-y-1/2 text-center"
+          >
+            <span
+              className={`flex h-10 w-10 items-center justify-center rounded-full border ${
+                nearDock
+                  ? 'border-primary bg-primary/25 text-primary'
+                  : 'border-[#8ec8e0]/50 bg-background/80 text-[#8ec8e0]'
+              }`}
+            >
+              <Fish className="h-4 w-4" />
+            </span>
+            <span className="mt-1 block whitespace-nowrap font-mono text-[8px] uppercase tracking-[0.12em] text-[#8ec8e0]">
+              {nearDock ? '⏎ Fish here' : 'The dock'}
+            </span>
+          </button>
+        )}
 
         {realm.buildings.map((building) => (
           <CivicBuilding
@@ -138,11 +174,15 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
         <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary shadow-lg">
           {nearExit
             ? '⏎ Back to the Commons'
-            : nearBuilding
-              ? `⏎ Enter · ${nearBuilding.name}`
-              : 'Walk with W A S D · ⏎ enter a building'}
+            : nearDock
+              ? '⏎ Fish off the dock'
+              : nearBuilding
+                ? `⏎ Enter · ${nearBuilding.name}`
+                : 'Walk with W A S D · ⏎ enter a building'}
         </div>
       )}
+
+      {fishing && <FishingGame onClose={() => setFishing(false)} />}
 
       {!blocked && (
         <div className="absolute bottom-3 left-3 z-30 grid grid-cols-3 gap-1 md:hidden">

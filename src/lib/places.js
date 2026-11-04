@@ -201,8 +201,11 @@ const ROOMS = {
       { type: 'counter', x: 50, y: 72, label: 'THE REGISTER' },
     ],
     actors: [
-      { emoji: '🦉', x: 50, y: 62, size: 32, name: 'Registrar', serves: 'register' },
-      { emoji: '🐢', x: 30, y: 80, size: 26, delay: '1.1s' },
+      { emoji: '🪿', x: 50, y: 60, size: 32, name: 'The Registrar', serves: 'register' },
+      { emoji: '🪿', x: 28, y: 76, size: 28, delay: '0.8s', name: 'Second clerk' },
+      { emoji: '🪿', x: 72, y: 78, size: 28, delay: '1.2s', name: 'A waiting goose' },
+      { emoji: '🪿', x: 16, y: 88, size: 24, delay: '1.6s', name: 'A waiting gosling' },
+      { emoji: '🪿', x: 84, y: 88, size: 24, delay: '2s', name: 'Another goose in the queue' },
     ],
   },
   dealership: {
@@ -317,6 +320,53 @@ const ROOMS = {
       { type: 'sacks', x: 20, y: 84 },
     ],
     actors: [{ emoji: '🐿️', x: 72, y: 58, size: 26, name: 'Denkeeper', serves: 'table' }],
+  },
+  fishmarket: {
+    name: 'The Fish Market',
+    sign: 'THE FISH MARKET',
+    honkish: 'HOOONKK HONK HONKK',
+    blurb: 'Ice, brine, gulls, and a fishmonger who has heard every excuse twice.',
+    accent: '#8ec8e0',
+    props: [
+      { type: 'counter', x: 50, y: 66, label: 'THE FISH SLAB' },
+      { type: 'sacks', x: 22, y: 60 },
+      { type: 'coins', x: 76, y: 82 },
+      { type: 'board', x: 76, y: 40 },
+    ],
+    actors: [
+      { emoji: '🪿', x: 50, y: 58, size: 32, name: 'The Fishmonger', serves: 'slab' },
+      { emoji: '🪿', x: 26, y: 78, size: 28, delay: '0.9s', name: 'The Old Fisher' },
+      { emoji: '🦆', x: 84, y: 88, size: 20, delay: '1.4s' },
+    ],
+  },
+  chandlery: {
+    name: 'The Chandlery',
+    sign: 'THE CHANDLERY',
+    honkish: 'HONK HOOONKK HONKK',
+    blurb: 'Rope, hooks, lantern oil and rods, all of it smelling faintly of the lake.',
+    accent: '#c8b48a',
+    props: [
+      { type: 'shelf', x: 20, y: 52 },
+      { type: 'shelf', x: 80, y: 52 },
+      { type: 'counter', x: 50, y: 72, label: 'RODS & TACKLE' },
+    ],
+    actors: [{ emoji: '🪿', x: 50, y: 64, size: 30, name: 'The Chandler', serves: 'tackle' }],
+  },
+  lighthouse: {
+    name: 'The Harbour Light',
+    sign: 'THE HARBOUR LIGHT',
+    honkish: 'HONKK HONKK HOOONKK',
+    blurb: 'A lamp that must never go out, and a keeper who will not let it.',
+    accent: '#f2c96b',
+    props: [
+      { type: 'map', x: 50, y: 34 },
+      { type: 'counter', x: 50, y: 70, label: 'THE LAMP ROOM' },
+      { type: 'coins', x: 18, y: 86 },
+    ],
+    actors: [
+      { emoji: '🪿', x: 50, y: 60, size: 30, name: 'The Lamp Keeper', serves: 'lamp' },
+      { emoji: '🪿', x: 24, y: 80, size: 26, delay: '1.3s' },
+    ],
   },
 };
 

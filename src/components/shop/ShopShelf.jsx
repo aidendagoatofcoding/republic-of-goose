@@ -10,6 +10,7 @@ export const SECTIONS = [
   { key: 'furniture', title: 'Furniture', blurb: 'Beds, chairs and shelves for the home you own.' },
   { key: 'vehicle', title: 'Vehicles', blurb: 'Cross the Republic without walking.' },
   { key: 'pet', title: 'Pets', blurb: 'Small companions that live on your plot.' },
+  { key: 'tool', title: 'Tools', blurb: 'Rods and tackle for the harbour dock.' },
 ];
 
 export default function ShopShelf({ category = 'all' }) {

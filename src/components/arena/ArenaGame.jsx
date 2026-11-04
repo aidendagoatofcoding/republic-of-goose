@@ -22,7 +22,7 @@ const makePlayer = () => ({
   cooldowns: { slash: 0, stab: 0 },
 });
 
-export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFinish }) {
+export default function ArenaGame({ bus = null, tier = 0, xp = 0, species = 'goose', onExit, onFinish }) {
   const playerRef = useRef(makePlayer());
   const ducksRef = useRef([]);
   const remotesRef = useRef(new Map());
@@ -347,8 +347,11 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
           until: performance.now() + 300,
         });
       } else if (msg.type === 'arena_pos') {
+        // The meadow echoes every message back to its sender — never draw yourself twice.
+        if (msg.from === bus.seat) return;
         remotesRef.current.set(msg.from, {
           name: msg.name,
+          species: msg.species || 'goose',
           x: msg.x,
           y: msg.y,
           hp: msg.hp,
@@ -394,6 +397,7 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
         remotes={remotes}
         effects={effectsRef.current}
         tier={tier}
+        species={species}
       />
       <ArenaHud
         player={playerRef.current}

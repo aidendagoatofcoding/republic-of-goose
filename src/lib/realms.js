@@ -1,16 +1,7 @@
 // The realms beyond the Commons portals. Each is its own city scene with buildings you walk into.
-import { SPAWN } from '@/lib/spawn';
 
 // Every realm portal closes in on the fountain: a tight ring just outside the cobbles.
-const PORTAL_RING = { rx: 5.6, ry: 15.5 };
-
-const ringSpot = (index, total) => {
-  const angle = ((-90 + (360 / total) * index) * Math.PI) / 180;
-  return {
-    x: Number((SPAWN.x + Math.cos(angle) * PORTAL_RING.rx).toFixed(2)),
-    y: Number((SPAWN.y + Math.sin(angle) * PORTAL_RING.ry).toFixed(2)),
-  };
-};
+// The ring is drawn in screen pixels (see Realms.jsx) so it stays a true circle.
 
 const REALM_DATA = [
   {
@@ -53,6 +44,14 @@ const REALM_DATA = [
         x: 50,
         y: 66,
         place: 'government',
+      },
+      {
+        id: 'herald',
+        name: 'Honk Herald',
+        variant: 'tower',
+        x: 50,
+        y: 80,
+        place: 'herald',
       },
     ],
   },
@@ -125,8 +124,33 @@ const REALM_DATA = [
       { emoji: '🦆', x: 24, y: 92, size: 18 },
       { emoji: '🕊️', x: 50, y: 28, size: 18 },
     ],
+    water: true,
+    dock: { x: 50, y: 92 },
     buildings: [
-      { id: 'herald', name: 'Honk Herald', variant: 'tower', x: 50, y: 56, place: 'herald' },
+      {
+        id: 'fishmarket',
+        name: 'The Fish Market',
+        variant: 'cottage',
+        x: 22,
+        y: 58,
+        place: 'fishmarket',
+      },
+      {
+        id: 'chandlery',
+        name: 'The Chandlery',
+        variant: 'cottage',
+        x: 50,
+        y: 56,
+        place: 'chandlery',
+      },
+      {
+        id: 'lighthouse',
+        name: 'The Harbour Light',
+        variant: 'tower',
+        x: 78,
+        y: 58,
+        place: 'lighthouse',
+      },
     ],
   },
   {
@@ -203,10 +227,10 @@ const REALM_DATA = [
   },
 ];
 
-// The portals themselves are laid out on the ring, not where each realm's own objects sit.
+// The portals are laid out on a true circle around the fountain, evenly spaced in order.
 export const REALMS = REALM_DATA.map((realm, index) => ({
   ...realm,
-  portal: ringSpot(index, REALM_DATA.length),
+  portalAngle: -90 + (360 / REALM_DATA.length) * index,
 }));
 
 export const REALM_BY_ID = Object.fromEntries(REALMS.map((realm) => [realm.id, realm]));

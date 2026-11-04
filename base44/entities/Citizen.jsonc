@@ -68,11 +68,11 @@
     },
     "xp": {
       "type": "number",
-      "description": "Lifetime experience earned in the arena and at the Champion Isle games"
+      "description": "Lifetime experience earned in the arena, on quests and at the Champion Isle games"
     },
     "sword_tier": {
       "type": "number",
-      "description": "Which blade the citizen carries: 0 rusty through 4 Honkbringer"
+      "description": "Which blade the citizen carries: 0 rusty through 8 of the finest steel"
     },
     "decorations": {
       "type": "array",
@@ -86,7 +86,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Homes, vehicles, pets and furniture bought by the citizen"
+      "description": "Homes, vehicles, pets, tools and furniture bought by the citizen"
     },
     "world_spots": {
       "type": "array",
@@ -143,6 +143,24 @@
     "last_wage": {
       "type": "string",
       "description": "Timestamp of the last wage paid out for the citizen's job"
+    },
+    "finds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids of the lost things the citizen has picked up out in the Republic"
+    },
+    "fish_caught": {
+      "type": "number",
+      "description": "How many fish the citizen has landed off the harbour dock"
+    },
+    "quests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Side quests the citizen has finished and been paid for"
     }
   },
   "required": [

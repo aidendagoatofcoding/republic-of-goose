@@ -13,6 +13,7 @@ import KitchenStation from '@/components/world/interiors/KitchenStation';
 import Citizenship from '@/pages/Citizenship';
 import Grammar from '@/pages/Grammar';
 import WarzoneArena from '@/components/world/interiors/WarzoneArena';
+import QuestPanel from '@/components/world/QuestPanel';
 
 const ShopCatalogue = () => <ShopShelf category="all" />;
 
@@ -41,6 +42,9 @@ export default function StationContent({ station, place, onEnterPlace, onExit, o
   }
   if (station.content.startsWith('shop-')) {
     return <ShopShelf category={station.content.slice(5)} />;
+  }
+  if (station.content.startsWith('quests:')) {
+    return <QuestPanel placeId={station.content.slice(7)} />;
   }
   const Piece = CONTENT[station.content];
   if (!Piece) {

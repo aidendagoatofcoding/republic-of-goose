@@ -1,4 +1,5 @@
 import { swordFor } from '@/lib/swords';
+import { speciesInfo } from '@/lib/species';
 
 const EFFECTS = {
   slash: { glyph: '⟋', color: '#f6ecc9' },
@@ -19,7 +20,7 @@ function Health({ value, max = 100, tint }) {
   );
 }
 
-export default function ArenaField({ player, ducks, remotes, effects, tier }) {
+export default function ArenaField({ player, ducks, remotes, effects, tier, species = 'goose' }) {
   const blade = swordFor(tier);
 
   return (
@@ -61,7 +62,7 @@ export default function ArenaField({ player, ducks, remotes, effects, tier }) {
             }`}
             aria-hidden="true"
           >
-            {remote.down ? '🪶' : '🦢'}
+            {remote.down ? '🪶' : speciesInfo(remote.species).emoji}
           </span>
           <span className="mt-0.5 block whitespace-nowrap font-mono text-[8px] uppercase tracking-[0.12em] text-[#ffb9a5]">
             {String(remote.name || 'A goose').split(' ')[0]}
@@ -98,7 +99,7 @@ export default function ArenaField({ player, ducks, remotes, effects, tier }) {
             style={{ transform: player.aimX < -0.1 ? 'scaleX(-1)' : undefined }}
             aria-hidden="true"
           >
-            🦢
+            {speciesInfo(species).emoji}
             <span
               className="absolute -right-2 top-1 text-lg"
               style={{ color: blade.tint, filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))' }}

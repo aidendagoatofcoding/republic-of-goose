@@ -25,10 +25,19 @@
         "home",
         "vehicle",
         "pet",
-        "furniture"
+        "furniture",
+        "tool"
+      ],
+      "enumColors": [
+        "gray",
+        "green",
+        "blue",
+        "pink",
+        "purple",
+        "yellow"
       ],
       "default": "decoration",
-      "description": "Kind of purchase: a worn decoration, a home, a vehicle, a pet or furniture for a home"
+      "description": "Kind of purchase: a worn decoration, a home, a vehicle, a pet, furniture for a home or a tool such as a fishing rod"
     }
   },
   "required": [
