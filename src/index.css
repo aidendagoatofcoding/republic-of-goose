@@ -631,3 +631,71 @@
     background-size: 25% 100%;
   }
 }
+
+/* The national fountain, running. */
+@keyframes fountain-stream {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.fountain-stream {
+  stroke-dasharray: 3 5;
+  animation: fountain-stream 0.9s linear infinite;
+}
+
+@keyframes fountain-jet {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 0.95;
+  }
+  100% {
+    stroke-dashoffset: -18;
+    opacity: 0.3;
+  }
+}
+
+.fountain-jet {
+  stroke-dasharray: 2 4;
+  animation: fountain-jet 1.4s linear infinite;
+}
+
+@keyframes fountain-ripple {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+.fountain-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fountain-ripple 2.4s ease-out infinite;
+}
+
+@keyframes fountain-drop {
+  0% {
+    transform: translateY(3px) scale(0.8);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-16px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+.fountain-drop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fountain-drop 1.8s ease-out infinite;
+}

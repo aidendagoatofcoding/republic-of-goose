@@ -11,6 +11,7 @@ export default function Walker({
   isMe = false,
   bubble,
   speed = '2.4s',
+  lift = 0,
   onPoke,
 }) {
   return (
@@ -23,7 +24,8 @@ export default function Walker({
       style={{
         left: `${x}%`,
         top: `${y}%`,
-        transition: `left ${speed} linear, top ${speed} linear`,
+        marginTop: lift ? -lift : undefined,
+        transition: `left ${speed} linear, top ${speed} linear, margin-top 200ms ease-out`,
       }}
       className="absolute z-30 flex -translate-x-1/2 -translate-y-full flex-col items-center focus:outline-none"
     >

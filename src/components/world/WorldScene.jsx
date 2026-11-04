@@ -598,7 +598,7 @@ export default function WorldScene({
         transform: `translate(${-camera}px, ${-camY}px)`,
         transition: 'transform 260ms ease-out',
       }}
-      className="absolute left-0 top-0 h-[900%] w-[2800%] min-w-[23000px] overflow-hidden bg-secondary/40"
+      className="absolute left-0 top-0 h-[180%] w-[2800%] min-w-[23000px] overflow-hidden bg-secondary/40"
     >
       <MeadowGround />
 
@@ -720,6 +720,7 @@ export default function WorldScene({
       {residents.flatMap((resident) =>
         resident.spots
           .filter((spot) => spot.category !== 'home')
+          .filter((spot) => !(riding && resident.is_me && spot.item_id === myRide?.item_id))
           .map((spot) => {
             const isPet = spot.category === 'pet';
             const drift = isPet ? wander[spot.item_id] : null;
@@ -733,6 +734,10 @@ export default function WorldScene({
                   event.stopPropagation();
                   if (resident.is_me) {
                     if (isPet) setPet(spot);
+                    else if (spot.category === 'vehicle') {
+                      setRiding(true);
+                      say(myKey, `You climb onto the ${spot.name.toLowerCase()}.`);
+                    }
                     return;
                   }
                   openOffer(resident, spot);
@@ -743,7 +748,11 @@ export default function WorldScene({
                   transition: 'left 2.6s linear, top 2.6s linear',
                 }}
                 className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 select-none text-center leading-none ${
-                  resident.is_me ? (isPet ? 'cursor-pointer' : 'cursor-default') : 'pointer-events-none'
+                  resident.is_me
+                    ? isPet || spot.category === 'vehicle'
+                      ? 'cursor-pointer'
+                      : 'cursor-default'
+                    : 'pointer-events-none'
                 }`}
               >
                 {bubbles[`pet:${spot.item_id}`]?.text && (
@@ -822,11 +831,20 @@ export default function WorldScene({
 
       {riding && myRide && (
         <div
-          style={{ left: `${me.x}%`, top: `${me.y}%` }}
-          className="pointer-events-none absolute z-[15] -translate-x-1/2 -translate-y-[92%] text-3xl drop-shadow-[0_6px_6px_rgba(0,0,0,0.55)]"
+          style={{
+            left: `${me.x}%`,
+            top: `${me.y}%`,
+            transition: 'left 60ms linear, top 60ms linear',
+          }}
+          className="pointer-events-none absolute z-[29] -translate-x-1/2 -translate-y-full text-6xl drop-shadow-[0_9px_9px_rgba(0,0,0,0.55)]"
           aria-hidden="true"
         >
-          {myRide.emoji}
+          <span
+            className="meadow-bob block"
+            style={{ transform: me.face === -1 ? 'scaleX(-1)' : undefined }}
+          >
+            {myRide.emoji}
+          </span>
         </div>
       )}
 
@@ -841,6 +859,7 @@ export default function WorldScene({
           face={me.face}
           isMe
           bubble={bubbles[myKey]?.text}
+          lift={riding && myRide ? 38 : 0}
           speed="0.16s"
           onPoke={() => {
             say(myKey, 'HONK!');

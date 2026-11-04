@@ -1,6 +1,29 @@
 import { SPAWN } from '@/lib/spawn';
 
-// The cobbled circle every goose arrives on, with the national fountain at its heart.
+// The jets that leave the top bowl and fall back into the basin, left and right of the pedestal.
+const STREAMS = [
+  { d: 'M92 76c-5 6-9 14-11 22', delay: '0s' },
+  { d: 'M95 78c-3 7-5 14-6 21', delay: '0.35s' },
+  { d: 'M108 76c5 6 9 14 11 22', delay: '0.15s' },
+  { d: 'M105 78c3 7 5 14 6 21', delay: '0.5s' },
+];
+
+// The spray thrown up out of the bowl before it comes back down.
+const JETS = [
+  { d: 'M100 72c-3-7-7-11-13-13', delay: '0s' },
+  { d: 'M100 72c3-7 7-11 13-13', delay: '0.3s' },
+  { d: 'M100 72c-1-8-1-13 0-18', delay: '0.15s' },
+];
+
+const DROPS = [
+  { cx: 84, cy: 62, delay: '0s' },
+  { cx: 92, cy: 58, delay: '0.4s' },
+  { cx: 100, cy: 54, delay: '0.8s' },
+  { cx: 108, cy: 58, delay: '0.55s' },
+  { cx: 116, cy: 62, delay: '1.1s' },
+];
+
+// The cobbled circle every goose arrives on, with the national fountain running at its heart.
 export default function SpawnCircle() {
   return (
     <div
@@ -36,18 +59,87 @@ export default function SpawnCircle() {
           <g>
             <ellipse cx="100" cy="104" rx="40" ry="24" fill="#2b3630" stroke="#84937a" strokeWidth="2" />
             <ellipse cx="100" cy="102" rx="33" ry="18" fill="url(#fountain-water)" />
-            <ellipse cx="100" cy="102" rx="26" ry="13" fill="none" stroke="#dbeee4" strokeWidth="1" opacity="0.45" />
+
+            {/* Rings spreading across the basin as the water lands. */}
+            <ellipse
+              className="fountain-ripple"
+              cx="100"
+              cy="102"
+              rx="24"
+              ry="13"
+              fill="none"
+              stroke="#dbeee4"
+              strokeWidth="1"
+            />
+            <ellipse
+              className="fountain-ripple"
+              cx="100"
+              cy="102"
+              rx="24"
+              ry="13"
+              fill="none"
+              stroke="#dbeee4"
+              strokeWidth="1"
+              style={{ animationDelay: '0.8s' }}
+            />
+            <ellipse
+              className="fountain-ripple"
+              cx="100"
+              cy="102"
+              rx="24"
+              ry="13"
+              fill="none"
+              stroke="#dbeee4"
+              strokeWidth="1"
+              style={{ animationDelay: '1.6s' }}
+            />
+
             <ellipse cx="100" cy="98" rx="7" ry="3.4" fill="#8e9a8c" stroke="#3a4539" strokeWidth="1.2" />
             <path d="M100 98V76" stroke="#7d8c7f" strokeWidth="3.4" strokeLinecap="round" />
             <ellipse cx="100" cy="74" rx="9" ry="4" fill="#8e9a8c" stroke="#3a4539" strokeWidth="1.2" />
-            <path
-              d="M91 74c-6 4-10 12-13 20M109 74c6 4 10 12 13 20M100 70c0 8 0 16 0 24"
-              stroke="#dbeee4"
-              strokeWidth="1.6"
-              fill="none"
-              opacity="0.55"
-              className="glow-pulse"
-            />
+            <ellipse cx="100" cy="73.4" rx="7" ry="2.6" fill="#bfe9d8" opacity="0.9" />
+
+            {/* Water pouring over the lip of the bowl. */}
+            {STREAMS.map((stream) => (
+              <path
+                key={stream.d}
+                className="fountain-stream"
+                style={{ animationDelay: stream.delay }}
+                d={stream.d}
+                fill="none"
+                stroke="#dbeee4"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            ))}
+
+            {/* Spray going up, then coming back down. */}
+            {JETS.map((jet) => (
+              <path
+                key={jet.d}
+                className="fountain-jet"
+                style={{ animationDelay: jet.delay }}
+                d={jet.d}
+                fill="none"
+                stroke="#e8f6ee"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                opacity="0.85"
+              />
+            ))}
+
+            {DROPS.map((drop) => (
+              <circle
+                key={`${drop.cx}-${drop.cy}`}
+                className="fountain-drop"
+                style={{ animationDelay: drop.delay }}
+                cx={drop.cx}
+                cy={drop.cy}
+                r="1.3"
+                fill="#e8f6ee"
+              />
+            ))}
+
             <circle cx="84" cy="100" r="1.6" fill="#e8f6ee" opacity="0.7" />
             <circle cx="116" cy="100" r="1.4" fill="#e8f6ee" opacity="0.6" />
           </g>
