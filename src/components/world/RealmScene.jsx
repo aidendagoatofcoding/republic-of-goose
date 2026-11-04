@@ -23,6 +23,10 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
     bounds: BOUNDS,
   });
 
+  // Nobody walks on the lake: the only footing past the shore is the pier itself.
+  const inWater = realm.water && pos.y > 66 && (pos.x < 42 || pos.x > 58);
+  const here = inWater ? { ...pos, y: 66 } : pos;
+
   const distanceTo = useCallback(
     (point) => {
       const box = boxRef.current;
@@ -34,9 +38,6 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
     [here.x, here.y]
   );
 
-  // Nobody walks on the lake: the only footing past the shore is the pier itself.
-  const inWater = realm.water && pos.y > 66 && (pos.x < 42 || pos.x > 58);
-  const here = inWater ? { ...pos, y: 66 } : pos;
   const exitAt = realm.centerReturn || EXIT;
 
   const nearBuilding = realm.buildings.find((building) => {

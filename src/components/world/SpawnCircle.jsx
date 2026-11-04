@@ -52,11 +52,6 @@ export default function SpawnCircle() {
             <circle cx="116" cy="100" r="1.4" fill="#e8f6ee" opacity="0.6" />
           </g>
         </svg>
-        <span className="absolute bottom-2 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-center">
-          <span className="block font-mono text-[8px] uppercase tracking-[0.24em] text-primary/80">
-            The Fountain Circle
-          </span>
-        </span>
       </div>
     </div>
   );

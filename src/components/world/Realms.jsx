@@ -34,7 +34,7 @@ export default function Realms({ onEnter, activeId = '' }) {
             style={{ left: `${left}%`, top: `${top}%` }}
             className="pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 text-center"
           >
-            <span className="relative mx-auto flex h-12 w-12 items-center justify-center">
+            <span className="relative mx-auto flex h-14 w-14 items-center justify-center">
               <span
                 className="absolute inset-0 rounded-full opacity-80"
                 style={{
@@ -46,7 +46,7 @@ export default function Realms({ onEnter, activeId = '' }) {
                 aria-hidden="true"
               />
               <span
-                className="absolute inset-[5px] rounded-full"
+                className="absolute inset-[6px] rounded-full"
                 style={{
                   background: 'radial-gradient(circle at 50% 45%, #0d150f 0%, #040705 78%)',
                   boxShadow: active
@@ -55,12 +55,12 @@ export default function Realms({ onEnter, activeId = '' }) {
                 }}
                 aria-hidden="true"
               />
-              <span className="relative text-lg leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+              <span className="relative text-xl leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                 {realm.glyph}
               </span>
             </span>
             <span
-              className={`mt-1 block whitespace-nowrap font-mono text-[8px] uppercase tracking-[0.12em] ${
+              className={`mt-1 block whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.12em] ${
                 active ? 'text-primary' : 'text-primary/70'
               }`}
             >

@@ -487,7 +487,7 @@ export default function WorldScene({
     const mx = (me.x / 100) * box.offsetWidth;
     const my = (me.y / 100) * box.offsetHeight;
     // A portal only answers when you are standing on it.
-    return Math.hypot(mx - px, my - py) <= 46;
+    return Math.hypot(mx - px, my - py) <= 62;
   });
 
   const collected = profile?.finds ?? [];
@@ -690,14 +690,14 @@ export default function WorldScene({
                 {bubble && <WorldBubble text={bubble} />}
                 <span
                   className="block"
-                  style={{ width: `${118 + Math.min(74, Math.round((spot.price ?? 0) / 8))}px` }}
+                  style={{ width: `${204 + Math.min(96, Math.round((spot.price ?? 0) / 6))}px` }}
                 >
                   <HouseSprite
                     name={spot.name}
-                    className="w-full drop-shadow-[0_8px_10px_rgba(0,0,0,0.45)]"
+                    className="w-full drop-shadow-[0_10px_12px_rgba(0,0,0,0.5)]"
                   />
                 </span>
-                <span className="mt-0.5 block max-w-[152px] truncate font-mono text-[9px] uppercase tracking-[0.1em] text-foreground/80">
+                <span className="mt-0.5 block max-w-[220px] truncate font-mono text-[10px] uppercase tracking-[0.1em] text-foreground/80">
                   {spot.name}
                 </span>
               </button>
