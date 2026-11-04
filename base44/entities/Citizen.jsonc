@@ -96,6 +96,13 @@
       },
       "description": "Homes, vehicles, pets, tools and furniture bought by the citizen"
     },
+    "gear": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Fishing tackle rigged on the line: one rod, bait, lure and landing net, by shop item id"
+    },
     "world_spots": {
       "type": "array",
       "description": "Where the citizen's home, vehicle, pets and items sit in the Honk Commons",

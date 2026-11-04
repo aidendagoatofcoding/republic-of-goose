@@ -5,7 +5,7 @@ import SwordsmithPanel from '@/components/arena/SwordsmithPanel';
 import { useCitizen } from '@/hooks/useCitizen';
 
 // The warzone portal drops you straight onto the front line. The smith waits at the edge of the field.
-export default function WarzoneBattle({ bus, onExit }) {
+export default function WarzoneBattle({ bus, mode = 'horde', onExit }) {
   const { citizen, signedIn, run } = useCitizen();
   const [smithOpen, setSmithOpen] = useState(false);
   const [note, setNote] = useState('');
@@ -29,6 +29,7 @@ export default function WarzoneBattle({ bus, onExit }) {
         tier={tier}
         xp={citizen?.xp ?? 0}
         species={citizen?.species || 'goose'}
+        mode={mode}
         onExit={onExit}
         onFinish={record}
       />

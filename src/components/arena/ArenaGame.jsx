@@ -22,7 +22,7 @@ const makePlayer = () => ({
   cooldowns: { slash: 0, stab: 0 },
 });
 
-export default function ArenaGame({ bus = null, tier = 0, xp = 0, species = 'goose', onExit, onFinish }) {
+export default function ArenaGame({ bus = null, tier = 0, xp = 0, species = 'goose', mode = 'horde', onExit, onFinish }) {
   const playerRef = useRef(makePlayer());
   const ducksRef = useRef([]);
   const remotesRef = useRef(new Map());
@@ -36,6 +36,8 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, species = 'goo
   const finishedRef = useRef(false);
   const busRef = useRef(bus);
   const tierRef = useRef(tier);
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
   const finishRef = useRef(onFinish);
 
   const [status, setStatus] = useState({ phase: 'fight', kills: 0, duels: 0 });
@@ -203,8 +205,9 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, species = 'goo
         player.y = Math.min(90, Math.max(14, player.y + ny * speed * dt));
       }
 
+      // The duelling ring holds only the geese in the room — no ducks are sent in.
       if (phaseRef.current === 'fight') {
-        if (now > spawnRef.current.at && ducksRef.current.length < ARENA.maxAlive) {
+        if (modeRef.current !== 'duel' && now > spawnRef.current.at && ducksRef.current.length < ARENA.maxAlive) {
           spawnRef.current.interval = Math.max(650, ARENA.spawnMs - killsRef.current * 18);
           spawnRef.current.at = now + spawnRef.current.interval;
           ducksRef.current.push({

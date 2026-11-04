@@ -3,6 +3,7 @@ import { Backpack, Coins } from 'lucide-react';
 import { useCitizen } from '@/hooks/useCitizen';
 import useShopItems from '@/hooks/useShopItems';
 import { SIFT_SHARDS } from '@/lib/hidden';
+import { tackleSlot } from '@/lib/tackle';
 
 // The toolbar along the bottom of the meadow, and the pack behind it. Press E.
 export default function InventoryBar() {
@@ -41,6 +42,7 @@ export default function InventoryBar() {
       emoji: item?.emoji || '❔',
       price: item?.price ?? 0,
       refund: Math.floor((item?.price ?? 0) * 0.8),
+      slot: tackleSlot(item),
     };
   });
 
@@ -51,6 +53,18 @@ export default function InventoryBar() {
     { id: 'fish', emoji: '🐟', label: `🐟 ${citizen.fish_caught ?? 0}`, title: 'Fish landed' },
     { id: 'finds', emoji: '🎒', label: `🎒 ${finds.length}`, title: 'Things found' },
   ];
+
+  const rig = async (item, rigged) => {
+    setBusy(item.id);
+    setNote('');
+    try {
+      await run({ action: rigged ? 'unequip' : 'equip', item_id: item.id });
+    } catch (error) {
+      setNote(error.message);
+    } finally {
+      setBusy('');
+    }
+  };
 
   const sell = async (item) => {
     setBusy(item.id);
@@ -67,8 +81,7 @@ export default function InventoryBar() {
 
   return (
     <>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[38] flex justify-center pb-1.5">
-        <div className="pointer-events-auto flex items-end gap-1 rounded-sm border border-border/80 bg-[#0b1310]/92 px-1.5 py-1 shadow-[0_6px_18px_rgba(0,0,0,0.55)]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[38] flex justify-center pb-1.5">        <div className="pointer-events-auto flex items-end gap-1 rounded-sm border border-border/80 bg-[#0b1310]/92 px-1.5 py-1 shadow-[0_6px_18px_rgba(0,0,0,0.55)]">
           {slots.map((slot) => (
             <div
               key={slot.id}
@@ -142,15 +155,31 @@ export default function InventoryBar() {
                         </span>
                       )}
                     </span>
-                    <button
-                      type="button"
-                      disabled={busy === item.id}
-                      onClick={() => sell(item)}
-                      className="flex shrink-0 items-center gap-1 rounded-sm border border-primary/50 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-primary hover:bg-primary/10 disabled:opacity-50"
-                    >
-                      <Coins className="h-3 w-3" />
-                      {item.refund}
-                    </button>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      {item.slot && (
+                        <button
+                          type="button"
+                          disabled={busy === item.id}
+                          onClick={() => rig(item, (citizen.gear ?? []).includes(item.id))}
+                          className={`rounded-sm border px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] disabled:opacity-50 ${
+                            (citizen.gear ?? []).includes(item.id)
+                              ? 'border-primary bg-primary/15 text-primary'
+                              : 'border-border text-muted-foreground hover:border-primary/60 hover:text-primary'
+                          }`}
+                        >
+                          {(citizen.gear ?? []).includes(item.id) ? 'Rigged' : 'Rig'}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        disabled={busy === item.id}
+                        onClick={() => sell(item)}
+                        className="flex items-center gap-1 rounded-sm border border-primary/50 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-primary hover:bg-primary/10 disabled:opacity-50"
+                      >
+                        <Coins className="h-3 w-3" />
+                        {item.refund}
+                      </button>
+                    </span>
                   </li>
                 ))}
               </ul>

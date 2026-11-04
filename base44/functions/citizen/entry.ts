@@ -33,6 +33,17 @@ const LOAN_PER_EARNED = 2;
 const LOAN_CAP = 5000;
 const LOAN_FEE = 1.2;
 
+// Which fishing slot a tool fills, matched on its shop name.
+function slotOfTackle(item) {
+  if (!item || item.category !== 'tool') return '';
+  const name = String(item.name || '');
+  if (/rod/i.test(name)) return 'rod';
+  if (/net|gaff/i.test(name)) return 'net';
+  if (/bait|worm|dough|shrimp|maggot|grub/i.test(name)) return 'bait';
+  if (/lure|spoon|spinner|jig|\bfly\b/i.test(name)) return 'lure';
+  return '';
+}
+
 function workerCost(workers) {
   return Math.round(WORKER_BASE_COST * Math.pow(WORKER_COST_GROWTH, workers));
 }
@@ -141,6 +152,7 @@ function publicCitizen(citizen, holdings = []) {
     job: citizen.job || '',
     finds: Array.isArray(citizen.finds) ? citizen.finds : [],
     fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)),
+    gear: Array.isArray(citizen.gear) ? citizen.gear : [],
     ore: Math.max(0, Math.floor(citizen.ore ?? 0)),
     quests: Array.isArray(citizen.quests) ? citizen.quests : [],
     created_date: citizen.created_date,
@@ -594,8 +606,38 @@ export default async function (req) {
       return Response.json({ citizen: publicCitizen(updated, holdings) });
     }
 
+    if (action === 'equip' || action === 'unequip') {
+      const itemId = String(body.item_id ?? '');
+      const owned = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+      if (!owned.includes(itemId)) {
+        return Response.json({ error: 'That is not in your pack.' }, { status: 400 });
+      }
+      const item = await admin.entities.ShopItem
+        .get(itemId)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      const slot = slotOfTackle(item);
+      if (!slot) {
+        return Response.json({ error: 'That is not fishing tackle.' }, { status: 400 });
+      }
+      const gearIds = Array.isArray(citizen.gear) ? citizen.gear : [];
+      let next = gearIds;
+      if (action === 'unequip') {
+        next = gearIds.filter((id: string) => id !== itemId);
+      } else {
+        const shelf = await admin.entities.ShopItem.list({ limit: 200 });
+        const byId = new Map((shelf?.items ?? []).map((row) => [row.id, row]));
+        next = [
+          ...gearIds.filter((id: string) => slotOfTackle(byId.get(id)) !== slot),
+          itemId,
+        ];
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, { gear: next });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
     if (action === 'fishCatch') {
-      const earned = 2;
+      const quality = Math.max(0, Math.min(3, Math.floor(Number(body.quality ?? 1)) || 1));
+      const earned = 2 + quality * 2;
       const updated = await admin.entities.Citizen.update(citizen.id, {
         bread: Math.round(citizen.bread ?? 0) + earned,
         bread_earned: earnedTotal(citizen) + earned,

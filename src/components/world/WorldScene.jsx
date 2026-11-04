@@ -5,7 +5,6 @@ import Places from '@/components/world/Places';
 import Walker from '@/components/world/Walker';
 import WorldBubble from '@/components/world/WorldBubble';
 import NeighbourDialog from '@/components/world/NeighbourDialog';
-import NeighbourTalk from '@/components/world/NeighbourTalk';
 import ChampionIsle from '@/components/world/ChampionIsle';
 import PongTable from '@/components/world/PongTable';
 import SprintGame from '@/components/world/SprintGame';
@@ -170,6 +169,13 @@ export default function WorldScene({
   useEffect(() => {
     if (connected) move(meRef.current.x, meRef.current.y, meRef.current.face);
   }, [connected, move]);
+
+  // The Sift gate calls for a portal from inside the witch's hut.
+  useEffect(() => {
+    const onRealm = (event) => setRealm(String(event.detail?.realm || ''));
+    window.addEventListener('goose:realm', onRealm);
+    return () => window.removeEventListener('goose:realm', onRealm);
+  }, []);
 
   const distanceTo = useCallback((spot, position) => {
     const box = boxRef.current;
@@ -589,8 +595,15 @@ export default function WorldScene({
           className="meadow-bob absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center"
           title={find.name}
         >
-          <span className="block text-2xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.65)]">
-            {find.emoji}
+          <span
+            className="block h-7 w-7 drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" className="h-full w-full">
+              <rect x="4" y="8" width="16" height="12" rx="3" fill="#7a6342" stroke="#2b2317" strokeWidth="1.4" />
+              <path d="M8 8c0-2.4 1.8-4 4-4s4 1.6 4 4" fill="none" stroke="#c2ff85" strokeWidth="1.6" />
+              <circle cx="12" cy="14" r="2" fill="#c2ff85" />
+            </svg>
           </span>
           {nearFind?.id === find.id && (
             <span className="mt-1 block whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-1.5 py-0.5 font-mono text-[7px] uppercase tracking-[0.1em] text-primary">
@@ -601,6 +614,17 @@ export default function WorldScene({
       ))}
 
       <Places />
+
+      {HIDDEN.filter((spot) => !collected.includes(spot.id)).map((spot) => (
+        <HiddenSpot
+          key={spot.id}
+          spot={spot}
+          near={nearHidden?.id === spot.id}
+          revealed={revealed.includes(spot.id)}
+          collected={false}
+          onSearch={searchSpot}
+        />
+      ))}
 
       <NeighbourHouses />
 
@@ -753,9 +777,13 @@ export default function WorldScene({
               bubble={bubbles[resident.key]?.text}
               speed="2.6s"
               onPoke={() => {
-                const line = pick(NPC_LINES);
-                say(resident.key, line);
-                setTalk({ name: resident.name, species: resident.species, line });
+                say(resident.key, pick(NPC_LINES));
+                setTalk({
+                  name: resident.name,
+                  dialogue: dialogueFor(
+                    resident.key.length % 2 === 0 ? 'gossip' : 'worker'
+                  ),
+                });
                 honkAt(0);
               }}
             />
@@ -910,7 +938,17 @@ export default function WorldScene({
         </GameStage>
       )}
 
-      <NeighbourTalk target={talk} onClose={() => setTalk(null)} />
+      <NpcDialog
+        target={talk}
+        onClose={() => setTalk(null)}
+        onOutcome={(choice) => {
+          if (choice.outcome === 'reveal') {
+            setRevealed(HIDDEN.map((spot) => spot.id));
+            say(myKey, 'You know where they are buried now.');
+          }
+          if (choice.outcome === 'heist') say(myKey, 'Left, right, left. Noted.');
+        }}
+      />
 
       {homeOpen && (
         <HomeInterior price={myHome?.price ?? 0} onExit={() => setHomeOpen(false)} />
@@ -923,6 +961,8 @@ export default function WorldScene({
           if (pet) say(`pet:${pet.item_id}`, reply);
         }}
       />
+
+      <InventoryBar />
 
       <CommonsChat name={profile?.name || 'A wanderer'} />
 
@@ -950,10 +990,14 @@ export default function WorldScene({
       )}
 
       {realm === 'warzone' || realm === 'duelling' ? (
-        <WarzoneBattle bus={arenaBus} onExit={() => setRealm('')} />
+        <WarzoneBattle
+          bus={arenaBus}
+          mode={realm === 'duelling' ? 'duel' : 'horde'}
+          onExit={() => setRealm('')}
+        />
       ) : realm ? (
         <RealmScene
-          realm={REALMS.find((entry) => entry.id === realm)}
+          realm={realmFor(realm)}
           onExit={() => setRealm('')}
           onEnterPlace={setInside}
           blocked={Boolean(inside)}
