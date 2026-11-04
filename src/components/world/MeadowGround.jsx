@@ -162,19 +162,26 @@ export default function MeadowGround() {
         </span>
       ))}
 
-      <span className="absolute left-[4%] top-[12%] text-2xl opacity-80">🌲</span>
-      <span className="absolute left-[8%] top-[20%] text-lg opacity-65">🌲</span>
-      <span className="absolute left-[15%] top-[9%] text-xl opacity-75">🌲</span>
+      <span className="absolute left-[4%] top-[12%] opacity-80" style={{ fontSize: 116 }}>🌲</span>
+      <span className="absolute left-[8%] top-[20%] opacity-65" style={{ fontSize: 92 }}>🌲</span>
+      <span className="absolute left-[15%] top-[9%] opacity-75" style={{ fontSize: 100 }}>🌲</span>
+      <span className="absolute left-[24%] top-[30%] opacity-70" style={{ fontSize: 96 }}>🌲</span>
+      <span className="absolute left-[45%] top-[14%] opacity-75" style={{ fontSize: 104 }}>🌲</span>
       <span className="absolute left-[52%] top-[6%] text-lg opacity-65">🌾</span>
-      <span className="absolute left-[70%] top-[8%] text-xl opacity-70">🌲</span>
-      <span className="absolute left-[86%] top-[12%] text-2xl opacity-80">🌲</span>
+      <span className="absolute left-[61%] top-[26%] opacity-65" style={{ fontSize: 88 }}>🌲</span>
+      <span className="absolute left-[70%] top-[8%] opacity-70" style={{ fontSize: 96 }}>🌲</span>
+      <span className="absolute left-[86%] top-[12%] opacity-80" style={{ fontSize: 112 }}>🌲</span>
       <span className="absolute left-[93%] top-[23%] text-base opacity-55">🪨</span>
       <span className="absolute left-[36%] top-[50%] text-base opacity-60">🌾</span>
       <span className="absolute left-[56%] top-[55%] text-sm opacity-55">🌿</span>
       <span className="absolute left-[68%] top-[70%] text-base opacity-55">🪨</span>
-      <span className="absolute left-[96%] top-[55%] text-lg opacity-60">🌲</span>
+      <span className="absolute left-[96%] top-[55%] opacity-60" style={{ fontSize: 92 }}>🌲</span>
       <span className="absolute left-[6%] top-[78%] text-lg opacity-60">🌾</span>
       <span className="absolute left-[80%] top-[92%] text-lg opacity-60">🪨</span>
+      <span className="absolute left-[42%] top-[96%] opacity-65" style={{ fontSize: 100 }}>🌲</span>
+      <span className="absolute left-[74%] top-[74%] opacity-70" style={{ fontSize: 96 }}>🌲</span>
+      <span className="absolute left-[28%] top-[46%] opacity-60" style={{ fontSize: 86 }}>🌲</span>
+      <span className="absolute left-[90%] top-[38%] opacity-65" style={{ fontSize: 94 }}>🌲</span>
     </div>
   );
 }

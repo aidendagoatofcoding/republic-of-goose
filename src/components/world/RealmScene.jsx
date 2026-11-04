@@ -5,8 +5,10 @@ import HarbourDock from '@/components/world/HarbourDock';
 import FishingGame from '@/components/world/FishingGame';
 import RealmScenery from '@/components/world/RealmScenery';
 import Walker from '@/components/world/Walker';
+import WeatherLayer from '@/components/world/WeatherLayer';
 import { useCitizen } from '@/hooks/useCitizen';
 import useInteriorWalk from '@/hooks/useInteriorWalk';
+import useWeather from '@/hooks/useWeather';
 
 const REACH = 185;
 const BOUNDS = { x: [6, 94], y: [58, 92] };
@@ -14,6 +16,7 @@ const EXIT = { x: 8, y: 88 };
 
 export default function RealmScene({ realm, onExit, onEnterPlace, blocked = false }) {
   const { citizen } = useCitizen();
+  const weather = useWeather();
   const [fishing, setFishing] = useState(false);
   const boxRef = useRef(null);
   const { pos, nudge } = useInteriorWalk({
@@ -89,6 +92,10 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
           : { background: '#070b08' }
       }
     >
+      <div className="absolute inset-0 z-[24]">
+        <WeatherLayer weather={weather} />
+      </div>
+
       <div ref={boxRef} className="absolute inset-0">
         <RealmScenery realm={realm} />
 

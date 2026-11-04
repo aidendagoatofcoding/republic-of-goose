@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Pickaxe } from 'lucide-react';
 import { useCitizen } from '@/hooks/useCitizen';
+import useShopItems from '@/hooks/useShopItems';
 
 // The bread seam. Swing the pick, fill your pockets, let the ore grow back.
 export default function MineStation() {
   const { citizen, signedIn, run } = useCitizen();
+  const items = useShopItems();
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -15,6 +17,12 @@ export default function MineStation() {
       </p>
     );
   }
+
+  const owned = Array.isArray(citizen?.possessions) ? citizen.possessions : [];
+  const bestPick = items
+    .filter((item) => /pick/i.test(item.name || '') && owned.includes(item.id))
+    .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))[0];
+  const pickName = bestPick ? `${bestPick.emoji} ${bestPick.name}` : 'bare webbed feet';
 
   const swing = async () => {
     setBusy(true);
@@ -52,6 +60,10 @@ export default function MineStation() {
           <p className="font-mono text-sm text-primary">🍞 {citizen?.bread ?? 0}</p>
         </div>
       </div>
+
+      <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+        In hand · <span className="text-primary">{pickName}</span>
+      </p>
 
       <button
         type="button"

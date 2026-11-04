@@ -11,6 +11,11 @@ const COTTAGES = [
   { key: 'cottage-6', name: 'Sky Nest', x: 85, y: 90, size: 'w-[90px] sm:w-[106px]' },
   { key: 'cottage-7', name: 'Nest Cottage', x: 12, y: 94, size: 'w-[96px] sm:w-[112px]' },
   { key: 'cottage-8', name: 'Burrow', x: 46, y: 95, size: 'w-[86px] sm:w-[98px]' },
+  { key: 'cottage-9', name: 'Orchard Cottage', x: 8, y: 84, size: 'w-[100px] sm:w-[124px]' },
+  { key: 'cottage-10', name: 'Willow House', x: 55, y: 86, size: 'w-[106px] sm:w-[128px]' },
+  { key: 'cottage-11', name: 'Mossy Hollow', x: 92, y: 88, size: 'w-[94px] sm:w-[112px]' },
+  { key: 'cottage-12', name: 'Reed Wharf', x: 62, y: 96, size: 'w-[98px] sm:w-[118px]' },
+  { key: 'cottage-13', name: 'Lark Lodge', x: 32, y: 82, size: 'w-[92px] sm:w-[108px]' },
 ];
 
 export default function NeighbourHouses() {

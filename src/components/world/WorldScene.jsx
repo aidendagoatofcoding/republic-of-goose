@@ -22,7 +22,7 @@ import PlaceInterior from '@/components/world/interiors/PlaceInterior';
 import PetPanel from '@/components/world/PetPanel';
 import WarzoneBattle from '@/components/arena/WarzoneBattle';
 import WeatherLayer from '@/components/world/WeatherLayer';
-import { weatherFor, NEXT_WEATHER, WEATHER_MS } from '@/lib/weather';
+import useWeather from '@/hooks/useWeather';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
 import { placeFor } from '@/lib/places';
 import RealmScene from '@/components/world/RealmScene';
@@ -58,8 +58,9 @@ const KNOCKS = ['Come in!', 'Who honks there?', 'Door is open.', 'Wipe your webb
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 const REACH_PX = 190;
-const MOVE_SPEED = 165;
-const RIDE_BOOST = 1.9;
+// The meadow is five times the size it once was, so a goose covers the ground faster.
+const MOVE_SPEED = 380;
+const RIDE_BOOST = 2.2;
 
 export default function WorldScene({
   residents,
@@ -140,13 +141,7 @@ export default function WorldScene({
   const [revealed, setRevealed] = useState([]);
 
   // The sky turns over on its own while you wander.
-  const [weather, setWeather] = useState(() => weatherFor('sunny'));
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setWeather((current) => weatherFor(NEXT_WEATHER[current.id] || 'sunny'));
-    }, WEATHER_MS);
-    return () => clearInterval(timer);
-  }, []);
+  const weather = useWeather();
 
   // Stamina: hold Shift to run, and it comes back when you walk or stand.
   const staminaRef = useRef(100);
@@ -271,7 +266,7 @@ export default function WorldScene({
       }
       if (!moving) return;
 
-      const speed = MOVE_SPEED * (riding ? RIDE_BOOST : 1) * (running ? 1.75 : 1);
+      const speed = MOVE_SPEED * (riding ? RIDE_BOOST : 1) * (running ? 2.1 : 1);
       const length = Math.hypot(vx, vy) || 1;
       const nx = vx / length;
       const ny = vy / length;
@@ -603,7 +598,7 @@ export default function WorldScene({
         transform: `translate(${-camera}px, ${-camY}px)`,
         transition: 'transform 260ms ease-out',
       }}
-      className="absolute left-0 top-0 h-[180%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
+      className="absolute left-0 top-0 h-[900%] w-[2800%] min-w-[23000px] overflow-hidden bg-secondary/40"
     >
       <MeadowGround />
 

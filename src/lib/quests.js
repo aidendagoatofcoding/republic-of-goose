@@ -1,6 +1,6 @@
 // The lost things scattered out in the Republic, and the side quests that want them back.
 // Anything with `hidden: true` is buried under a rock or a tree and must be searched for.
-// The Sift shards lie out in the open: nothing about them is hidden and nothing about them is locked.
+// The Sift shards are buried the same way: search the boulders and the hollow trees for them.
 
 export const FINDS = [
   { id: 'lantern', name: "The witch's lantern", emoji: '🏮', x: 63, y: 29 },
@@ -12,15 +12,15 @@ export const FINDS = [
   { id: 'lamp-oil', name: 'A can of lamp oil', emoji: '🛢️', x: 71, y: 79 },
   { id: 'seal', name: 'The registry seal', emoji: '🔏', x: 28, y: 19 },
   { id: 'mothkey', name: 'The brass key', emoji: '🗝️', x: 44, y: 40 },
-  { id: 'shard-1', name: 'A sift shard', emoji: '🔷', x: 22, y: 52 },
-  { id: 'shard-2', name: 'A sift shard', emoji: '🔶', x: 34, y: 32 },
-  { id: 'shard-3', name: 'A sift shard', emoji: '🔷', x: 52, y: 24 },
-  { id: 'shard-4', name: 'A sift shard', emoji: '🔶', x: 66, y: 40 },
-  { id: 'shard-5', name: 'A sift shard', emoji: '🔷', x: 78, y: 62 },
-  { id: 'shard-6', name: 'A sift shard', emoji: '🔶', x: 58, y: 57 },
-  { id: 'shard-7', name: 'A sift shard', emoji: '🔷', x: 30, y: 70 },
-  { id: 'shard-8', name: 'A sift shard', emoji: '🔶', x: 14, y: 80 },
-  { id: 'shard-9', name: 'A sift shard', emoji: '🔷', x: 86, y: 80 },
+  { id: 'shard-1', name: 'Sift shard', hidden: true, emoji: '🔷', x: 25, y: 56 },
+  { id: 'shard-2', name: 'Sift shard', hidden: true, emoji: '🔶', x: 37, y: 36 },
+  { id: 'shard-3', name: 'Sift shard', hidden: true, emoji: '🔷', x: 55, y: 28 },
+  { id: 'shard-4', name: 'Sift shard', hidden: true, emoji: '🔶', x: 69, y: 44 },
+  { id: 'shard-5', name: 'Sift shard', hidden: true, emoji: '🔷', x: 81, y: 66 },
+  { id: 'shard-6', name: 'Sift shard', hidden: true, emoji: '🔶', x: 61, y: 61 },
+  { id: 'shard-7', name: 'Sift shard', hidden: true, emoji: '🔷', x: 33, y: 74 },
+  { id: 'shard-8', name: 'Sift shard', hidden: true, emoji: '🔶', x: 17, y: 84 },
+  { id: 'shard-9', name: 'Sift shard', hidden: true, emoji: '🔷', x: 89, y: 84 },
   { id: 'artifact', name: 'The Glade Artifact', hidden: true, x: 40, y: 88 },
   { id: 'strongbox', name: 'A bank strongbox', hidden: true, x: 68, y: 90 },
   { id: 'mossstone', name: 'The moss stone', hidden: true, x: 12, y: 62 },

@@ -789,11 +789,21 @@ export default async function (req) {
       if (now - last < 2500) {
         return Response.json({ error: 'Catch your breath before the next swing.' }, { status: 429 });
       }
-      const haul = 5 + Math.floor(Math.random() * 9);
+      // A better pick in the pack breaks off more of the seam with every swing.
+      const shelf = await admin.entities.ShopItem.list({ limit: 300 });
+      const shelfById = new Map((shelf?.items ?? []).map((row) => [row.id, row]));
+      const picks = (Array.isArray(citizen.possessions) ? citizen.possessions : [])
+        .map((id) => shelfById.get(id))
+        .filter((item) => item && /pick/i.test(String(item.name ?? '')));
+      const bestPick = picks.reduce((best, item) => Math.max(best, Number(item.price ?? 0)), 0);
+      const swing =
+        bestPick >= 2000 ? 3 : bestPick >= 900 ? 2.2 : bestPick >= 300 ? 1.6 : bestPick > 0 ? 1.25 : 1;
+      const chunks = bestPick >= 900 ? 2 : 1;
+      const haul = Math.round((5 + Math.random() * 9) * swing);
       const updated = await admin.entities.Citizen.update(citizen.id, {
         bread: Math.round(citizen.bread ?? 0) + haul,
         bread_earned: earnedTotal(citizen) + haul,
-        ore: Math.max(0, Math.floor(citizen.ore ?? 0)) + 1,
+        ore: Math.max(0, Math.floor(citizen.ore ?? 0)) + chunks,
         xp: xpOf(citizen) + 1,
         last_mined: new Date(now).toISOString(),
       });
