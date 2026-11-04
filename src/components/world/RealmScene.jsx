@@ -27,19 +27,24 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
     (point) => {
       const box = boxRef.current;
       if (!box) return null;
-      const dx = ((pos.x - point.x) / 100) * box.offsetWidth;
-      const dy = ((pos.y - point.y) / 100) * box.offsetHeight;
+      const dx = ((here.x - point.x) / 100) * box.offsetWidth;
+      const dy = ((here.y - point.y) / 100) * box.offsetHeight;
       return Math.hypot(dx, dy);
     },
-    [pos.x, pos.y]
+    [here.x, here.y]
   );
+
+  // Nobody walks on the lake: the only footing past the shore is the pier itself.
+  const inWater = realm.water && pos.y > 66 && (pos.x < 42 || pos.x > 58);
+  const here = inWater ? { ...pos, y: 66 } : pos;
+  const exitAt = realm.centerReturn || EXIT;
 
   const nearBuilding = realm.buildings.find((building) => {
     const distance = distanceTo(building);
     return distance !== null && distance <= REACH;
   });
   const nearExit = (() => {
-    const distance = distanceTo(EXIT);
+    const distance = distanceTo(exitAt);
     return distance !== null && distance <= REACH;
   })();
   const nearDock = (() => {
@@ -75,7 +80,14 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
   }, [blocked, nearBuilding, nearDock, nearExit, onEnterPlace, onExit]);
 
   return (
-    <div className="fixed inset-0 z-[45] overflow-hidden bg-[#070b08]">
+    <div
+      className="fixed inset-0 z-[45] overflow-hidden"
+      style={
+        realm.bright
+          ? { background: 'linear-gradient(180deg, #2b1030 0%, #5b2a52 40%, #12525c 100%)' }
+          : { background: '#070b08' }
+      }
+    >
       <div ref={boxRef} className="absolute inset-0">
         <RealmScenery realm={realm} />
 
@@ -116,9 +128,11 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
         <button
           type="button"
           onClick={onExit}
-          style={{ left: `${EXIT.x}%`, top: `${EXIT.y}%` }}
+          style={{ left: `${exitAt.x}%`, top: `${exitAt.y}%` }}
           title="Back through the portal to the Commons"
-          className="absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center"
+          className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center ${
+            realm.centerReturn ? 'scale-150' : ''
+          }`}
         >
           <span className="relative mx-auto flex h-14 w-14 items-center justify-center">
             <span className="portal-ring absolute inset-0 rounded-full" aria-hidden="true" />
@@ -140,9 +154,9 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
             label="You"
             species={citizen?.species || 'goose'}
             worn={citizen?.worn}
-            x={pos.x}
-            y={pos.y}
-            face={pos.face}
+            x={here.x}
+            y={here.y}
+            face={here.face}
             isMe
             speed="0s"
           />

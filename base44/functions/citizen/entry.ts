@@ -141,6 +141,7 @@ function publicCitizen(citizen, holdings = []) {
     job: citizen.job || '',
     finds: Array.isArray(citizen.finds) ? citizen.finds : [],
     fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)),
+    ore: Math.max(0, Math.floor(citizen.ore ?? 0)),
     quests: Array.isArray(citizen.quests) ? citizen.quests : [],
     created_date: citizen.created_date,
     holdings,
@@ -738,6 +739,49 @@ export default async function (req) {
         : kept;
       const updated = await admin.entities.Citizen.update(citizen.id, { home_items: next });
       return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'mine') {
+      const now = Date.now();
+      const last = Date.parse(citizen.last_mined || '') || 0;
+      if (now - last < 2500) {
+        return Response.json({ error: 'Catch your breath before the next swing.' }, { status: 429 });
+      }
+      const haul = 5 + Math.floor(Math.random() * 9);
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        bread: Math.round(citizen.bread ?? 0) + haul,
+        bread_earned: earnedTotal(citizen) + haul,
+        ore: Math.max(0, Math.floor(citizen.ore ?? 0)) + 1,
+        xp: xpOf(citizen) + 1,
+        last_mined: new Date(now).toISOString(),
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings), haul });
+    }
+
+    if (action === 'sellItem') {
+      const itemId = String(body.item_id ?? '');
+      const owned = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+      const worn = Array.isArray(citizen.decorations) ? citizen.decorations : [];
+      const inPossessions = owned.includes(itemId);
+      const inDecorations = worn.includes(itemId);
+      if (!inPossessions && !inDecorations) {
+        return Response.json({ error: 'You do not own that.' }, { status: 400 });
+      }
+      const item = await admin.entities.ShopItem
+        .get(itemId)
+        .catch(() => null);
+      const refund = Math.floor(Number(item?.price ?? 0) * 0.8);
+      const patch: Record<string, unknown> = { bread: Math.round(citizen.bread ?? 0) + refund };
+      if (inPossessions) {
+        patch.possessions = owned.filter((id) => id !== itemId);
+        patch.world_spots = (Array.isArray(citizen.world_spots) ? citizen.world_spots : []).filter(
+          (spot) => spot.item_id !== itemId
+        );
+      } else {
+        patch.decorations = worn.filter((id) => id !== itemId);
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, patch);
+      return Response.json({ citizen: publicCitizen(updated, holdings), refund });
     }
 
     if (action === 'offers') {

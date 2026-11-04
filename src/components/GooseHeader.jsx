@@ -39,7 +39,7 @@ export default function GooseHeader({ onOpenNav }) {
           <CitizenBadge species={citizen.species} className="hidden md:inline-flex" />
         ) : (
           <span className="meta-label hidden shrink-0 sm:block">
-            {loading ? 'Checking passport' : 'Honkish 5.4'}
+            {loading ? 'Checking passport' : 'Honkish 5.9'}
           </span>
         )}
       </div>

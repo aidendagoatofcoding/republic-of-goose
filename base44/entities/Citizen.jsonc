@@ -66,13 +66,21 @@
       "type": "number",
       "description": "Total bread earned through work, baking and chat, used to unlock better jobs"
     },
+    "ore": {
+      "type": "number",
+      "description": "Bread ore hauled out of the mines, kept in the citizen's pack"
+    },
+    "last_mined": {
+      "type": "string",
+      "description": "Timestamp of the last swing at the bread seam, used for the cooldown"
+    },
     "xp": {
       "type": "number",
       "description": "Lifetime experience earned in the arena, on quests and at the Champion Isle games"
     },
     "sword_tier": {
       "type": "number",
-      "description": "Which blade the citizen carries: 0 rusty through 8 of the finest steel"
+      "description": "Which blade the citizen carries: 0 rusty through the finest steel"
     },
     "decorations": {
       "type": "array",

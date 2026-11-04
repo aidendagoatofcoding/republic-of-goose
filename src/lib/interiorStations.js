@@ -6,6 +6,7 @@ export const STATIONS = {
   bank: [
     { id: 'loans', name: 'Loans desk', x: 32, y: 78, content: 'bank-loans' },
     { id: 'vault', name: 'The vault', x: 78, y: 76, content: 'bank-vault' },
+    { id: 'quiet-hands', name: 'A goose in a long coat', x: 18, y: 84, content: 'heist' },
   ],
   parliament: [
     { id: 'speaker', name: "Speaker's podium", x: 50, y: 76, content: 'parliament' },
@@ -36,9 +37,27 @@ export const STATIONS = {
   ],
   witch: [
     { id: 'brew', name: 'The brewing pot', x: 46, y: 62, content: 'witch-brew' },
-    { id: 'witch-quest', name: 'The witch', x: 46, y: 82, content: 'quests:witch' },
+    { id: 'sift-gate', name: 'The Sift gate', x: 30, y: 84, content: 'sift-gate' },
   ],
-  inn: [{ id: 'bar', name: 'The inn bar', x: 74, y: 74, content: 'inn-bar' }],
+  inn: [
+    { id: 'bar', name: 'The inn bar', x: 74, y: 74, content: 'inn-bar' },
+    { id: 'landlord', name: 'The landlord', x: 62, y: 84, content: 'quests:inn' },
+  ],
+  mineshaft: [
+    { id: 'seam', name: 'The bread seam', x: 50, y: 80, content: 'mine' },
+  ],
+  assay: [
+    { id: 'scales', name: 'The assay scales', x: 50, y: 82, content: 'shop-tool' },
+  ],
+  'sift-garden': [
+    { id: 'blooms', name: 'The glass blooms', x: 50, y: 82, content: 'shop-decoration' },
+  ],
+  'sift-archive': [
+    { id: 'stacks', name: 'The bright stacks', x: 50, y: 82, content: 'grammar' },
+  ],
+  'sift-court': [
+    { id: 'hum', name: 'The hum', x: 50, y: 76, content: 'parliament' },
+  ],
   'owl-tower': [
     { id: 'watch', name: 'The watch desk', x: 50, y: 74, content: 'owl-watch' },
     { id: 'owl-quest', name: 'The watchkeeper', x: 20, y: 82, content: 'quests:owl-tower' },

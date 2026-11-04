@@ -17,10 +17,22 @@ const spur = (id, x, y) => ({
   y2: Math.max(AVENUE_Y, y),
 });
 
+// Only one street per place: two plazas standing near the same spot share a single spur
+// instead of running two roads through each other.
+const uniqueSpurs = (entries) => {
+  const seen = [];
+  return entries.filter((entry) => {
+    const clash = seen.some((other) => Math.abs(other.x - entry.x) < 5);
+    if (clash) return false;
+    seen.push(entry);
+    return true;
+  });
+};
+
 export const ROADS = [
   { id: 'avenue', x1: 0, y1: AVENUE_Y, x2: 100, y2: AVENUE_Y },
-  ...AREAS.map((area) => spur(`plaza-${area.id}`, area.x, area.y)),
-  ...VENUES.map((venue) => spur(`ground-${venue.id}`, venue.x, venue.y)),
+  ...uniqueSpurs(AREAS.map((area) => spur(`plaza-${area.id}`, area.x, area.y))),
+  ...uniqueSpurs(VENUES.map((venue) => spur(`ground-${venue.id}`, venue.x, venue.y))),
 ];
 
 const project = (point, road) => {

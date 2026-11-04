@@ -8,10 +8,27 @@ export const FINDS = [
   'ledger',
   'lamp-oil',
   'seal',
+  'shard-1',
+  'shard-2',
+  'shard-3',
+  'shard-4',
+  'shard-5',
+  'shard-6',
+  'shard-7',
+  'shard-8',
+  'shard-9',
+  'artifact',
+  'strongbox',
+  'mothkey',
+  'mossstone',
 ];
 
 export const QUESTS = [
-  { id: 'witch-lantern', finds: ['lantern'], reward: { bread: 120, xp: 40 } },
+  { id: 'glade-artifact', finds: ['artifact'], reward: { bread: 220, xp: 70 } },
+  { id: 'inn-key', finds: ['mothkey'], reward: { bread: 150, xp: 50 } },
+  { id: 'shrine-stone', finds: ['mossstone'], reward: { bread: 160, xp: 55 } },
+  { id: 'den-strongbox', finds: ['strongbox'], reward: { bread: 200, xp: 65 } },
+  { id: 'bank-heist', finds: [], reward: { bread: 260, xp: 90 } },
   {
     id: 'glade-seeds',
     finds: ['pinecone-a', 'pinecone-b', 'pinecone-c'],

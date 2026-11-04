@@ -7,7 +7,7 @@ export default function SpawnCircle() {
       style={{ left: `${SPAWN.x}%`, top: `${SPAWN.y}%` }}
       className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"
     >
-      <div className="relative flex h-[240px] w-[240px] items-center justify-center sm:h-[320px] sm:w-[320px]">
+      <div className="relative flex h-[300px] w-[300px] items-center justify-center sm:h-[400px] sm:w-[400px]">
         <svg viewBox="0 0 200 200" className="absolute inset-0 h-full w-full" aria-hidden="true">
           <defs>
             <clipPath id="spawn-cobble-clip">

@@ -14,6 +14,9 @@ import Citizenship from '@/pages/Citizenship';
 import Grammar from '@/pages/Grammar';
 import WarzoneArena from '@/components/world/interiors/WarzoneArena';
 import QuestPanel from '@/components/world/QuestPanel';
+import MineStation from '@/components/world/MineStation';
+import SiftGate from '@/components/world/SiftGate';
+import BankHeist from '@/components/world/BankHeist';
 
 const ShopCatalogue = () => <ShopShelf category="all" />;
 
@@ -45,6 +48,15 @@ export default function StationContent({ station, place, onEnterPlace, onExit, o
   }
   if (station.content.startsWith('quests:')) {
     return <QuestPanel placeId={station.content.slice(7)} />;
+  }
+  if (station.content === 'mine') {
+    return <MineStation />;
+  }
+  if (station.content === 'sift-gate') {
+    return <SiftGate onExit={onExit} />;
+  }
+  if (station.content === 'heist') {
+    return <BankHeist />;
   }
   const Piece = CONTENT[station.content];
   if (!Piece) {

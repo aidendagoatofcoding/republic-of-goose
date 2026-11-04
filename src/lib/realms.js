@@ -125,14 +125,14 @@ const REALM_DATA = [
       { emoji: '🕊️', x: 50, y: 28, size: 18 },
     ],
     water: true,
-    dock: { x: 50, y: 92 },
+    dock: { x: 50, y: 82 },
     buildings: [
       {
         id: 'fishmarket',
         name: 'The Fish Market',
         variant: 'cottage',
         x: 22,
-        y: 58,
+        y: 52,
         place: 'fishmarket',
       },
       {
@@ -140,7 +140,7 @@ const REALM_DATA = [
         name: 'The Chandlery',
         variant: 'cottage',
         x: 50,
-        y: 56,
+        y: 50,
         place: 'chandlery',
       },
       {
@@ -148,9 +148,32 @@ const REALM_DATA = [
         name: 'The Harbour Light',
         variant: 'tower',
         x: 78,
-        y: 58,
+        y: 52,
         place: 'lighthouse',
       },
+    ],
+  },
+  {
+    id: 'mines',
+    name: 'The Bread Mines',
+    plazaName: 'Mine Yard',
+    portalLabel: 'The Mines',
+    glyph: '⛏️',
+    honkish: 'HONKK HONK HOOONKK',
+    blurb: 'Deep galleries of raw bread ore, lit by lamps and the odd philosophical mole.',
+    accent: '#c8b48a',
+    portal: { x: 50, y: 29 },
+    plaza: { x: 50, y: 29, rx: 6, ry: 3.5 },
+    scenery: [
+      { emoji: '🪨', x: 12, y: 66, size: 26 },
+      { emoji: '🪨', x: 88, y: 68, size: 24 },
+      { emoji: '🛒', x: 30, y: 80, size: 20 },
+      { emoji: '🛒', x: 72, y: 82, size: 20 },
+    ],
+    mineface: { x: 50, y: 72 },
+    buildings: [
+      { id: 'mineshaft', name: 'The Deep Shaft', variant: 'tower', x: 28, y: 54, place: 'mineshaft' },
+      { id: 'assay', name: 'The Assay Office', variant: 'cottage', x: 72, y: 54, place: 'assay' },
     ],
   },
   {
@@ -234,4 +257,32 @@ export const REALMS = REALM_DATA.map((realm, index) => ({
 }));
 
 export const REALM_BY_ID = Object.fromEntries(REALMS.map((realm) => [realm.id, realm]));
-export const realmFor = (id) => REALM_BY_ID[id] || null;
+
+// The Sift: a bright world behind the world, reached only through the witch's gate.
+// It has its own cobbled spawn with a return portal standing in the middle of it.
+export const SIFT = {
+  id: 'sift',
+  name: 'The Sift',
+  plazaName: 'The Bright Spawn',
+  glyph: '💠',
+  honkish: 'HONK HOOONKK HONK',
+  blurb: 'Pink sky, turquoise water, and a skyline that hums when you stand still.',
+  accent: '#ff9ad5',
+  bright: true,
+  centerReturn: { x: 50, y: 66 },
+  scenery: [
+    { emoji: '🌸', x: 10, y: 60, size: 28 },
+    { emoji: '🌸', x: 90, y: 60, size: 26 },
+    { emoji: '🦋', x: 30, y: 38, size: 20 },
+    { emoji: '✨', x: 68, y: 34, size: 18 },
+    { emoji: '🌿', x: 20, y: 84, size: 22 },
+    { emoji: '🌿', x: 80, y: 84, size: 22 },
+  ],
+  buildings: [
+    { id: 'sift-garden', name: 'The Glass Garden', variant: 'temple', x: 24, y: 52, place: 'sift-garden' },
+    { id: 'sift-archive', name: 'The Bright Archive', variant: 'tower', x: 50, y: 46, place: 'sift-archive' },
+    { id: 'sift-court', name: 'The Quiet Court', variant: 'capital', x: 76, y: 52, place: 'sift-court' },
+  ],
+};
+
+export const realmFor = (id) => (id === 'sift' ? SIFT : REALM_BY_ID[id] || null);
