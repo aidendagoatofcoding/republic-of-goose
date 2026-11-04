@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { ScrollText } from 'lucide-react';
 import { useCitizen } from '@/hooks/useCitizen';
-import { QUESTS_FOR_PLACE, findById } from '@/lib/quests';
+import { QUESTS, QUESTS_FOR_PLACE, findById } from '@/lib/quests';
 
 // The side quests a keeper of this building has going.
-export default function QuestPanel({ placeId }) {
+export default function QuestPanel({ placeId, questId }) {
   const { citizen, signedIn, run } = useCitizen();
   const [busy, setBusy] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
 
-  const quests = QUESTS_FOR_PLACE(placeId);
+  const quests = questId
+    ? QUESTS.filter((quest) => quest.id === questId)
+    : QUESTS_FOR_PLACE(placeId);
   if (quests.length === 0) return null;
 
   const finds = citizen?.finds ?? [];

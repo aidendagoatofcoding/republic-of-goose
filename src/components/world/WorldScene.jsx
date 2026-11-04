@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import HouseSprite from '@/components/world/HouseSprite';
-import MeadowGround from '@/components/world/MeadowGround';
+import CommonsScenery from '@/components/world/CommonsScenery';
 import Places from '@/components/world/Places';
 import Walker from '@/components/world/Walker';
 import WorldBubble from '@/components/world/WorldBubble';
@@ -14,8 +14,6 @@ import NestGuard from '@/components/world/NestGuard';
 import ArcheryGame from '@/components/world/ArcheryGame';
 import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
-import Roads from '@/components/world/Roads';
-import NeighbourHouses from '@/components/world/NeighbourHouses';
 import { spotOnRoadNear } from '@/lib/roads';
 import SportVenue from '@/components/world/SportVenue';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
@@ -29,20 +27,18 @@ import RealmScene from '@/components/world/RealmScene';
 import { REALMS, realmFor } from '@/lib/realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
-import SpawnCircle from '@/components/world/SpawnCircle';
 import HomeInterior from '@/components/world/interiors/HomeInterior';
 import GameStage from '@/components/world/GameStage';
 import CommonsChat from '@/components/world/CommonsChat';
 import { SPAWN, PORTAL_RING_RADIUS } from '@/lib/spawn';
 import { FINDS } from '@/lib/quests';
 import { HIDDEN } from '@/lib/hidden';
-import { dialogueFor } from '@/lib/dialogues';
+
 import HiddenSpot from '@/components/world/HiddenSpot';
-import NpcDialog from '@/components/world/NpcDialog';
+import ZeldaDialog from '@/components/world/ZeldaDialog';
 import InventoryBar from '@/components/world/InventoryBar';
 import SceneBoundary from '@/components/world/SceneBoundary';
 import EdgeWarden, { EDGE_WARDEN } from '@/components/world/EdgeWarden';
-import EdgeWardenPanel from '@/components/world/EdgeWardenPanel';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
 
@@ -85,13 +81,13 @@ export default function WorldScene({
   const myRide = mine?.spots.find((spot) => spot.category === 'vehicle');
   const [riding, setRiding] = useState(false);
   const [homeOpen, setHomeOpen] = useState(false);
-  const [giverOpen, setGiverOpen] = useState(false);
   const [pet, setPet] = useState(null);
   const [me, setMe] = useState({ x: SPAWN.x, y: SPAWN.y, face: 1 });
   const meRef = useRef(me);
   const keysRef = useRef(new Set());
   const placedRef = useRef('');
   const lastPublishRef = useRef(0);
+  const dirtyRef = useRef(false);
   const centeredRef = useRef(false);
   const enterRef = useRef(null);
 
@@ -140,6 +136,8 @@ export default function WorldScene({
   const myKey = seat ? `seat:${seat}` : 'me';
 
   const [talk, setTalk] = useState(null);
+  const talkRef = useRef(null);
+  talkRef.current = talk;
   const [revealed, setRevealed] = useState([]);
 
   // The sky turns over on its own while you wander.
@@ -150,6 +148,13 @@ export default function WorldScene({
   const staminaShownRef = useRef(100);
   const sprintRef = useRef(false);
   const [stamina, setStamina] = useState(100);
+
+  // A conversation stops the goose dead, so held keys are let go when one starts.
+  useEffect(() => {
+    if (!talk) return;
+    keysRef.current.clear();
+    sprintRef.current = false;
+  }, [talk]);
 
   // First search uncovers what is under the stone or in the trunk; the second picks it up.
   const searchSpot = useCallback(
@@ -249,7 +254,7 @@ export default function WorldScene({
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const box = boxRef.current;
-      if (!box || !mine || placing || inside || realm || homeOpen) return;
+      if (!box || !mine || placing || inside || realm || homeOpen || talk) return;
       const width = box.offsetWidth || 1;
       const height = box.offsetHeight || 1;
       const keys = keysRef.current;
@@ -266,7 +271,16 @@ export default function WorldScene({
         staminaShownRef.current = shown;
         setStamina(shown);
       }
-      if (!moving) return;
+      if (!moving) {
+        // Settle the last frame so a goose never stops short of where it walked.
+        if (dirtyRef.current) {
+          dirtyRef.current = false;
+          lastPublishRef.current = now;
+          setMe(meRef.current);
+          move(meRef.current.x, meRef.current.y, meRef.current.face);
+        }
+        return;
+      }
 
       const speed = MOVE_SPEED * (riding ? RIDE_BOOST : 1) * (running ? 1.75 : 1);
       const length = Math.hypot(vx, vy) || 1;
@@ -279,15 +293,17 @@ export default function WorldScene({
         face: nx < -0.05 ? -1 : nx > 0.05 ? 1 : current.face,
       };
       meRef.current = next;
-      if (now - lastPublishRef.current > 45) {
+      dirtyRef.current = true;
+      if (now - lastPublishRef.current > 24) {
         lastPublishRef.current = now;
+        dirtyRef.current = false;
         setMe(next);
         move(next.x, next.y, next.face);
       }
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [mine, placing, move, inside, realm, homeOpen, riding]);
+  }, [mine, placing, move, inside, realm, homeOpen, riding, talk]);
 
   useEffect(() => {
     const KEYS = {
@@ -301,6 +317,7 @@ export default function WorldScene({
       s: 'down',
     };
     const onDown = (event) => {
+      if (talkRef.current) return;
       const tag = event.target?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (event.key?.toLowerCase() === 'shift') {
@@ -338,6 +355,7 @@ export default function WorldScene({
   useEffect(() => {
     const onEnter = (event) => {
       if (event.key !== 'Enter') return;
+      if (talkRef.current) return;
       const tag = event.target?.tagName;
       if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tag)) return;
       const target = enterRef.current;
@@ -355,7 +373,7 @@ export default function WorldScene({
         say(target.id, pick(NPC_LINES));
         setTalk(target.talk);
       } else if (target.kind === 'giver') {
-        setGiverOpen(true);
+        setTalk(target.talk);
       }
       else setInside(target.place);
     };
@@ -548,7 +566,12 @@ export default function WorldScene({
   const enterTarget = homeOpen
     ? null
     : wardenNear
-    ? { kind: 'giver', id: 'edge', name: 'Speak to the Edge Warden' }
+    ? {
+      kind: 'giver',
+      id: 'edge',
+      name: 'Speak to the Edge Warden',
+      talk: { key: 'edge-warden', name: 'The Edge Warden', species: 'fox', questId: 'edge-lamp' },
+    }
     : nearOwnHome !== null && nearOwnHome <= REACH_PX
     ? { kind: 'home', id: 'home', name: 'Enter your home' }
     : nearVenue
@@ -572,14 +595,9 @@ export default function WorldScene({
           id: nearNeighbour.resident.key,
           name: `Talk to ${String(nearNeighbour.resident.name).split(' ')[0]}`,
           talk: {
+            key: nearNeighbour.resident.key,
             name: nearNeighbour.resident.name,
-            dialogue: dialogueFor(
-              nearNeighbour.resident.key.length % 3 === 0
-                ? 'worker'
-                : nearNeighbour.resident.key.length % 3 === 1
-                  ? 'witch'
-                  : 'gossip'
-            ),
+            species: nearNeighbour.resident.species,
           },
         }
         : null;
@@ -605,17 +623,23 @@ export default function WorldScene({
       ref={boxRef}
       style={{
         transform: `translate(${-camera}px, ${-camY}px)`,
-        transition: 'transform 260ms ease-out',
+        transition: 'transform 110ms linear',
       }}
       className="absolute left-0 top-0 h-[180%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
     >
-      <MeadowGround />
+      <CommonsScenery />
 
-      <SpawnCircle />
-
-      <EdgeWarden near={wardenNear} onOpen={() => setGiverOpen(true)} />
-
-      <Roads />
+      <EdgeWarden
+        near={wardenNear}
+        onOpen={() =>
+          setTalk({
+            key: 'edge-warden',
+            name: 'The Edge Warden',
+            species: 'fox',
+            questId: 'edge-lamp',
+          })
+        }
+      />
 
       {FINDS.filter((find) => !find.hidden && !collected.includes(find.id)).map((find) => (
         <button
@@ -661,7 +685,7 @@ export default function WorldScene({
         />
       ))}
 
-      <NeighbourHouses />
+
 
       <Realms onEnter={setRealm} activeId={nearPortal?.id || ''} />
 
@@ -713,7 +737,7 @@ export default function WorldScene({
                 {bubble && <WorldBubble text={bubble} />}
                 <span
                   className="block"
-                  style={{ width: `${204 + Math.min(96, Math.round((spot.price ?? 0) / 6))}px` }}
+                  style={{ width: `${68 + Math.min(54, Math.round((spot.price ?? 0) / 9))}px` }}
                 >
                   <HouseSprite
                     name={spot.name}
@@ -808,16 +832,16 @@ export default function WorldScene({
               worn={resident.worn}
               x={position.x}
               y={position.y}
-              face={position.face}
+              face={
+                talk?.key === resident.key ? (me.x < position.x ? -1 : 1) : position.face
+              }
               bubble={bubbles[resident.key]?.text}
               speed="2.6s"
               onPoke={() => {
-                say(resident.key, pick(NPC_LINES));
                 setTalk({
+                  key: resident.key,
                   name: resident.name,
-                  dialogue: dialogueFor(
-                    resident.key.length % 2 === 0 ? 'gossip' : 'worker'
-                  ),
+                  species: resident.species,
                 });
                 honkAt(0);
               }}
@@ -871,7 +895,7 @@ export default function WorldScene({
           isMe
           bubble={bubbles[myKey]?.text}
           lift={riding && myRide ? 38 : 0}
-          speed="0.16s"
+          speed="0s"
           onPoke={() => {
             say(myKey, 'HONK!');
             honk(0);
@@ -1012,17 +1036,7 @@ export default function WorldScene({
         </GameStage>
       )}
 
-      <NpcDialog
-        target={talk}
-        onClose={() => setTalk(null)}
-        onOutcome={(choice) => {
-          if (choice.outcome === 'reveal') {
-            setRevealed(HIDDEN.map((spot) => spot.id));
-            say(myKey, 'You know where they are buried now.');
-          }
-          if (choice.outcome === 'heist') say(myKey, 'Left, right, left. Noted.');
-        }}
-      />
+      <ZeldaDialog target={talk} onClose={() => setTalk(null)} />
 
       {homeOpen && (
         <HomeInterior price={myHome?.price ?? 0} onExit={() => setHomeOpen(false)} />
@@ -1040,7 +1054,7 @@ export default function WorldScene({
 
       <CommonsChat name={profile?.name || 'A wanderer'} />
 
-      <EdgeWardenPanel open={giverOpen} onClose={() => setGiverOpen(false)} />
+
 
       <NeighbourDialog
         target={offerTarget}
