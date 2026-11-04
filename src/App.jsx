@@ -11,7 +11,6 @@ import Home from '@/pages/Home';
 import Country from '@/pages/Country';
 import Citizenship from '@/pages/Citizenship';
 import Translator from '@/pages/Translator';
-import Chat from '@/pages/Chat';
 import Alphabet from '@/pages/Alphabet';
 import Dictionary from '@/pages/Dictionary';
 import Laws from '@/pages/Laws';
@@ -63,7 +62,6 @@ const AuthenticatedApp = () => {
         <Route path="/country" element={<Country />} />
         <Route path="/citizenship" element={<Citizenship />} />
         <Route path="/translator" element={<Translator />} />
-        <Route path="/chat" element={<Chat />} />
         <Route path="/alphabet" element={<Alphabet />} />
         <Route path="/dictionary" element={<Dictionary />} />
         <Route path="/laws" element={<Laws />} />

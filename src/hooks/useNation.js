@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { applyTheme, DEFAULT_THEME } from '@/lib/themes';
-import { DEFAULT_ANNOUNCEMENT, DEFAULT_LAWS } from '@/lib/nationDefaults';
+import {
+  DEFAULT_ABOUT,
+  DEFAULT_ANNOUNCEMENT,
+  DEFAULT_LAWS,
+  aboutFromConfig,
+} from '@/lib/nationDefaults';
 
 const FALLBACK_LAWS = DEFAULT_LAWS.map((law, index) => ({ ...law, id: `default-${index}` }));
 
@@ -9,6 +14,7 @@ export default function useNation() {
   const [announcement, setAnnouncement] = useState(DEFAULT_ANNOUNCEMENT);
   const [laws, setLaws] = useState(FALLBACK_LAWS);
   const [theme, setTheme] = useState(DEFAULT_THEME);
+  const [about, setAbout] = useState(DEFAULT_ABOUT);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
@@ -28,6 +34,7 @@ export default function useNation() {
         if (lines.length) setAnnouncement(lines);
       }
       if (config?.theme) setTheme(config.theme);
+      if (config) setAbout(aboutFromConfig(config));
       if (lawPage?.items?.length) setLaws(lawPage.items);
     } catch {
       // Keep the published defaults on screen if the record can't be reached.
@@ -44,5 +51,5 @@ export default function useNation() {
     applyTheme(theme);
   }, [theme]);
 
-  return { announcement, laws, theme, loading, reload };
+  return { announcement, laws, theme, about, loading, reload };
 }

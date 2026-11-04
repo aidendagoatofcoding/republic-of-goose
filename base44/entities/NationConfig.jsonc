@@ -9,6 +9,22 @@
     "theme": {
       "type": "string",
       "description": "Active national colour theme"
+    },
+    "about_intro": {
+      "type": "string",
+      "description": "Opening paragraphs of the About the Country page, one paragraph per line"
+    },
+    "about_facts": {
+      "type": "string",
+      "description": "National facts shown on the About page as 'Label | Value' per line"
+    },
+    "about_borders": {
+      "type": "string",
+      "description": "Borders of the Republic listed on the About page, one per line"
+    },
+    "about_regions": {
+      "type": "string",
+      "description": "Major regions of the Republic as 'Name | Note' per line"
     }
   },
   "required": [

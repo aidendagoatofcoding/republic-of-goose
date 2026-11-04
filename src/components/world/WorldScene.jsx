@@ -567,6 +567,7 @@ export default function WorldScene({
   }, [placing, onPlace]);
 
   const live = people.filter((person) => person.seat !== seat);
+  const realmData = realm ? realmFor(realm) : null;
 
   return (
     <div className="relative h-full w-full">
@@ -991,30 +992,32 @@ export default function WorldScene({
         />
       )}
 
-      {realm === 'warzone' || realm === 'duelling' ? (
-        <WarzoneBattle
-          bus={arenaBus}
-          mode={realm === 'duelling' ? 'duel' : 'horde'}
-          onExit={() => setRealm('')}
-        />
-      ) : realm ? (
-        <RealmScene
-          realm={realmFor(realm)}
-          onExit={() => setRealm('')}
-          onEnterPlace={setInside}
-          blocked={Boolean(inside)}
-        />
-      ) : null}
+      <SceneBoundary resetKey={`${realm}|${inside}`} onReset={() => setRealm('')}>
+        {realm === 'warzone' || realm === 'duelling' ? (
+          <WarzoneBattle
+            bus={arenaBus}
+            mode={realm === 'duelling' ? 'duel' : 'horde'}
+            onExit={() => setRealm('')}
+          />
+        ) : realmData ? (
+          <RealmScene
+            realm={realmData}
+            onExit={() => setRealm('')}
+            onEnterPlace={setInside}
+            blocked={Boolean(inside)}
+          />
+        ) : null}
 
-      {inside && (
-        <PlaceInterior
-          place={placeFor(inside)}
-          onEnterPlace={setInside}
-          onExit={() => setInside('')}
-          onPlay={setSport}
-          arenaBus={arenaBus}
-        />
-      )}
+        {inside && (
+          <PlaceInterior
+            place={placeFor(inside)}
+            onEnterPlace={setInside}
+            onExit={() => setInside('')}
+            onPlay={setSport}
+            arenaBus={arenaBus}
+          />
+        )}
+      </SceneBoundary>
     </div>
   );
 }

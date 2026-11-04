@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 const MASTER_PASSPHRASE = 'HONK2026';
-const ALLOWED_THEMES = ['forest', 'ocean', 'sunset', 'royal'];
+const ALLOWED_THEMES = ['forest', 'ocean', 'sunset', 'royal', 'ember', 'midnight', 'aurora', 'platinum'];
 const MAX_SUBJECT = 140;
 const MAX_BODY = 4000;
 const MAX_RECIPIENTS = 40;
@@ -93,6 +93,17 @@ export default async function (req) {
       }
       const config = await writeConfig(admin, { theme: body.theme });
       return Response.json({ ok: true, theme: config.theme });
+    }
+
+    if (action === 'saveAbout') {
+      const clip = (value: unknown) => String(value ?? '').slice(0, 6000);
+      const config = await writeConfig(admin, {
+        about_intro: clip(body.about_intro),
+        about_facts: clip(body.about_facts),
+        about_borders: clip(body.about_borders),
+        about_regions: clip(body.about_regions),
+      });
+      return Response.json({ ok: true, config: config.id });
     }
 
     if (action === 'saveLaw') {

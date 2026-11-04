@@ -5,7 +5,6 @@ import {
   Type,
   BookOpen,
   Lock,
-  MessageSquare,
   Newspaper,
   UserRound,
   Users,
@@ -34,7 +33,6 @@ export const NAV_GROUPS = [
   {
     label: 'Community',
     items: [
-      { path: '/chat', label: 'Goose Chat', title: 'The Honk Hall', icon: MessageSquare },
       { path: '/world', label: 'The Commons', title: 'The Honk Commons', icon: Users },
     ],
   },
