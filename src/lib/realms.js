@@ -1,4 +1,5 @@
 // The realms beyond the Commons portals. Each is its own city scene with buildings you walk into.
+// Every portal stands on the ring around the Commons spawn circle.
 export const REALMS = [
   {
     id: 'capital',
@@ -9,8 +10,8 @@ export const REALMS = [
     honkish: 'HONK HONK HONK',
     blurb: 'Marble steps, four ministries, and the long echo of official honking.',
     accent: '#f2c96b',
-    portal: { x: 44, y: 66 },
-    plaza: { x: 44, y: 68, rx: 8, ry: 5 },
+    portal: { x: 65, y: 30 },
+    plaza: { x: 65, y: 30, rx: 6, ry: 3.5 },
     scenery: [
       { emoji: '🌳', x: 6, y: 62, size: 36 },
       { emoji: '🌳', x: 94, y: 62, size: 34 },
@@ -43,8 +44,8 @@ export const REALMS = [
     honkish: 'HONK HOOONKK HONK',
     blurb: 'The civic heart of the Republic, where every goose is written into the register.',
     accent: '#f2c96b',
-    portal: { x: 50, y: 77 },
-    plaza: { x: 50, y: 77, rx: 6, ry: 4 },
+    portal: { x: 61, y: 41 },
+    plaza: { x: 61, y: 41, rx: 6, ry: 3.5 },
     scenery: [
       { emoji: '🚩', x: 38, y: 52, size: 22 },
       { emoji: '🚩', x: 62, y: 52, size: 22 },
@@ -75,8 +76,8 @@ export const REALMS = [
     honkish: 'HONKK HONKK HOOONKK',
     blurb: 'Shares shouted across the square, shops haggling under striped canvas.',
     accent: '#8fdca0',
-    portal: { x: 67, y: 66 },
-    plaza: { x: 67, y: 68, rx: 9, ry: 5 },
+    portal: { x: 50, y: 46 },
+    plaza: { x: 50, y: 46, rx: 6, ry: 3.5 },
     scenery: [
       { emoji: '🎪', x: 10, y: 62, size: 30 },
       { emoji: '🎪', x: 90, y: 62, size: 30 },
@@ -86,8 +87,9 @@ export const REALMS = [
       { emoji: '🥕', x: 86, y: 88, size: 16 },
     ],
     buildings: [
-      { id: 'exchange', name: 'The Honk Exchange', variant: 'tower', x: 32, y: 56, place: 'exchange' },
-      { id: 'guild', name: 'Shop Guild', variant: 'cottage', x: 70, y: 60, place: 'guild' },
+      { id: 'exchange', name: 'The Honk Exchange', variant: 'tower', x: 22, y: 56, place: 'exchange' },
+      { id: 'guild', name: 'Shop Guild', variant: 'cottage', x: 50, y: 58, place: 'guild' },
+      { id: 'dealership', name: 'Honk Motors', variant: 'cottage', x: 78, y: 56, place: 'dealership' },
     ],
   },
   {
@@ -99,8 +101,8 @@ export const REALMS = [
     honkish: 'HONK HOOONKK HONKK',
     blurb: 'Wheat to the horizon, ovens never quite cool, and the whole Republic smells of bread.',
     accent: '#e8cf8a',
-    portal: { x: 33, y: 74 },
-    plaza: { x: 33, y: 75, rx: 8, ry: 5 },
+    portal: { x: 39, y: 41 },
+    plaza: { x: 39, y: 41, rx: 6, ry: 3.5 },
     scenery: [
       { emoji: '🌾', x: 6, y: 66, size: 26 },
       { emoji: '🌾', x: 94, y: 66, size: 26 },
@@ -124,8 +126,8 @@ export const REALMS = [
     honkish: 'HOOONKK HONK HONK',
     blurb: 'Boats knocking hulls, gulls arguing over the catch, the Herald printing all of it.',
     accent: '#8ec8e0',
-    portal: { x: 77, y: 74 },
-    plaza: { x: 77, y: 75, rx: 8, ry: 5 },
+    portal: { x: 35, y: 30 },
+    plaza: { x: 35, y: 30, rx: 6, ry: 3.5 },
     scenery: [
       { emoji: '⛵', x: 12, y: 70, size: 30 },
       { emoji: '⛵', x: 88, y: 74, size: 26 },
@@ -147,8 +149,8 @@ export const REALMS = [
     honkish: 'HOOONKK HONK HOOONKK',
     blurb: 'Pines, fireflies, and the deep green quiet on the far edge of the Republic.',
     accent: '#8fdca0',
-    portal: { x: 55, y: 57 },
-    plaza: { x: 55, y: 58, rx: 7, ry: 5 },
+    portal: { x: 39, y: 19 },
+    plaza: { x: 39, y: 19, rx: 6, ry: 3.5 },
     scenery: [
       { emoji: '🌲', x: 8, y: 60, size: 40 },
       { emoji: '🌲', x: 92, y: 62, size: 38 },
@@ -161,6 +163,31 @@ export const REALMS = [
     ],
     buildings: [
       { id: 'glade', name: "Forester's Glade", variant: 'cottage', x: 50, y: 54, place: 'forest' },
+    ],
+  },
+  {
+    id: 'warzone',
+    name: 'The Duck Warzone',
+    plazaName: 'War Front',
+    portalLabel: 'Warzone',
+    glyph: '⚔️',
+    honkish: 'HONK! HOOONKK! HONK!',
+    blurb: 'The southern front, where the ducks have dug in and the geese hold the line.',
+    accent: '#e0664a',
+    portal: { x: 50, y: 14 },
+    plaza: { x: 50, y: 14, rx: 6, ry: 3.5 },
+    scenery: [
+      { emoji: '🔥', x: 14, y: 66, size: 26 },
+      { emoji: '🔥', x: 86, y: 70, size: 24 },
+      { emoji: '🛡️', x: 24, y: 74, size: 26 },
+      { emoji: '🛡️', x: 76, y: 78, size: 24 },
+      { emoji: '⚔️', x: 34, y: 86, size: 20 },
+      { emoji: '⚔️', x: 68, y: 88, size: 18 },
+      { emoji: '🦆', x: 62, y: 40, size: 20 },
+      { emoji: '🦆', x: 38, y: 34, size: 18 },
+    ],
+    buildings: [
+      { id: 'front', name: 'The Front Line', variant: 'tower', x: 50, y: 58, place: 'warzone' },
     ],
   },
 ];

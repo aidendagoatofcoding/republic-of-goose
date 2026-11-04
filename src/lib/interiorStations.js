@@ -79,6 +79,12 @@ export const STATIONS = {
   library: [
     { id: 'stacks', name: 'The grammar shelves', x: 50, y: 80, content: 'grammar' },
   ],
+  dealership: [
+    { id: 'lot', name: 'The lot', x: 50, y: 80, content: 'shop-vehicle' },
+  ],
+  warzone: [
+    { id: 'front', name: 'The front line', x: 50, y: 84, content: 'warzone' },
+  ],
   forest: [
     { id: 'glade', name: 'The quiet glade', x: 50, y: 84, content: 'forest' },
   ],

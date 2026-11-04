@@ -111,6 +111,7 @@ function publicCitizen(citizen, holdings = []) {
     decorations,
     possessions,
     world_spots: worldSpots,
+    home_items: Array.isArray(citizen.home_items) ? citizen.home_items : [],
     passport_code: citizen.passport_code,
     username: citizen.username || '',
     workers,
@@ -578,6 +579,31 @@ export default async function (req) {
         { item_id: itemId, x: clampSpot(body.x, 2, 98), y: clampSpot(body.y, 6, 94) },
       ];
       const updated = await admin.entities.Citizen.update(citizen.id, { world_spots: next });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'homeItem') {
+      const itemId = String(body.item_id ?? '').trim();
+      const owned = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+      if (!owned.includes(itemId)) {
+        return Response.json({ error: 'You do not own that.' }, { status: 400 });
+      }
+      const item = await admin.entities.ShopItem
+        .get(itemId)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!item || (item.category || '') !== 'furniture') {
+        return Response.json(
+          { error: 'Only furniture can be set out inside a home.' },
+          { status: 400 }
+        );
+      }
+      const room = Array.isArray(citizen.home_items) ? citizen.home_items : [];
+      const kept = room.filter((entry) => entry.item_id !== itemId);
+      const placing = body.x !== undefined && body.y !== undefined;
+      const next = placing
+        ? [...kept, { item_id: itemId, x: clampSpot(body.x, 6, 94), y: clampSpot(body.y, 40, 92) }]
+        : kept;
+      const updated = await admin.entities.Citizen.update(citizen.id, { home_items: next });
       return Response.json({ citizen: publicCitizen(updated, holdings) });
     }
 

@@ -78,11 +78,29 @@
       "items": {
         "type": "string"
       },
-      "description": "Homes, vehicles and pets bought by the citizen, placed in the Honk Commons"
+      "description": "Homes, vehicles, pets and furniture bought by the citizen"
     },
     "world_spots": {
       "type": "array",
       "description": "Where the citizen's home, vehicle, pets and items sit in the Honk Commons",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "home_items": {
+      "type": "array",
+      "description": "Furniture set out inside the citizen's own home, placed on the floor plan",
       "items": {
         "type": "object",
         "properties": {

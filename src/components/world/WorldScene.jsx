@@ -29,6 +29,9 @@ import { areaAt } from '@/lib/commonsAreas';
 import { REALMS } from '@/lib/realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
+import SpawnCircle from '@/components/world/SpawnCircle';
+import HomeInterior from '@/components/world/interiors/HomeInterior';
+import { SPAWN } from '@/lib/spawn';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
 
@@ -47,6 +50,7 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 const REACH_PX = 190;
 const MOVE_SPEED = 165;
+const RIDE_BOOST = 1.9;
 
 // The National Bakery stands among the stalls of the Market Square. The civic offices of the
 // Republic sit inside the Government Plaza portal.
@@ -73,17 +77,15 @@ export default function WorldScene({
 
   const mine = residents.find((resident) => resident.is_me) || null;
   const myHome = mine?.spots.find((spot) => spot.category === 'home');
-  const [me, setMe] = useState({
-    x: clamp((myHome?.x ?? 50) + (myHome ? 5 : 0), 8, 92),
-    y: clamp((myHome?.y ?? 58) + 9, 18, 92),
-    face: 1,
-  });
+  const myRide = mine?.spots.find((spot) => spot.category === 'vehicle');
+  const [riding, setRiding] = useState(false);
+  const [homeOpen, setHomeOpen] = useState(false);
+  const [me, setMe] = useState({ x: SPAWN.x, y: SPAWN.y, face: 1 });
   const meRef = useRef(me);
   const keysRef = useRef(new Set());
   const placedRef = useRef('');
   const lastPublishRef = useRef(0);
   const centeredRef = useRef(false);
-  const snappedRef = useRef(false);
   const enterRef = useRef(null);
 
   const say = useCallback((key, text) => {
@@ -179,22 +181,6 @@ export default function WorldScene({
   }, [me.y, viewTick]);
 
   useEffect(() => {
-    if (snappedRef.current || !mine) return;
-    snappedRef.current = true;
-    const home = mine.spots.find((spot) => spot.category === 'home');
-    if (!home) return;
-    const spot = {
-      x: clamp(home.x + 4, 6, 94),
-      y: clamp(home.y + 9, 18, 92),
-      face: 1,
-    };
-    meRef.current = spot;
-    centeredRef.current = false;
-    setMe(spot);
-    move(spot.x, spot.y, spot.face);
-  }, [mine, move]);
-
-  useEffect(() => {
     let frame = 0;
     let last = performance.now();
     const tick = (now) => {
@@ -202,7 +188,7 @@ export default function WorldScene({
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const box = boxRef.current;
-      if (!box || !mine || placing || inside || realm) return;
+      if (!box || !mine || placing || inside || realm || homeOpen) return;
       const width = box.offsetWidth || 1;
       const height = box.offsetHeight || 1;
       const keys = keysRef.current;
@@ -210,13 +196,14 @@ export default function WorldScene({
       const vy = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
       if (!vx && !vy) return;
 
+      const speed = MOVE_SPEED * (riding ? RIDE_BOOST : 1);
       const length = Math.hypot(vx, vy) || 1;
       const nx = vx / length;
       const ny = vy / length;
       const current = meRef.current;
       const next = {
-        x: clamp(current.x + ((nx * MOVE_SPEED * dt) / width) * 100, 2, 98),
-        y: clamp(current.y + ((ny * MOVE_SPEED * dt) / height) * 100, 2, 98),
+        x: clamp(current.x + ((nx * speed * dt) / width) * 100, 2, 98),
+        y: clamp(current.y + ((ny * speed * dt) / height) * 100, 2, 98),
         face: nx < -0.05 ? -1 : nx > 0.05 ? 1 : current.face,
       };
       meRef.current = next;
@@ -228,7 +215,7 @@ export default function WorldScene({
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [mine, placing, move, inside, realm]);
+  }, [mine, placing, move, inside, realm, homeOpen, riding]);
 
   useEffect(() => {
     const KEYS = {
@@ -275,6 +262,7 @@ export default function WorldScene({
       event.preventDefault();
       if (target.kind === 'sport') setSport(target.id);
       else if (target.kind === 'realm') setRealm(target.id);
+      else if (target.kind === 'home') setHomeOpen(true);
       else if (target.kind === 'npc') {
         const line = pick(NPC_LINES);
         say(target.id, line);
@@ -445,7 +433,13 @@ export default function WorldScene({
     .filter((entry) => entry.distance !== null && entry.distance <= REACH_PX)
     .sort((a, b) => a.distance - b.distance)[0];
 
-  const enterTarget = nearCivic
+  const nearOwnHome = myHome ? distanceTo(myHome, me) : null;
+
+  const enterTarget = homeOpen
+    ? null
+    : nearOwnHome !== null && nearOwnHome <= REACH_PX
+    ? { kind: 'home', id: 'home', name: 'Enter your home' }
+    : nearCivic
     ? { kind: 'place', id: nearCivic.id, place: nearCivic.place, name: `Enter ${nearCivic.name}` }
     : nearVenue
     ? { kind: 'sport', id: nearVenue.id, name: `Enter the ${nearVenue.name}` }
@@ -490,6 +484,8 @@ export default function WorldScene({
       className="absolute left-0 top-0 h-[180%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
     >
       <MeadowGround />
+
+      <SpawnCircle />
 
       <Roads />
 
@@ -544,7 +540,10 @@ export default function WorldScene({
                 aria-label={`${spot.name}, ${resident.is_me ? 'your home' : `${resident.name}'s home`}`}
                 onClick={(event) => {
                   event.stopPropagation();
-                  if (resident.is_me) return;
+                  if (resident.is_me) {
+                    setHomeOpen(true);
+                    return;
+                  }
                   openOffer(resident, spot);
                 }}
                 style={{ left: `${x}%`, top: `${y}%` }}
@@ -657,6 +656,16 @@ export default function WorldScene({
         />
       ))}
 
+      {riding && myRide && (
+        <div
+          style={{ left: `${me.x}%`, top: `${me.y}%` }}
+          className="pointer-events-none absolute z-[15] -translate-x-1/2 -translate-y-[92%] text-3xl drop-shadow-[0_6px_6px_rgba(0,0,0,0.55)]"
+          aria-hidden="true"
+        >
+          {myRide.emoji}
+        </div>
+      )}
+
       {mine && (
         <Walker
           label="You"
@@ -700,6 +709,20 @@ export default function WorldScene({
           className="absolute left-2 top-2 z-40 rounded-sm border border-primary/60 bg-card/90 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary hover:bg-primary/10"
         >
           Honk
+        </button>
+      )}
+
+      {!placing && mine && myRide && (
+        <button
+          type="button"
+          onClick={() => setRiding((value) => !value)}
+          className={`absolute left-2 top-12 z-40 rounded-sm border px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] ${
+            riding
+              ? 'border-primary bg-primary/20 text-primary'
+              : 'border-border bg-card/90 text-muted-foreground hover:text-primary'
+          }`}
+        >
+          {riding ? `Dismount ${myRide.emoji}` : `Ride ${myRide.emoji}`}
         </button>
       )}
 
@@ -762,6 +785,8 @@ export default function WorldScene({
       )}
 
       <NeighbourTalk target={talk} onClose={() => setTalk(null)} />
+
+      {homeOpen && <HomeInterior onExit={() => setHomeOpen(false)} />}
 
       <NeighbourDialog
         target={offerTarget}

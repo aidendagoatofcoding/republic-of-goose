@@ -12,6 +12,7 @@ import ShopShelf from '@/components/shop/ShopShelf';
 import KitchenStation from '@/components/world/interiors/KitchenStation';
 import Citizenship from '@/pages/Citizenship';
 import Grammar from '@/pages/Grammar';
+import WarzoneStation from '@/components/world/interiors/WarzoneStation';
 
 const ShopCatalogue = () => <ShopShelf category="all" />;
 
@@ -28,6 +29,7 @@ const CONTENT = {
   bakery: Games,
   registry: Citizenship,
   grammar: Grammar,
+  warzone: WarzoneStation,
 };
 
 export default function StationContent({ station, place, onEnterPlace, onExit, onPlay }) {
