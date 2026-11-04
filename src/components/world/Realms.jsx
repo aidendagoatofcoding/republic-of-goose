@@ -11,6 +11,11 @@ export default function Realms({ onEnter, activeId = '' }) {
       style={{ left: `${SPAWN.x}%`, top: `${SPAWN.y}%`, width: size, height: size }}
       className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2"
     >
+      {/* the ring the portals stand on, so the whole circle reads as one gate yard */}
+      <span
+        className="absolute inset-0 rounded-full border border-dashed border-primary/25"
+        aria-hidden="true"
+      />
       {REALMS.map((realm) => {
         const active = activeId === realm.id;
         const rad = (realm.portalAngle * Math.PI) / 180;

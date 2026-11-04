@@ -251,9 +251,12 @@ const REALM_DATA = [
 ];
 
 // The portals are laid out on a true circle around the fountain, evenly spaced in order.
+// The portals are laid out on a true circle around the fountain, evenly spaced in order.
+// The ring is turned half a step off the compass points, so no portal ever sits straight
+// down behind the toolbar at the bottom of the screen — the Mines stands in the lower left.
 export const REALMS = REALM_DATA.map((realm, index) => ({
   ...realm,
-  portalAngle: -90 + (360 / REALM_DATA.length) * index,
+  portalAngle: -90 + (360 / REALM_DATA.length) * (index + 0.5),
 }));
 
 export const REALM_BY_ID = Object.fromEntries(REALMS.map((realm) => [realm.id, realm]));

@@ -489,12 +489,13 @@ export default function WorldScene({
     return Math.hypot(mx - px, my - py) <= 46;
   });
 
+  const collected = profile?.finds ?? [];
+
   const nearHidden = HIDDEN.filter((spot) => !collected.includes(spot.id)).find((spot) => {
     const distance = distanceTo(spot, me);
     return distance !== null && distance <= 132;
   });
 
-  const collected = profile?.finds ?? [];
   const nearFind = FINDS.filter((find) => !collected.includes(find.id)).find((find) => {
     const distance = distanceTo(find, me);
     return distance !== null && distance <= 140;
