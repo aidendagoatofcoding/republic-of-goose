@@ -27,7 +27,7 @@ export default function HarbourDock() {
         }}
       >
         <div
-          className="absolute inset-0 opacity-45"
+          className="water-drift absolute inset-0 opacity-45"
           style={{
             backgroundImage:
               'repeating-linear-gradient(0deg, rgba(180,231,240,0.16) 0 1px, transparent 1px 14px)',

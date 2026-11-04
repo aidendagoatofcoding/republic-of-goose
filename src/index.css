@@ -391,6 +391,55 @@
   animation: door-glow 4.2s ease-in-out infinite;
 }
 
+@keyframes river-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -180;
+  }
+}
+
+/* The current lines of the Odder river, drifting downstream. */
+.river-current {
+  animation: river-flow 6s linear infinite;
+}
+
+.river-current-slow {
+  animation: river-flow 11s linear infinite reverse;
+}
+
+@keyframes water-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 56px;
+  }
+}
+
+.water-drift {
+  animation: water-drift 7s linear infinite;
+}
+
+@keyframes ember-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  40% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-46px) scale(1.1);
+  }
+}
+
+.ember-rise {
+  animation: ember-rise 6s linear infinite;
+}
+
 @layer utilities {
   .grain-overlay {
     position: fixed;

@@ -9,12 +9,31 @@ const CENTRE_LINE = {
     'repeating-linear-gradient(90deg, rgba(233,220,180,0.4) 0 16px, transparent 16px 34px)',
 };
 
+// The Odder runs the width of the meadow; the mill race joins it from the northern hills.
+const RIVER = 'M-2 47C10 41 22 52 34 47S56 37 70 45 88 51 102 43';
+const RIVER_BACK = 'M-2 45C10 39 22 50 34 45S56 35 70 43 88 49 102 41';
+const RIVER_BELOW = 'M-2 49C10 43 22 54 34 49S56 39 70 47 88 53 102 45';
+const RACE = 'M31 -2C29 12 35 22 33 30 31 38 33 43 34 47';
+
+const GRASS_TUFTS = [
+  [6, 12], [9, 33], [14, 66], [19, 88], [26, 24], [37, 78], [44, 14],
+  [52, 58], [59, 90], [64, 22], [72, 72], [81, 16], [88, 60], [92, 86], [97, 36],
+];
+
 export default function MeadowGround() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      {/* turf, with the low sun of a Nordic evening raking across it */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#16241b] via-[#1d3125] to-[#101d15]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_32%_30%,rgba(150,220,150,0.14),transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_84%_78%,rgba(120,200,190,0.1),transparent_55%)]" />
+      <div
+        className="absolute inset-0 opacity-[0.16]"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(48deg, #4d7040 0 1px, transparent 1px 5px), repeating-linear-gradient(-24deg, #2f4a2c 0 1px, transparent 1px 7px)',
+        }}
+      />
 
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
         <g stroke="#5a7a3f" strokeOpacity="0.5" strokeWidth="0.9" strokeLinecap="round">
@@ -37,16 +56,71 @@ export default function MeadowGround() {
           <path d="M17 27c7-8.5 17-8.5 24 0" />
         </g>
 
+        <ellipse cx="12" cy="29" rx="7.4" ry="4.2" fill="#123640" />
         <ellipse cx="12" cy="29" rx="6.6" ry="3.8" fill="#22505a" />
         <ellipse cx="12" cy="29" rx="6.6" ry="3.8" fill="none" stroke="#a9d3d8" strokeOpacity="0.35" strokeWidth="0.5" />
         <ellipse cx="9.4" cy="27.6" rx="2" ry="0.9" fill="#cfe9ec" opacity="0.25" />
+      </svg>
 
-        <path d="M-2 47C10 41 22 52 34 47S56 37 70 45 88 51 102 43" fill="none" stroke="#1f4b55" strokeWidth="7.5" strokeLinecap="round" />
-        <path d="M-2 47C10 41 22 52 34 47S56 37 70 45 88 51 102 43" fill="none" stroke="#3d7d8a" strokeOpacity="0.5" strokeWidth="2" strokeLinecap="round" />
-        <path d="M-2 45C10 39 22 50 34 45S56 35 70 43 88 49 102 41" fill="none" stroke="#bfe3e6" strokeOpacity="0.28" strokeWidth="0.6" />
+      {/* ---- the rivers: still beds, then moving water laid over them ---- */}
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+      >
+        <path d={RIVER} fill="none" stroke="#123842" strokeWidth="9" strokeLinecap="round" />
+        <path d={RIVER} fill="none" stroke="#2f6f7c" strokeWidth="7" strokeLinecap="round" />
+        <path d={RIVER_BELOW} fill="none" stroke="#8fd0d6" strokeOpacity="0.14" strokeWidth="2.6" strokeLinecap="round" />
+        <path d={RIVER_BACK} fill="none" stroke="#a9dcdd" strokeOpacity="0.2" strokeWidth="1.2" strokeLinecap="round" />
 
-        <path d="M31 -2C29 12 35 22 33 30 31 38 33 43 34 47" fill="none" stroke="#1f4b55" strokeWidth="3.4" strokeLinecap="round" />
-        <path d="M31 -2C29 12 35 22 33 30 31 38 33 43 34 47" fill="none" stroke="#3d7d8a" strokeOpacity="0.45" strokeWidth="1" />
+        <path d={RACE} fill="none" stroke="#123842" strokeWidth="4.4" strokeLinecap="round" />
+        <path d={RACE} fill="none" stroke="#2f6f7c" strokeWidth="3.2" strokeLinecap="round" />
+
+        {/* drifting currents, drawn twice at different speeds for depth */}
+        <path
+          d={RIVER_BACK}
+          fill="none"
+          stroke="#e6f7f7"
+          strokeOpacity="0.55"
+          strokeWidth="0.7"
+          strokeDasharray="9 21"
+          strokeLinecap="round"
+          className="river-current"
+        />
+        <path
+          d={RIVER}
+          fill="none"
+          stroke="#c9efef"
+          strokeOpacity="0.4"
+          strokeWidth="0.6"
+          strokeDasharray="5 17"
+          strokeLinecap="round"
+          className="river-current-slow"
+        />
+        <path
+          d={RIVER_BELOW}
+          fill="none"
+          stroke="#b7e6e6"
+          strokeOpacity="0.3"
+          strokeWidth="0.5"
+          strokeDasharray="14 30"
+          strokeLinecap="round"
+          className="river-current"
+        />
+        <path
+          d={RACE}
+          fill="none"
+          stroke="#e6f7f7"
+          strokeOpacity="0.5"
+          strokeWidth="0.8"
+          strokeDasharray="6 16"
+          strokeLinecap="round"
+          className="river-current"
+        />
+
+        {/* the shallows catch the light along the bank */}
+        <path d={RIVER_BACK} fill="none" stroke="#9fd6b8" strokeOpacity="0.3" strokeWidth="0.35" />
 
         <ellipse cx="30" cy="58" rx="5.4" ry="3.1" fill="#4b4436" fillOpacity="0.6" />
         <ellipse cx="30" cy="58" rx="5.4" ry="3.1" fill="none" stroke="#c9b98a" strokeOpacity="0.28" strokeWidth="0.4" />
@@ -78,10 +152,19 @@ export default function MeadowGround() {
         />
       ))}
 
+      {GRASS_TUFTS.map(([x, y]) => (
+        <span
+          key={`tuft-${x}-${y}`}
+          className="absolute text-[9px] opacity-40"
+          style={{ left: `${x}%`, top: `${y}%` }}
+        >
+          🌿
+        </span>
+      ))}
+
       <span className="absolute left-[4%] top-[12%] text-2xl opacity-80">🌲</span>
       <span className="absolute left-[8%] top-[20%] text-lg opacity-65">🌲</span>
       <span className="absolute left-[15%] top-[9%] text-xl opacity-75">🌲</span>
-      <span className="absolute left-[38%] top-[10%] text-base opacity-60">🌿</span>
       <span className="absolute left-[52%] top-[6%] text-lg opacity-65">🌾</span>
       <span className="absolute left-[70%] top-[8%] text-xl opacity-70">🌲</span>
       <span className="absolute left-[86%] top-[12%] text-2xl opacity-80">🌲</span>
@@ -91,7 +174,6 @@ export default function MeadowGround() {
       <span className="absolute left-[68%] top-[70%] text-base opacity-55">🪨</span>
       <span className="absolute left-[96%] top-[55%] text-lg opacity-60">🌲</span>
       <span className="absolute left-[6%] top-[78%] text-lg opacity-60">🌾</span>
-      <span className="absolute left-[24%] top-[88%] text-base opacity-55">🌿</span>
       <span className="absolute left-[80%] top-[92%] text-lg opacity-60">🪨</span>
     </div>
   );

@@ -39,6 +39,7 @@ import { dialogueFor } from '@/lib/dialogues';
 import HiddenSpot from '@/components/world/HiddenSpot';
 import NpcDialog from '@/components/world/NpcDialog';
 import InventoryBar from '@/components/world/InventoryBar';
+import SceneBoundary from '@/components/world/SceneBoundary';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
 
@@ -688,14 +689,14 @@ export default function WorldScene({
                 {bubble && <WorldBubble text={bubble} />}
                 <span
                   className="block"
-                  style={{ width: `${68 + Math.min(54, Math.round((spot.price ?? 0) / 9))}px` }}
+                  style={{ width: `${118 + Math.min(74, Math.round((spot.price ?? 0) / 8))}px` }}
                 >
                   <HouseSprite
                     name={spot.name}
                     className="w-full drop-shadow-[0_8px_10px_rgba(0,0,0,0.45)]"
                   />
                 </span>
-                <span className="mt-0.5 block max-w-[104px] truncate font-mono text-[8px] uppercase tracking-[0.1em] text-foreground/70">
+                <span className="mt-0.5 block max-w-[152px] truncate font-mono text-[9px] uppercase tracking-[0.1em] text-foreground/80">
                   {spot.name}
                 </span>
               </button>
