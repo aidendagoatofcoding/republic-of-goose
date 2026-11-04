@@ -48,11 +48,10 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const REACH_PX = 190;
 const MOVE_SPEED = 165;
 
-// The National Bakery stands among the stalls of the Market Square, the Citizens' Registry on the Government Plaza.
+// The National Bakery stands among the stalls of the Market Square. The civic offices of the
+// Republic sit inside the Government Plaza portal.
 const CIVIC_BUILDINGS = [
   { id: 'bakery', name: 'The National Bakery', variant: 'cottage', x: 72, y: 67, place: 'bakery' },
-  { id: 'registry', name: "Citizens' Registry", variant: 'temple', x: 46, y: 79, place: 'registry' },
-  { id: 'library', name: 'Library of Honkgress', variant: 'tower', x: 54, y: 78, place: 'library' },
 ];
 
 export default function WorldScene({
