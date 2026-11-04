@@ -41,6 +41,8 @@ import HiddenSpot from '@/components/world/HiddenSpot';
 import NpcDialog from '@/components/world/NpcDialog';
 import InventoryBar from '@/components/world/InventoryBar';
 import SceneBoundary from '@/components/world/SceneBoundary';
+import EdgeWarden, { EDGE_WARDEN } from '@/components/world/EdgeWarden';
+import EdgeWardenPanel from '@/components/world/EdgeWardenPanel';
 
 const clamp = (value, min = 4, max = 96) => Math.min(max, Math.max(min, value));
 
@@ -58,9 +60,8 @@ const KNOCKS = ['Come in!', 'Who honks there?', 'Door is open.', 'Wipe your webb
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 const REACH_PX = 190;
-// The meadow is five times the size it once was, so a goose covers the ground faster.
-const MOVE_SPEED = 380;
-const RIDE_BOOST = 2.2;
+const MOVE_SPEED = 165;
+const RIDE_BOOST = 1.9;
 
 export default function WorldScene({
   residents,
@@ -84,6 +85,7 @@ export default function WorldScene({
   const myRide = mine?.spots.find((spot) => spot.category === 'vehicle');
   const [riding, setRiding] = useState(false);
   const [homeOpen, setHomeOpen] = useState(false);
+  const [giverOpen, setGiverOpen] = useState(false);
   const [pet, setPet] = useState(null);
   const [me, setMe] = useState({ x: SPAWN.x, y: SPAWN.y, face: 1 });
   const meRef = useRef(me);
@@ -266,7 +268,7 @@ export default function WorldScene({
       }
       if (!moving) return;
 
-      const speed = MOVE_SPEED * (riding ? RIDE_BOOST : 1) * (running ? 2.1 : 1);
+      const speed = MOVE_SPEED * (riding ? RIDE_BOOST : 1) * (running ? 1.75 : 1);
       const length = Math.hypot(vx, vy) || 1;
       const nx = vx / length;
       const ny = vy / length;
@@ -352,6 +354,8 @@ export default function WorldScene({
       } else if (target.kind === 'npc') {
         say(target.id, pick(NPC_LINES));
         setTalk(target.talk);
+      } else if (target.kind === 'giver') {
+        setGiverOpen(true);
       }
       else setInside(target.place);
     };
@@ -538,8 +542,13 @@ export default function WorldScene({
 
   const nearOwnHome = myHome ? distanceTo(myHome, me) : null;
 
+  const wardenDistance = distanceTo(EDGE_WARDEN, me);
+  const wardenNear = wardenDistance !== null && wardenDistance <= REACH_PX;
+
   const enterTarget = homeOpen
     ? null
+    : wardenNear
+    ? { kind: 'giver', id: 'edge', name: 'Speak to the Edge Warden' }
     : nearOwnHome !== null && nearOwnHome <= REACH_PX
     ? { kind: 'home', id: 'home', name: 'Enter your home' }
     : nearVenue
@@ -598,11 +607,13 @@ export default function WorldScene({
         transform: `translate(${-camera}px, ${-camY}px)`,
         transition: 'transform 260ms ease-out',
       }}
-      className="absolute left-0 top-0 h-[180%] w-[2800%] min-w-[23000px] overflow-hidden bg-secondary/40"
+      className="absolute left-0 top-0 h-[180%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
     >
       <MeadowGround />
 
       <SpawnCircle />
+
+      <EdgeWarden near={wardenNear} onOpen={() => setGiverOpen(true)} />
 
       <Roads />
 
@@ -1028,6 +1039,8 @@ export default function WorldScene({
       <InventoryBar />
 
       <CommonsChat name={profile?.name || 'A wanderer'} />
+
+      <EdgeWardenPanel open={giverOpen} onClose={() => setGiverOpen(false)} />
 
       <NeighbourDialog
         target={offerTarget}

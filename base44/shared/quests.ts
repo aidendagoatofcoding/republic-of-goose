@@ -67,6 +67,7 @@ export const QUESTS = [
     reward: { bread: 90, xp: 30 },
   },
   { id: 'owl-letter', finds: ['letter'], reward: { bread: 110, xp: 35 } },
+  { id: 'edge-lamp', finds: ['lamp-oil'], reward: { bread: 230, xp: 70 } },
   { id: 'harbour-ledger', finds: ['ledger'], reward: { bread: 130, xp: 45 } },
   { id: 'lighthouse-oil', finds: ['lamp-oil'], reward: { bread: 140, xp: 45 } },
   { id: 'registry-seal', finds: ['seal'], reward: { bread: 150, xp: 50 } },

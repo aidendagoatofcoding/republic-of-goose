@@ -288,6 +288,16 @@ export const QUESTS = [
     reward: { bread: 200, xp: 65 },
   },
   {
+    id: 'edge-lamp',
+    place: 'edge',
+    giver: 'The Edge Warden',
+    title: 'The Last Lamp',
+    brief:
+      'The lamp that marks the end of the Republic has run dry. Its spare can blew off westward across the whole meadow — find it and the edge stays lit.',
+    finds: ['lamp-oil'],
+    reward: { bread: 230, xp: 70 },
+  },
+  {
     id: 'harbour-ledger',
     place: 'fishmarket',
     giver: 'The Fishmonger',
