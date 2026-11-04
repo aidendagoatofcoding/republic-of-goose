@@ -38,7 +38,31 @@ export const SWORDS = [
     power: 2.2,
     emoji: '🔱',
     tint: '#c2ff85',
-    blurb: 'The last blade of the Republic. It hums when the ducks come.',
+    blurb: 'The blade that hums when the ducks come.',
+  },
+  {
+    name: 'Stormbeak Sabre',
+    cost: 2600,
+    power: 2.5,
+    emoji: '⚡',
+    tint: '#9fe0ff',
+    blurb: 'Quenched in lake water during a thunderstorm. It still crackles.',
+  },
+  {
+    name: 'Crested Warblade',
+    cost: 3600,
+    power: 2.85,
+    emoji: '🪶',
+    tint: '#e8cf8a',
+    blurb: 'Carried only by the Crested Guard, and only by their leave.',
+  },
+  {
+    name: 'Dawnpiercer, Blade of the Republic',
+    cost: 5000,
+    power: 3.2,
+    emoji: '🌟',
+    tint: '#ffffff',
+    blurb: 'The last edge the smith will ever hammer. It ends arguments.',
   },
 ];
 

@@ -6,6 +6,9 @@ export const SWORDS = [
   { name: 'Silver Sabre', cost: 380, power: 1.5 },
   { name: 'Gilded Greatsword', cost: 850, power: 1.8 },
   { name: 'Honkbringer, the Dawn Blade', cost: 1800, power: 2.2 },
+  { name: 'Stormbeak Sabre', cost: 2600, power: 2.5 },
+  { name: 'Crested Warblade', cost: 3600, power: 2.85 },
+  { name: 'Dawnpiercer, Blade of the Republic', cost: 5000, power: 3.2 },
 ];
 
 export const XP_PER_LEVEL = 120;

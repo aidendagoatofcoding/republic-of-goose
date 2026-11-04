@@ -19,13 +19,13 @@ import Roads from '@/components/world/Roads';
 import NeighbourHouses from '@/components/world/NeighbourHouses';
 import { nearestRoad, pointOnRoad, spotOnRoadNear } from '@/lib/roads';
 import SportVenue from '@/components/world/SportVenue';
-import Areas from '@/components/world/areas/Areas';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
+import PetPanel from '@/components/world/PetPanel';
+import WarzoneBattle from '@/components/arena/WarzoneBattle';
 import CivicBuilding from '@/components/world/areas/CivicBuilding';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
 import { placeFor } from '@/lib/places';
 import RealmScene from '@/components/world/RealmScene';
-import { areaAt } from '@/lib/commonsAreas';
 import { REALMS } from '@/lib/realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
@@ -82,6 +82,7 @@ export default function WorldScene({
   const myRide = mine?.spots.find((spot) => spot.category === 'vehicle');
   const [riding, setRiding] = useState(false);
   const [homeOpen, setHomeOpen] = useState(false);
+  const [pet, setPet] = useState(null);
   const [me, setMe] = useState({ x: SPAWN.x, y: SPAWN.y, face: 1 });
   const meRef = useRef(me);
   const keysRef = useRef(new Set());
@@ -479,8 +480,6 @@ export default function WorldScene({
 
   enterRef.current = sport || placing || inside || realm ? null : enterTarget;
 
-  const activeArea = areaAt(me);
-
   useEffect(() => {
     if (!placing) {
       placedRef.current = '';
@@ -510,8 +509,6 @@ export default function WorldScene({
       <Roads />
 
       <Places />
-
-      <Areas activeId={activeArea?.id || ''} />
 
       <NeighbourHouses />
 
@@ -603,7 +600,11 @@ export default function WorldScene({
                 title={spot.name}
                 onClick={(event) => {
                   event.stopPropagation();
-                  if (!resident.is_me) openOffer(resident, spot);
+                  if (resident.is_me) {
+                    if (isPet) setPet(spot);
+                    return;
+                  }
+                  openOffer(resident, spot);
                 }}
                 style={{
                   left: `${x}%`,
@@ -611,9 +612,12 @@ export default function WorldScene({
                   transition: 'left 2.6s linear, top 2.6s linear',
                 }}
                 className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 select-none text-center leading-none ${
-                  resident.is_me ? 'cursor-default' : 'pointer-events-none'
+                  resident.is_me ? (isPet ? 'cursor-pointer' : 'cursor-default') : 'pointer-events-none'
                 }`}
               >
+                {bubbles[`pet:${spot.item_id}`]?.text && (
+                  <WorldBubble text={bubbles[`pet:${spot.item_id}`].text} />
+                )}
                 <span
                   className="block"
                   style={{ transform: drift?.face === -1 ? 'scaleX(-1)' : undefined }}
@@ -711,12 +715,6 @@ export default function WorldScene({
       )}
 
       </div>
-
-      {activeArea && (
-        <div className="pointer-events-none absolute left-1/2 top-3 z-40 -translate-x-1/2 rounded-sm border border-primary/40 bg-card/85 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.24em] text-primary">
-          {activeArea.name}
-        </div>
-      )}
 
       {enterTarget && !sport && !placing && (
         <div className="pointer-events-none absolute bottom-14 left-1/2 z-40 -translate-x-1/2 whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary shadow-lg">
@@ -826,6 +824,14 @@ export default function WorldScene({
         <HomeInterior price={myHome?.price ?? 0} onExit={() => setHomeOpen(false)} />
       )}
 
+      <PetPanel
+        pet={pet}
+        onClose={() => setPet(null)}
+        onAction={(reply) => {
+          if (pet) say(`pet:${pet.item_id}`, reply);
+        }}
+      />
+
       <CommonsChat name={profile?.name || 'A wanderer'} />
 
       <NeighbourDialog
@@ -851,14 +857,16 @@ export default function WorldScene({
         />
       )}
 
-      {realm && (
+      {realm === 'warzone' ? (
+        <WarzoneBattle bus={arenaBus} onExit={() => setRealm('')} />
+      ) : realm ? (
         <RealmScene
           realm={REALMS.find((entry) => entry.id === realm)}
           onExit={() => setRealm('')}
           onEnterPlace={setInside}
           blocked={Boolean(inside)}
         />
-      )}
+      ) : null}
 
       {inside && (
         <PlaceInterior

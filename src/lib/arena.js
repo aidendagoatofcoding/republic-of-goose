@@ -16,6 +16,7 @@ export const ARENA = {
 export const ARENA_ATTACKS = {
   slash: { label: 'Slash', key: 'J', cost: 10, cooldown: 340, damage: 14, reach: 17, cone: 0.1 },
   stab: { label: 'Stab', key: 'K', cost: 18, cooldown: 640, damage: 26, reach: 23, cone: 0.6 },
+  bow: { label: 'Loose arrow', key: 'H', cost: 14, cooldown: 720, damage: 19, reach: 62, cone: 0.82 },
 };
 
 export const BLOCK_COST = 0.3;

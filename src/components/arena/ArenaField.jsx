@@ -3,6 +3,7 @@ import { swordFor } from '@/lib/swords';
 const EFFECTS = {
   slash: { glyph: '⟋', color: '#f6ecc9' },
   stab: { glyph: '➤', color: '#ffd9a0' },
+  bow: { glyph: '➶', color: '#c2ff85' },
   parry: { glyph: '✧', color: '#9fe0ff' },
   hurt: { glyph: '✸', color: '#ff7a5c' },
 };

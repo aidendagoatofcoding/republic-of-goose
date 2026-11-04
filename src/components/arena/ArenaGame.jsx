@@ -257,6 +257,10 @@ export default function ArenaGame({ bus = null, tier = 0, xp = 0, onExit, onFini
         attack('stab');
         return;
       }
+      if (key === 'h') {
+        attack('bow');
+        return;
+      }
       if (key === 'l') {
         parry();
         return;

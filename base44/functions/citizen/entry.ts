@@ -433,7 +433,7 @@ export default async function (req) {
       const next = nextSwordFor(tier);
       if (!next) {
         return Response.json(
-          { error: 'Honkbringer is already yours. There is nothing finer in the Republic.' },
+          { error: 'Dawnpiercer is already yours. There is nothing finer in the Republic.' },
           { status: 400 }
         );
       }
