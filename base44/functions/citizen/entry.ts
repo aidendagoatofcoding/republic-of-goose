@@ -201,6 +201,7 @@ function publicCitizen(citizen, holdings = []) {
     bake_progress: Math.max(0, Math.floor(citizen.bake_progress ?? 0)),
     job: citizen.job || '',
     finds: Array.isArray(citizen.finds) ? citizen.finds : [],
+    sift_keys: Array.isArray(citizen.sift_keys) ? citizen.sift_keys : [],
     fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)),
     gear: Array.isArray(citizen.gear) ? citizen.gear : [],
     ore: Math.max(0, Math.floor(citizen.ore ?? 0)),
@@ -225,6 +226,19 @@ const EVENT_IDS = ['sprint', 'toss', 'archery', 'race', 'choir', 'guard'];
 // Only these are ever set down out in the Commons. Furniture belongs inside a home,
 // tools and decorations stay in the pack, so nothing gets scattered across the meadow.
 const WORLD_CATEGORIES = ['home', 'vehicle', 'pet'];
+
+// The nine shards that open the Sift, by the ids of the things hidden out in the Republic.
+const SIFT_SHARDS = [
+  'shard-1',
+  'shard-2',
+  'shard-3',
+  'shard-4',
+  'shard-5',
+  'shard-6',
+  'shard-7',
+  'shard-8',
+  'shard-9',
+];
 
 async function loadBoards(admin) {
   const page = await admin.entities.EventScore.list({ limit: 400, sort: '-score' });
@@ -693,6 +707,39 @@ export default async function (req) {
       const updated = await admin.entities.Citizen.update(citizen.id, {
         finds: [...finds, findId],
       });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    // The Sift gate: nine holes in the witch's stone, one shard set into each.
+    if (action === 'siftKey') {
+      const finds = Array.isArray(citizen.finds) ? citizen.finds : [];
+      const carried = finds.filter((id) => SIFT_SHARDS.includes(id)).length;
+      const holes = (Array.isArray(citizen.sift_keys) ? citizen.sift_keys : [])
+        .map((value) => Number(value))
+        .filter((value) => Number.isInteger(value) && value >= 0 && value < SIFT_SHARDS.length);
+      const hole = Number(body.hole);
+      if (!Number.isInteger(hole) || hole < 0 || hole >= SIFT_SHARDS.length) {
+        return Response.json({ error: 'That is not one of the nine holes.' }, { status: 400 });
+      }
+      let next: number[];
+      if (holes.includes(hole)) {
+        next = holes.filter((value) => value !== hole);
+      } else {
+        if (carried === 0) {
+          return Response.json(
+            { error: 'You are carrying no shards to set in the gate.' },
+            { status: 400 }
+          );
+        }
+        if (holes.length >= carried) {
+          return Response.json(
+            { error: 'Every shard you carry is already set in a hole.' },
+            { status: 400 }
+          );
+        }
+        next = [...holes, hole].sort((a, b) => a - b);
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, { sift_keys: next });
       return Response.json({ citizen: publicCitizen(updated, holdings) });
     }
 

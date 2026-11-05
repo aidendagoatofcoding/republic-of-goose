@@ -29,6 +29,8 @@ import useWeather from '@/hooks/useWeather';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
 import { placeFor } from '@/lib/places';
 import RealmScene from '@/components/world/RealmScene';
+import SiftWorld from '@/components/world/SiftWorld';
+import VehicleSprite from '@/components/world/VehicleSprite';
 import { REALMS, realmFor } from '@/lib/realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
@@ -886,9 +888,16 @@ export default function WorldScene({
                   style={{ transform: drift?.face === -1 ? 'scaleX(-1)' : undefined }}
                   aria-hidden="true"
                 >
-                  <span className={`block text-3xl ${isPet ? 'meadow-bob' : ''}`}>
-                    {spot.emoji}
-                  </span>
+                  {spot.category === 'vehicle' ? (
+                    <VehicleSprite
+                      name={spot.name}
+                      className="block w-20 drop-shadow-[0_8px_8px_rgba(0,0,0,0.45)]"
+                    />
+                  ) : (
+                    <span className={`block text-3xl ${isPet ? 'meadow-bob' : ''}`}>
+                      {spot.emoji}
+                    </span>
+                  )}
                 </span>
                 {spot.category === 'vehicle' && (
                   <span className="mt-1 block max-w-[92px] truncate font-mono text-[8px] uppercase tracking-[0.1em] text-foreground/70">
@@ -953,20 +962,14 @@ export default function WorldScene({
 
       {riding && myRide && (
         <div
-          style={{
-            left: `${me.x}%`,
-            top: `${me.y}%`,
-            transition: 'left 60ms linear, top 60ms linear',
-          }}
-          className="pointer-events-none absolute z-[29] -translate-x-1/2 -translate-y-full text-6xl drop-shadow-[0_9px_9px_rgba(0,0,0,0.55)]"
+          style={{ left: `${me.x}%`, top: `${me.y}%` }}
+          className="pointer-events-none absolute z-[29] -translate-x-1/2 -translate-y-[62%]"
           aria-hidden="true"
         >
-          <span
-            className="meadow-bob block"
-            style={{ transform: me.face === -1 ? 'scaleX(-1)' : undefined }}
-          >
-            {myRide.emoji}
-          </span>
+          <VehicleSprite
+            name={myRide.name}
+            className="block w-28 drop-shadow-[0_9px_9px_rgba(0,0,0,0.55)]"
+          />
         </div>
       )}
 
@@ -981,7 +984,7 @@ export default function WorldScene({
           face={me.face}
           isMe
           bubble={bubbles[myKey]?.text}
-          lift={riding && myRide ? 38 : 0}
+          lift={riding && myRide ? 26 : 0}
           speed="0s"
           onPoke={() => {
             say(myKey, 'HONK!');
@@ -1225,7 +1228,13 @@ export default function WorldScene({
       )}
 
       <SceneBoundary resetKey={`${realm}|${inside}`} onReset={() => setRealm('')}>
-        {realmData ? (
+        {realm === 'sift' ? (
+          <SiftWorld
+            onExit={() => setRealm('')}
+            onEnterPlace={setInside}
+            blocked={Boolean(inside)}
+          />
+        ) : realmData ? (
           <RealmScene
             realm={realmData}
             onExit={() => setRealm('')}

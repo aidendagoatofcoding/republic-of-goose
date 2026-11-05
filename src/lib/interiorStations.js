@@ -44,6 +44,9 @@ export const STATIONS = {
     { id: 'brew', name: 'The brewing pot', x: 46, y: 62, content: 'witch-brew' },
     { id: 'sift-gate', name: 'The Sift gate', x: 30, y: 84, content: 'sift-gate' },
   ],
+  'sift-bazaar': [{ id: 'mirrors', name: 'The mirrors', x: 32, y: 78, content: 'sift-mirrors' }],
+  'sift-baths': [{ id: 'towels', name: 'The towels', x: 50, y: 86, content: 'sift-towels' }],
+  'sift-tower': [{ id: 'tuning', name: 'The tuning floor', x: 50, y: 76, content: 'sift-tuning' }],
   inn: [
     { id: 'bar', name: 'The inn bar', x: 74, y: 74, content: 'inn-bar' },
     { id: 'landlord', name: 'The landlord', x: 62, y: 84, content: 'quests:inn' },
