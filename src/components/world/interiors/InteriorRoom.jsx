@@ -13,6 +13,7 @@ import {
   Vault,
 } from '@/components/world/interiors/props/Furniture';
 import { Banner, Chandelier, Coins, Trees } from '@/components/world/interiors/props/Scenery';
+import { OreVein, Rails, Timber } from '@/components/world/interiors/props/MineProps';
 
 const PROPS = {
   counter: Counter,
@@ -30,6 +31,9 @@ const PROPS = {
   banner: Banner,
   trees: Trees,
   coins: Coins,
+  timber: Timber,
+  ore: OreVein,
+  rails: Rails,
 };
 
 const DUST = Array.from({ length: 16 }, (_, i) => ({

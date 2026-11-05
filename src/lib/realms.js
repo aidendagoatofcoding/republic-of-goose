@@ -174,12 +174,7 @@ const REALM_DATA = [
     accent: '#c8b48a',
     portal: { x: 50, y: 29 },
     plaza: { x: 50, y: 29, rx: 6, ry: 3.5 },
-    scenery: [
-      { emoji: '🪨', x: 12, y: 66, size: 26 },
-      { emoji: '🪨', x: 88, y: 68, size: 24 },
-      { emoji: '🛒', x: 30, y: 80, size: 20 },
-      { emoji: '🛒', x: 72, y: 82, size: 20 },
-    ],
+    scenery: [],
     mineface: { x: 50, y: 72 },
     buildings: [
       { id: 'mineshaft', name: 'The Deep Shaft', variant: 'tower', x: 28, y: 54, place: 'mineshaft' },

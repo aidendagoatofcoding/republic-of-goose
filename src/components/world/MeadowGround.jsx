@@ -122,6 +122,27 @@ export default function MeadowGround() {
         {/* the shallows catch the light along the bank */}
         <path d={RIVER_BACK} fill="none" stroke="#9fd6b8" strokeOpacity="0.3" strokeWidth="0.35" />
 
+        {/* rushes, bank stones and surface rings, drawn in place of the old emoji */}
+        <g fill="none" stroke="#5f8c46" strokeOpacity="0.75" strokeWidth="0.55" strokeLinecap="round">
+          <path d="M12 39q1.2-2.4.4-4.6M13.1 39.4q.6-2 .2-3.6M10.9 39.2q-.8-1.8-1.9-2.9" />
+          <path d="M31 41.8q1.3-2.6.5-5M32.2 42.2q.6-2.2.2-3.9M29.8 42q-.9-2-2.1-3.2" />
+          <path d="M44 37q1.2-2.4.4-4.7M45.1 37.4q.6-2 .2-3.6M42.9 37.2q-.8-1.8-2-3" />
+          <path d="M62 35.4q1.3-2.5.5-4.8M63.2 35.8q.6-2.1.2-3.7M60.8 35.6q-.9-1.9-2.1-3.1" />
+          <path d="M79 42.5q1.2-2.4.4-4.6M80.1 42.9q.6-2 .2-3.6M77.9 42.7q-.8-1.8-2-3" />
+          <path d="M95 38.9q1.1-2.3.3-4.4M96 39.3q.6-1.9.2-3.4" />
+        </g>
+        <g fill="#4d4737" fillOpacity="0.8" stroke="#c9b98a" strokeOpacity="0.22" strokeWidth="0.3">
+          <ellipse cx="41.6" cy="53.4" rx="1.9" ry="1" />
+          <ellipse cx="43.9" cy="54.3" rx="1.1" ry="0.65" />
+          <ellipse cx="73.5" cy="52.6" rx="1.5" ry="0.85" />
+          <ellipse cx="20.5" cy="53.6" rx="1.2" ry="0.7" />
+        </g>
+        <g fill="none" stroke="#d8f3f4" strokeOpacity="0.32" strokeWidth="0.35" strokeLinecap="round">
+          <path d="M20 49.5q1.6-.8 3.2 0" />
+          <path d="M45 42q1.4-.7 2.8 0" />
+          <path d="M72 46.6q1.5-.7 3 0" />
+        </g>
+
         <ellipse cx="30" cy="58" rx="5.4" ry="3.1" fill="#4b4436" fillOpacity="0.6" />
         <ellipse cx="30" cy="58" rx="5.4" ry="3.1" fill="none" stroke="#c9b98a" strokeOpacity="0.28" strokeWidth="0.4" />
       </svg>
@@ -152,7 +173,6 @@ export default function MeadowGround() {
       <span className="absolute left-[70%] top-[8%] opacity-70" style={{ fontSize: 96 }}>🌲</span>
       <span className="absolute left-[86%] top-[12%] opacity-80" style={{ fontSize: 112 }}>🌲</span>
       <span className="absolute left-[93%] top-[23%] text-base opacity-55">🪨</span>
-      <span className="absolute left-[36%] top-[50%] text-base opacity-60">🌾</span>
       <span className="absolute left-[56%] top-[55%] text-sm opacity-55">🌿</span>
       <span className="absolute left-[68%] top-[70%] text-base opacity-55">🪨</span>
       <span className="absolute left-[96%] top-[55%] opacity-60" style={{ fontSize: 92 }}>🌲</span>
@@ -160,7 +180,6 @@ export default function MeadowGround() {
       <span className="absolute left-[80%] top-[92%] text-lg opacity-60">🪨</span>
       <span className="absolute left-[42%] top-[96%] opacity-65" style={{ fontSize: 100 }}>🌲</span>
       <span className="absolute left-[74%] top-[74%] opacity-70" style={{ fontSize: 96 }}>🌲</span>
-      <span className="absolute left-[28%] top-[46%] opacity-60" style={{ fontSize: 86 }}>🌲</span>
       <span className="absolute left-[90%] top-[38%] opacity-65" style={{ fontSize: 94 }}>🌲</span>
     </div>
   );

@@ -4,6 +4,7 @@ import CivicBuilding from '@/components/world/areas/CivicBuilding';
 import HarbourDock from '@/components/world/HarbourDock';
 import FishingGame from '@/components/world/FishingGame';
 import RealmScenery from '@/components/world/RealmScenery';
+import MineScenery from '@/components/world/MineScenery';
 import Walker from '@/components/world/Walker';
 import WeatherLayer from '@/components/world/WeatherLayer';
 import { useCitizen } from '@/hooks/useCitizen';
@@ -98,6 +99,8 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
 
       <div ref={boxRef} className="absolute inset-0">
         <RealmScenery realm={realm} />
+
+        {realm.mineface && <MineScenery />}
 
         {realm.water && <HarbourDock />}
 
