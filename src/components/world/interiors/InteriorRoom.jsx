@@ -46,13 +46,18 @@ function InteriorRoom({ place }) {
     <div className="absolute inset-0 overflow-hidden bg-[#080d09]">
       <div
         className="absolute inset-x-0 top-0 h-[66%]"
-        style={{ background: 'linear-gradient(180deg, #1b2419 0%, #101610 70%, #0c120d 100%)' }}
+        style={{
+          background: place.wood
+            ? 'linear-gradient(180deg, #fbf7ec 0%, #efe8d8 70%, #e2d9c5 100%)'
+            : 'linear-gradient(180deg, #1b2419 0%, #101610 70%, #0c120d 100%)',
+        }}
       />
       <div
         className="absolute inset-x-0 top-0 h-[66%] opacity-[0.16]"
         style={{
-          backgroundImage:
-            'repeating-linear-gradient(0deg, #e8d9b0 0 1px, transparent 1px 38px), repeating-linear-gradient(90deg, #e8d9b0 0 1px, transparent 1px 94px)',
+          backgroundImage: place.wood
+            ? 'repeating-linear-gradient(0deg, #8a7a5c 0 1px, transparent 1px 44px), repeating-linear-gradient(90deg, #8a7a5c 0 1px, transparent 1px 96px)'
+            : 'repeating-linear-gradient(0deg, #e8d9b0 0 1px, transparent 1px 38px), repeating-linear-gradient(90deg, #e8d9b0 0 1px, transparent 1px 94px)',
         }}
         aria-hidden="true"
       />
@@ -75,15 +80,22 @@ function InteriorRoom({ place }) {
         </div>
       ))}
 
+      {/* Floor: homes are laid in pale oak boards, civic rooms in dark timber. */}
       <div
         className="absolute inset-x-0 bottom-0 h-[34%]"
-        style={{ background: 'linear-gradient(180deg, #2c2417 0%, #17110a 100%)' }}
+        style={{
+          background: place.wood
+            ? 'linear-gradient(180deg, #d8ac70 0%, #c4955a 55%, #ab7c45 100%)'
+            : 'linear-gradient(180deg, #2c2417 0%, #17110a 100%)',
+        }}
       />
       <div
-        className="absolute inset-x-0 bottom-0 h-[34%] opacity-25"
+        className="absolute inset-x-0 bottom-0 h-[34%]"
         style={{
-          backgroundImage:
-            'repeating-linear-gradient(90deg, #e8d9b0 0 1px, transparent 1px 46px)',
+          backgroundImage: place.wood
+            ? 'repeating-linear-gradient(90deg, #8d6435 0 2px, rgba(255,255,255,0.10) 2px 3px, transparent 3px 94px), repeating-linear-gradient(0deg, rgba(255,255,255,0.10) 0 1px, transparent 1px 17px)'
+            : 'repeating-linear-gradient(90deg, #e8d9b0 0 1px, transparent 1px 46px)',
+          opacity: place.wood ? 0.75 : 0.25,
           maskImage: 'linear-gradient(180deg, transparent, #000 80%)',
           WebkitMaskImage: 'linear-gradient(180deg, transparent, #000 80%)',
         }}
@@ -120,7 +132,11 @@ function InteriorRoom({ place }) {
 
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ boxShadow: 'inset 0 0 140px 40px rgba(0,0,0,0.75)' }}
+        style={{
+          boxShadow: place.wood
+            ? 'inset 0 0 120px 24px rgba(90,62,32,0.35)'
+            : 'inset 0 0 140px 40px rgba(0,0,0,0.75)',
+        }}
         aria-hidden="true"
       />
     </div>

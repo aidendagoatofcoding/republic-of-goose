@@ -6,6 +6,7 @@ export const HOME_ROOMS = {
     sign: 'YOUR HOME · COTTAGE',
     honkish: 'HONK HONK',
     accent: '#e0b98a',
+    wood: true,
     props: [
       { type: 'chandelier', x: 50, y: 14 },
       { type: 'shelf', x: 14, y: 44 },
@@ -21,6 +22,7 @@ export const HOME_ROOMS = {
     sign: 'YOUR HOME · HALL',
     honkish: 'HONK HONK HONK',
     accent: '#e0b98a',
+    wood: true,
     props: [
       { type: 'chandelier', x: 32, y: 13 },
       { type: 'chandelier', x: 68, y: 13 },
@@ -40,6 +42,7 @@ export const HOME_ROOMS = {
     sign: 'YOUR HOME · MANOR',
     honkish: 'HONK HOOONKK HONK',
     accent: '#f2c96b',
+    wood: true,
     props: [
       { type: 'chandelier', x: 26, y: 12 },
       { type: 'chandelier', x: 50, y: 10 },

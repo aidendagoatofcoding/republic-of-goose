@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import InteriorRoom from '@/components/world/interiors/InteriorRoom';
+import Walker from '@/components/world/Walker';
+import useInteriorWalk from '@/hooks/useInteriorWalk';
 import { HOME_ROOMS, FURNITURE_SIZE, tierFor } from '@/lib/homeRooms';
 import { DoorOpen, KeyRound, Lock } from 'lucide-react';
 
@@ -16,6 +18,13 @@ export default function HomeInterior({ price = 0, onExit }) {
   const [busy, setBusy] = useState(false);
   const [openBusy, setOpenBusy] = useState(false);
   const homeOpen = citizen?.home_open === true;
+
+  // You can walk about your own rooms, the same way you walk the Commons.
+  const { pos, nudge } = useInteriorWalk({
+    roomRef: floorRef,
+    start: { x: 50, y: 86, face: 1 },
+    bounds: { x: [8, 92], y: [66, 92] },
+  });
 
   useEffect(() => {
     let active = true;
@@ -110,6 +119,56 @@ export default function HomeInterior({ price = 0, onExit }) {
             </button>
           );
         })}
+
+        <div className="pointer-events-none absolute inset-0 z-20">
+          <Walker
+            label="You"
+            species={citizen?.species || 'goose'}
+            worn={citizen?.worn}
+            x={pos.x}
+            y={pos.y}
+            face={pos.face}
+            isMe
+            speed="0s"
+          />
+        </div>
+      </div>
+
+      <div className="absolute bottom-24 right-3 z-30 grid grid-cols-3 gap-1 md:hidden">
+        <span />
+        <button
+          type="button"
+          onClick={() => nudge(0, -1)}
+          aria-label="Walk up"
+          className="rounded-sm border border-[#f2c96b]/40 bg-[#0a0f0b]/80 px-2 py-1.5 font-mono text-[9px] text-[#f2c96b]"
+        >
+          ↑
+        </button>
+        <span />
+        <button
+          type="button"
+          onClick={() => nudge(-1, 0)}
+          aria-label="Walk left"
+          className="rounded-sm border border-[#f2c96b]/40 bg-[#0a0f0b]/80 px-2 py-1.5 font-mono text-[9px] text-[#f2c96b]"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          onClick={() => nudge(0, 1)}
+          aria-label="Walk down"
+          className="rounded-sm border border-[#f2c96b]/40 bg-[#0a0f0b]/80 px-2 py-1.5 font-mono text-[9px] text-[#f2c96b]"
+        >
+          ↓
+        </button>
+        <button
+          type="button"
+          onClick={() => nudge(1, 0)}
+          aria-label="Walk right"
+          className="rounded-sm border border-[#f2c96b]/40 bg-[#0a0f0b]/80 px-2 py-1.5 font-mono text-[9px] text-[#f2c96b]"
+        >
+          →
+        </button>
       </div>
 
       <div className="absolute left-3 top-3 z-30 max-w-[58%] sm:left-5 sm:top-5">
@@ -120,7 +179,9 @@ export default function HomeInterior({ price = 0, onExit }) {
           {tier} · {room.sign.split('·')[1]?.trim() || tier}
         </p>
         <p className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-[#f2c96b]/80">
-          {selected ? 'Now tap the floor to set it down' : 'Pick a piece below, then tap the floor'}
+          {selected
+            ? 'Now tap the floor to set it down'
+            : 'Walk with W A S D · pick a piece below, then tap the floor'}
         </p>
         <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[#e8d9b0]/70">
           🍞 {citizen?.bread ?? 0} in hand
@@ -178,7 +239,7 @@ export default function HomeInterior({ price = 0, onExit }) {
             </p>
           ) : owned.length === 0 ? (
             <p className="mt-1 text-[14px] text-foreground/70">
-              No furniture yet. Buy some in the Shop Guild or the National E-Shop.
+              No furniture yet. Buy some at the Cabinetmaker in Market Square.
             </p>
           ) : (
             <div className="mt-1.5 flex flex-wrap gap-1.5">

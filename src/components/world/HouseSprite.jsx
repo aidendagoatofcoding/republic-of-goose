@@ -9,18 +9,19 @@ import {
   GableTiles,
 } from '@/components/world/houseParts';
 
+// Homes are painted in pale, sunlit colours — cream walls and soft pale roofs.
 const SHAPES = {
-  'pond villa': { kind: 'gable', wall: '#cdd9c3', roof: '#3f6350', trim: '#efe7d2', glow: '#f2d68b' },
-  'nest cottage': { kind: 'thatch', wall: '#d7c49b', roof: '#8a6a3c', trim: '#f0e6cc', glow: '#f4d78d' },
-  'moss manor': { kind: 'manor', wall: '#cfd6c2', roof: '#40584a', trim: '#efe8d6', glow: '#f6d78c' },
-  'ice longhouse': { kind: 'ice', wall: '#a9c8d4', roof: '#6d99ab', trim: '#e8f4f8', glow: '#ffe2a5' },
-  'lighthouse nest': { kind: 'tower', wall: '#dfe0d5', roof: '#3d4f45', trim: '#f1ede1', glow: '#ffe6a2' },
-  'reed bungalow': { kind: 'thatch', wall: '#c9b98d', roof: '#6f7c46', trim: '#eee2c2', glow: '#f0cd7f' },
-  'sky nest': { kind: 'tower', wall: '#d6cfc0', roof: '#5b4a63', trim: '#f2ecdf', glow: '#ffe1a0' },
-  burrow: { kind: 'mound', wall: '#5c4630', roof: '#463422', trim: '#c3ad82', glow: '#f3ce84' },
+  'pond villa': { kind: 'gable', wall: '#f4f6ee', roof: '#a8c0ae', trim: '#ffffff', glow: '#ffe6a8' },
+  'nest cottage': { kind: 'thatch', wall: '#faf1da', roof: '#d3b47c', trim: '#fffdf6', glow: '#ffe9b5' },
+  'moss manor': { kind: 'manor', wall: '#f1f3ec', roof: '#b3c6b2', trim: '#ffffff', glow: '#ffeab0' },
+  'ice longhouse': { kind: 'ice', wall: '#e2eff5', roof: '#aecfdd', trim: '#ffffff', glow: '#ffe9b8' },
+  'lighthouse nest': { kind: 'tower', wall: '#f7f5eb', roof: '#b8c4bb', trim: '#ffffff', glow: '#ffe7ab' },
+  'reed bungalow': { kind: 'thatch', wall: '#f4ecd6', roof: '#bcc794', trim: '#fffdf4', glow: '#ffe2a8' },
+  'sky nest': { kind: 'tower', wall: '#f4f0e8', roof: '#c6b8d0', trim: '#ffffff', glow: '#ffe6b0' },
+  burrow: { kind: 'mound', wall: '#8d6d49', roof: '#6f5438', trim: '#e0cda6', glow: '#ffe0a8' },
 };
 
-const FALLBACK = { kind: 'gable', wall: '#cdd9c3', roof: '#3f6350', trim: '#efe7d2', glow: '#f2d68b' };
+const FALLBACK = { kind: 'gable', wall: '#f4f6ee', roof: '#a8c0ae', trim: '#ffffff', glow: '#ffe6a8' };
 
 const shapeFor = (name) => SHAPES[String(name || '').toLowerCase()] || FALLBACK;
 

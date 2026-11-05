@@ -25,6 +25,15 @@ export const STATIONS = {
     { id: 'till', name: 'The till', x: 50, y: 80, content: 'shop-decoration' },
     { id: 'decorations', name: 'Decorations', x: 22, y: 86, content: 'shop-decoration' },
   ],
+  homes: [
+    { id: 'deeds', name: 'The deeds desk', x: 50, y: 82, content: 'shop-home' },
+  ],
+  furniture: [
+    { id: 'bench', name: 'The cabinet bench', x: 50, y: 82, content: 'shop-furniture' },
+  ],
+  pets: [
+    { id: 'kennels', name: 'The kennels', x: 50, y: 82, content: 'shop-pet' },
+  ],
   granary: [
     { id: 'office', name: 'Labour office', x: 62, y: 84, content: 'granary' },
   ],

@@ -9,7 +9,7 @@ import PackPanel from '@/components/world/inventory/PackPanel';
 const HOTBAR = 9;
 
 // The quick bar along the bottom of the meadow, and the pack behind it. Press E.
-export default function InventoryBar() {
+export default function InventoryBar({ position = null, onPlaced }) {
   const { citizen, run } = useCitizen();
   const items = useShopItems();
   const [open, setOpen] = useState(false);
@@ -47,6 +47,7 @@ export default function InventoryBar() {
       name: item?.name || 'An unknown thing',
       emoji: item?.emoji || '❔',
       price: item?.price ?? 0,
+      category: item?.category || 'decoration',
       refund: Math.floor((item?.price ?? 0) * 0.8),
       slot: tackleSlot(item),
     };
@@ -97,6 +98,25 @@ export default function InventoryBar() {
     }
   };
 
+  const place = async (item) => {
+    setBusy(item.id);
+    setNote('');
+    try {
+      await run({
+        action: 'placeHome',
+        item_id: item.id,
+        x: position?.x ?? 50,
+        y: position?.y ?? 60,
+      });
+      setNote(`${item.name} is standing out in the Commons now.`);
+      onPlaced?.();
+    } catch (error) {
+      setNote(error.message);
+    } finally {
+      setBusy('');
+    }
+  };
+
   return (
     <>
       <Hotbar slots={slots} selected={selected} onSelect={setSelected} onOpen={() => setOpen(true)} />
@@ -111,6 +131,7 @@ export default function InventoryBar() {
           onClose={() => setOpen(false)}
           onRig={rig}
           onSell={sell}
+          onPlace={place}
         />
       )}
     </>

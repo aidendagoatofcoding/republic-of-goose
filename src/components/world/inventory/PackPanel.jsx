@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Coins, MapPin, X } from 'lucide-react';
 import Slot from '@/components/world/inventory/Slot';
 
@@ -8,14 +8,41 @@ const PLACEABLE = ['home', 'vehicle', 'pet', 'furniture'];
 
 // The pack itself, laid out like a survival inventory: sockets, a quick bar and a
 // detail panel for whatever is selected.
-export default function PackPanel({ citizen, stats, owned, busy, note, onClose, onRig, onSell }) {
+export default function PackPanel({
+  citizen,
+  stats,
+  owned,
+  busy,
+  note,
+  onClose,
+  onRig,
+  onSell,
+  onPlace,
+}) {
   const [picked, setPicked] = useState(null);
   const item = owned.find((entry) => entry.id === picked) || null;
   const rigged = item ? (citizen.gear ?? []).includes(item.id) : false;
   const empty = Array.from({ length: Math.max(0, GRID - owned.length) });
 
+  // Enter on a home in the pack sets it down on the land and takes it out of the pack.
+  useEffect(() => {
+    if (!item || item.category !== 'home') return;
+    const onKey = (event) => {
+      if (event.key !== 'Enter' || busy) return;
+      const tag = event.target?.tagName;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+      event.preventDefault();
+      onPlace?.(item);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [item, busy, onPlace]);
+
   return (
-    <div className="fixed inset-0 z-[62] flex items-center justify-center bg-black/75 p-3">
+    <div
+      data-pack-open="true"
+      className="fixed inset-0 z-[62] flex items-center justify-center bg-black/75 p-3"
+    >
       <div className="max-h-[88vh] w-full max-w-3xl overflow-y-auto border-2 border-[#0b0e09] bg-[#2c3129] p-3 shadow-[0_24px_60px_rgba(0,0,0,0.7),inset_2px_2px_0_#4a5340,inset_-2px_-2px_0_#12150f] sm:p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -76,7 +103,13 @@ export default function PackPanel({ citizen, stats, owned, busy, note, onClose, 
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-semibold text-[#f2f6ef]">{item.name}</p>
                     <p className="font-mono text-[8px] uppercase tracking-[0.14em] text-[#a9b59c]">
-                      {item.worn ? 'worn' : item.slot ? `${item.slot} tackle` : 'in the meadow'}
+                      {item.worn
+                        ? 'worn'
+                        : item.slot
+                          ? `${item.slot} tackle`
+                          : item.category === 'home'
+                            ? 'not yet set down'
+                            : 'in the meadow'}
                     </p>
                   </div>
                 </div>
@@ -93,6 +126,17 @@ export default function PackPanel({ citizen, stats, owned, busy, note, onClose, 
                       }`}
                     >
                       {rigged ? 'Rigged' : 'Rig on the line'}
+                    </button>
+                  )}
+                  {item.category === 'home' && (
+                    <button
+                      type="button"
+                      disabled={busy === item.id}
+                      onClick={() => onPlace?.(item)}
+                      title="Set this home down on the land where you stand"
+                      className="flex items-center gap-1 border-2 border-[#0b0e09] bg-[#4b5442] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#c2ff85] shadow-[inset_2px_2px_0_#5a6250] hover:bg-[#5a6350] disabled:opacity-50"
+                    >
+                      <MapPin className="h-3 w-3" /> ⏎ Place
                     </button>
                   )}
                   <button

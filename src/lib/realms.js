@@ -75,9 +75,12 @@ const REALM_DATA = [
       { emoji: '🥕', x: 86, y: 88, size: 16 },
     ],
     buildings: [
-      { id: 'exchange', name: 'The Honk Exchange', variant: 'tower', x: 22, y: 56, place: 'exchange' },
-      { id: 'guild', name: 'Shop Guild', variant: 'cottage', x: 50, y: 58, place: 'guild' },
-      { id: 'dealership', name: 'Honk Motors', variant: 'cottage', x: 78, y: 56, place: 'dealership' },
+      { id: 'exchange', name: 'The Honk Exchange', variant: 'tower', x: 18, y: 52, place: 'exchange' },
+      { id: 'homes', name: 'Homes Office', variant: 'cottage', x: 50, y: 50, place: 'homes' },
+      { id: 'furniture', name: 'Cabinetmaker', variant: 'cottage', x: 82, y: 52, place: 'furniture' },
+      { id: 'guild', name: 'Decoration Emporium', variant: 'cottage', x: 22, y: 72, place: 'guild' },
+      { id: 'pets', name: 'The Menagerie', variant: 'cottage', x: 50, y: 72, place: 'pets' },
+      { id: 'dealership', name: 'Honk Motors', variant: 'cottage', x: 78, y: 72, place: 'dealership' },
     ],
   },
   {

@@ -383,6 +383,8 @@ export default function WorldScene({
     const onEnter = (event) => {
       if (event.key !== 'Enter') return;
       if (talkRef.current) return;
+      // The pack has its own Enter, for setting a home down on the land.
+      if (document.querySelector('[data-pack-open="true"]')) return;
       const tag = event.target?.tagName;
       if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tag)) return;
       const target = enterRef.current;
@@ -1210,7 +1212,7 @@ export default function WorldScene({
         }}
       />
 
-      <InventoryBar />
+      <InventoryBar position={me} onPlaced={onRefreshWorld} />
 
       <CommonsChat name={profile?.name || 'A wanderer'} />
 

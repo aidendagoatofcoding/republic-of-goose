@@ -782,7 +782,10 @@ export default async function (req) {
         const current = Array.isArray(citizen.possessions) ? citizen.possessions : [];
         const shelf = await admin.entities.ShopItem.list({ limit: 200 });
         const shelfById = new Map((shelf?.items ?? []).map((row) => [row.id, row]));
-        const hasHome = current.some((id) => (shelfById.get(id)?.category || '') === 'home');
+        const placedSpots = Array.isArray(citizen.world_spots) ? citizen.world_spots : [];
+        const hasHome =
+          current.some((id) => (shelfById.get(id)?.category || '') === 'home') ||
+          placedSpots.some((spot) => (shelfById.get(spot.item_id)?.category || '') === 'home');
         if (!hasHome) {
           return Response.json(
             { error: 'Buy a home in the Commons before you furnish it.' },
@@ -813,15 +816,18 @@ export default async function (req) {
         patch.decorations = [...worn, item.id];
       } else {
         patch.possessions = [...owned, item.id];
-        const spots = Array.isArray(citizen.world_spots) ? citizen.world_spots : [];
-        patch.world_spots = [
-          ...spots,
-          {
-            item_id: item.id,
-            x: clampSpot(10 + (spots.length % 6) * 7, 2, 98),
-            y: clampSpot(46 + (Math.floor(spots.length / 6) % 4) * 12, 10, 92),
-          },
-        ];
+        // A home stays in the pack until the citizen sets it down on the land.
+        if (category !== 'home') {
+          const spots = Array.isArray(citizen.world_spots) ? citizen.world_spots : [];
+          patch.world_spots = [
+            ...spots,
+            {
+              item_id: item.id,
+              x: clampSpot(10 + (spots.length % 6) * 7, 2, 98),
+              y: clampSpot(46 + (Math.floor(spots.length / 6) % 4) * 12, 10, 92),
+            },
+          ];
+        }
       }
       const updated = await admin.entities.Citizen.update(citizen.id, patch);
       return Response.json({ citizen: publicCitizen(updated, holdings) });
@@ -839,6 +845,31 @@ export default async function (req) {
         { item_id: itemId, x: clampSpot(body.x, 2, 98), y: clampSpot(body.y, 6, 94) },
       ];
       const updated = await admin.entities.Citizen.update(citizen.id, { world_spots: next });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    // A home taken from the pack is set on the land, and it leaves the pack for good.
+    if (action === 'placeHome') {
+      const itemId = String(body.item_id ?? '');
+      const owned = Array.isArray(citizen.possessions) ? citizen.possessions : [];
+      if (!owned.includes(itemId)) {
+        return Response.json({ error: 'You do not own that.' }, { status: 400 });
+      }
+      const item = await admin.entities.ShopItem
+        .get(itemId)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!item || (item.category || '') !== 'home') {
+        return Response.json({ error: 'Only a home can be set down here.' }, { status: 400 });
+      }
+      const spots = Array.isArray(citizen.world_spots) ? citizen.world_spots : [];
+      const next = [
+        ...spots.filter((spot) => spot.item_id !== itemId),
+        { item_id: itemId, x: clampSpot(body.x, 2, 98), y: clampSpot(body.y, 6, 94) },
+      ];
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        world_spots: next,
+        possessions: owned.filter((id) => id !== itemId),
+      });
       return Response.json({ citizen: publicCitizen(updated, holdings) });
     }
 
