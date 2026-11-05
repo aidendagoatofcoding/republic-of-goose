@@ -7,6 +7,7 @@ import { speciesInfo } from '@/lib/species';
 import CitizenBadge from '@/components/CitizenBadge';
 import SpeciesAvatar from '@/components/SpeciesAvatar';
 import OwnedDecorations from '@/components/passport/OwnedDecorations';
+import BossCabinet from '@/components/passport/BossCabinet';
 
 const formatDate = (value) =>
   value
@@ -168,6 +169,8 @@ export default function PassportCard({ citizen }) {
           </div>
         </section>
       </div>
+
+      <BossCabinet loot={citizen.boss_loot ?? []} />
     </div>
   );
 }

@@ -33,6 +33,11 @@ export const BOSSES = [
       { name: 'Ice Slide', power: 9 },
     ],
     reward: { bread: 420, xp: 160 },
+    loot: [
+      { id: 'ice-duck-feather', name: 'Frostbill Feather', emoji: '❄️', note: 'A wing feather that never thaws.' },
+      { id: 'ice-duck-egg', name: 'Frozen Egg', emoji: '🥚', note: 'Still faintly warm inside.', bonus: '+120 bread' },
+      { id: 'ice-duck-ice', name: 'Haul of Lake Ice', emoji: '🧊', note: 'The bank buys it by the block.', bonus: '+6 ore' },
+    ],
   },
   {
     id: 'sand-wyrm',
@@ -58,6 +63,11 @@ export const BOSSES = [
       { name: 'Dust Storm', power: 16 },
     ],
     reward: { bread: 520, xp: 190 },
+    loot: [
+      { id: 'sand-wyrm-scale', name: 'Wyrm Scale', emoji: '🟡', note: 'A plate of it, still warm from the sand.' },
+      { id: 'sand-wyrm-molar', name: 'Dune Molar', emoji: '🦷', note: 'A grinding tooth the size of a bread tin.', bonus: '+180 bread' },
+      { id: 'sand-wyrm-silk', name: 'Spool of Sand Silk', emoji: '🧵', note: 'Stronger than the harbour rope.', bonus: '+8 ore' },
+    ],
   },
   {
     id: 'moss-troll',
@@ -83,6 +93,11 @@ export const BOSSES = [
       { name: 'Old Weight', power: 15 },
     ],
     reward: { bread: 380, xp: 140 },
+    loot: [
+      { id: 'moss-troll-heart', name: 'Mossheart', emoji: '💚', note: 'It beats once a season.' },
+      { id: 'moss-troll-root', name: 'Old Growth Root', emoji: '🪵', note: 'Older than the Republic.', bonus: '+150 bread' },
+      { id: 'moss-troll-amber', name: 'Pine Amber', emoji: '🟠', note: 'With a beetle asleep in the middle.', bonus: '+5 ore' },
+    ],
   },
   {
     id: 'dragon',
@@ -103,7 +118,16 @@ export const BOSSES = [
       { name: 'Humming Roar', power: 19 },
     ],
     reward: { bread: 700, xp: 260 },
+    loot: [
+      { id: 'dragon-horn', name: 'Sift Dragon Horn', emoji: '🐉', note: 'It still hums, quietly.' },
+      { id: 'dragon-hum', name: 'Bottle of Sift Hum', emoji: '🫧', note: 'Pink and turquoise, sealed tight.', bonus: '+300 bread' },
+      { id: 'dragon-crystal', name: 'Humming Crystal', emoji: '💎', note: 'It sings when the bread ore is near.', bonus: '+14 ore' },
+    ],
   },
 ];
 
 export const bossFor = (id) => BOSSES.find((boss) => boss.id === id) || null;
+
+// Every spoil in the Republic, for naming what sits in a citizen's cabinet.
+export const LOOT = BOSSES.flatMap((boss) => boss.loot ?? []);
+export const lootById = (id) => LOOT.find((item) => item.id === id) || null;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import ArcadeShell from '@/components/world/arcade/ArcadeShell';
 import { speciesInfo } from '@/lib/species';
 
 const HURDLES = 5;
@@ -8,6 +8,29 @@ const WINDOW = [14, 32];
 const CLEAR_POINTS = 20;
 
 const START_POSITIONS = [120, 158, 196, 234, 272];
+
+// A reed, drawn properly: a cluster of stalks leaning with the wind.
+function Reed({ x }) {
+  return (
+    <span
+      className="pointer-events-none absolute bottom-[26%] -translate-x-1/2"
+      style={{ left: `${x}%` }}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 40 70" className="h-16 w-10 drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]">
+        <g stroke="#4c7a3f" strokeWidth="2.4" strokeLinecap="round" fill="none">
+          <path d="M20 70V18" />
+          <path d="M13 70V26M27 70V22" stroke="#3c6633" />
+        </g>
+        <g fill="#8a6a3a">
+          <ellipse cx="20" cy="15" rx="3.4" ry="8" />
+          <ellipse cx="27" cy="19" rx="2.8" ry="6.5" />
+          <ellipse cx="13" cy="23" rx="2.6" ry="6" />
+        </g>
+      </svg>
+    </span>
+  );
+}
 
 export default function RaceGame({ species = 'goose', onClose, onFinish }) {
   const [phase, setPhase] = useState('ready');
@@ -137,106 +160,115 @@ export default function RaceGame({ species = 'goose', onClose, onFinish }) {
   const score = cleared * CLEAR_POINTS;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-background/90 p-3 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-md border border-primary/40 bg-card p-4 shadow-2xl">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-primary">
-              Honk Champion Isle · Reed Race
-            </p>
-            <p className="mt-1 font-display text-xl font-bold">Jump the reeds</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-2 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-3 w-3" /> Leave track
-          </button>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-          <span>
-            Score {score} · {cleared}/{HURDLES} cleared
-          </span>
-          <span>{elapsed.toFixed(2)} s</span>
-          <span>{missed} missed</span>
-        </div>
-
-        <div className="relative mt-1 h-24 overflow-hidden rounded-sm border border-border/70 bg-secondary/50">
-          <span className="absolute inset-x-0 bottom-0 h-1/3 bg-[#2b3b2f]" />
-          <span
-            className="absolute bottom-[30%] z-10 text-2xl leading-none"
-            style={{
-              left: '9%',
-              transform: jumping ? 'translate(-50%, -26px)' : 'translate(-50%, 0)',
-              transition: 'transform 140ms ease-out',
-            }}
-            aria-hidden="true"
-          >
-            {speciesInfo(species).emoji}
-          </span>
-          <span className="absolute inset-y-0 left-[14%] w-px bg-primary/40" />
-          <span className="absolute inset-y-0 left-[32%] w-px bg-primary/20" />
-          {hurdles.map((hurdle) => (
-            <span
-              key={hurdle.id}
-              className="absolute bottom-[28%] -translate-x-1/2 text-xl leading-none"
-              style={{ left: `${hurdle.x}%` }}
-              aria-hidden="true"
+    <ArcadeShell
+      event="Reed Race"
+      title="Jump the reeds"
+      onExit={onClose}
+      exitLabel="Leave track"
+      hud={[
+        { label: 'Score', value: `${score}` },
+        { label: 'Cleared', value: `${cleared}/${HURDLES}` },
+        { label: 'Time', value: `${elapsed.toFixed(2)}s` },
+      ]}
+      footer={
+        <div>
+          {phase === 'running' ? (
+            <button
+              type="button"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                jump();
+              }}
+              className="w-full select-none rounded-sm bg-primary py-5 font-display text-3xl font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[0_8px_0_rgba(0,0,0,0.45)] active:translate-y-[3px] active:shadow-none"
             >
-              🌾
-            </span>
-          ))}
-        </div>
-
-        <p className="mt-2 h-4 font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
-          {flash}
-        </p>
-
-        {phase === 'ready' && (
-          <button
-            type="button"
-            onClick={start}
-            className="mt-2 w-full rounded-sm bg-primary py-3 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground"
-          >
-            Take the lane
-          </button>
-        )}
-
-        {phase === 'running' && (
-          <button
-            type="button"
-            onPointerDown={(event) => {
-              event.preventDefault();
-              jump();
-            }}
-            className="mt-2 w-full select-none rounded-sm bg-primary py-4 font-display text-2xl font-bold uppercase tracking-[0.14em] text-primary-foreground active:scale-[0.99]"
-          >
-            Jump
-          </button>
-        )}
-
-        <p className="mt-2 text-center font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-          {phase === 'running' ? 'jump between the markers · space bar works too' : ''}
-        </p>
-
-        {phase === 'done' && (
-          <div className="mt-2 rounded-sm border border-primary/40 bg-primary/5 p-3 text-center">
-            <p className="display-title text-xl">{result}</p>
-            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-              {score} points · {missed} missed · {finalTime.toFixed(2)} s
-            </p>
+              Jump
+            </button>
+          ) : phase === 'ready' ? (
             <button
               type="button"
               onClick={start}
-              className="mt-3 rounded-sm bg-primary px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-primary-foreground"
+              className="w-full rounded-sm bg-primary py-4 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-primary-foreground"
             >
-              Race again
+              Take the lane
             </button>
-          </div>
-        )}
+          ) : (
+            <div className="flex flex-col items-center gap-2 rounded-sm border border-primary/40 bg-primary/5 px-3 py-2 sm:flex-row sm:justify-between">
+              <p className="font-display text-lg leading-tight text-[#f6ecc9]">{result}</p>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                  {score} pts · {missed} missed · {finalTime.toFixed(2)}s
+                </span>
+                <button
+                  type="button"
+                  onClick={start}
+                  className="rounded-sm bg-primary px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-primary-foreground"
+                >
+                  Race again
+                </button>
+              </div>
+            </div>
+          )}
+          <p className="mt-1.5 h-4 text-center font-mono text-[9px] uppercase tracking-[0.16em] text-primary">
+            {phase === 'running' ? flash || 'jump between the markers · space bar works too' : ''}
+          </p>
+        </div>
+      }
+    >
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        {/* the evening sky over the reed beds */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#3d4f63] via-[#6d7f74] to-[#2b3b2f]" />
+        <div className="absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-[#22303a] to-transparent" />
+        <span className="absolute left-[12%] top-[16%] h-10 w-10 rounded-full bg-[#f6ecc9]/80 blur-[1px]" />
+        {/* hills at the back */}
+        <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="absolute inset-x-0 top-[38%] h-[16%] w-full">
+          <path d="M0 30V16c14-9 28-2 42-7s26-6 40 1 18 8 18 8v12z" fill="#26382c" opacity="0.85" />
+        </svg>
+        {/* the water of the reed bed */}
+        <div className="absolute inset-x-0 bottom-0 h-[46%] bg-gradient-to-b from-[#20463f] to-[#12241f]" />
+        <div
+          className="water-drift absolute inset-x-0 bottom-0 h-[46%] opacity-20"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(0deg, rgba(194,255,133,0.5) 0 1px, transparent 1px 14px)',
+          }}
+          aria-hidden="true"
+        />
+        {/* the bank the goose runs along */}
+        <div className="absolute inset-x-0 bottom-[18%] h-[16%] border-y border-black/40 bg-[#3c5334]" />
+        <div
+          className="absolute inset-x-0 bottom-[18%] h-[16%] opacity-40"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(90deg, rgba(0,0,0,0.35) 0 2px, transparent 2px 22px)',
+          }}
+          aria-hidden="true"
+        />
+
+        {/* the jump markers */}
+        <span className="absolute bottom-[10%] top-[35%] left-[14%] w-px border-l border-dashed border-primary/50" />
+        <span className="absolute bottom-[10%] top-[35%] left-[32%] w-px border-l border-dashed border-primary/30" />
+
+        {hurdles.map((hurdle) => (
+          <Reed key={hurdle.id} x={hurdle.x} />
+        ))}
+
+        <span
+          className="absolute bottom-[24%] z-10 text-5xl leading-none"
+          style={{
+            left: '9%',
+            transform: jumping ? 'translate(-50%, -54px) scale(1.05)' : 'translate(-50%, 0)',
+            transition: 'transform 140ms ease-out',
+            filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.6))',
+          }}
+          aria-hidden="true"
+        >
+          {speciesInfo(species).emoji}
+        </span>
+
+        <span className="absolute left-3 top-3 rounded-sm border border-primary/30 bg-black/45 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.18em] text-[#f6ecc9]/75">
+          the reed beds · {missed} missed
+        </span>
       </div>
-    </div>
+    </ArcadeShell>
   );
 }

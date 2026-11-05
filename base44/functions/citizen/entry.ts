@@ -3,7 +3,7 @@ import { MARKET, marketSnapshot, priceAt, currentTick } from '../../shared/marke
 import { hashPassword, normaliseUsername } from '../../shared/passport.ts';
 import { JOBS, jobById } from '../../shared/jobs.ts';
 import { isFind, questById } from '../../shared/quests.ts';
-import { BOSSES, bossById } from '../../shared/bosses.ts';
+import { BOSSES, bossById, lootFor } from '../../shared/bosses.ts';
 import {
   XP_PER_LEVEL,
   MAX_ARENA_DUELS,
@@ -209,6 +209,7 @@ function publicCitizen(citizen, holdings = []) {
     taken_quests: Array.isArray(citizen.taken_quests) ? citizen.taken_quests : [],
     quests: Array.isArray(citizen.quests) ? citizen.quests : [],
     bosses: Array.isArray(citizen.bosses) ? citizen.bosses : [],
+    boss_loot: Array.isArray(citizen.boss_loot) ? citizen.boss_loot : [],
     created_date: citizen.created_date,
     holdings,
   };
@@ -846,11 +847,32 @@ export default async function (req) {
       if (beaten.includes(boss.id)) {
         return Response.json({ citizen: publicCitizen(citizen, holdings), already: true });
       }
+      // The spoils: the beast's own trophy is certain, and it was carrying one more thing.
+      const catalogue = lootFor(boss.id);
+      const trophy = catalogue[0] ?? null;
+      const extras = catalogue.slice(1);
+      const extra = extras.length > 0 ? extras[Math.floor(Math.random() * extras.length)] : null;
+      const dropped = [trophy, extra].filter((item) => item !== null);
+      const spoils = dropped.reduce(
+        (sum, item) => ({
+          bread: sum.bread + (item.bonus?.bread ?? 0),
+          ore: sum.ore + (item.bonus?.ore ?? 0),
+          xp: sum.xp + (item.bonus?.xp ?? 0),
+        }),
+        { bread: 0, ore: 0, xp: 0 }
+      );
+      const cabinet = Array.isArray(citizen.boss_loot) ? citizen.boss_loot : [];
+      const newLoot = dropped
+        .map((item) => item.id)
+        .filter((id) => !cabinet.includes(id));
+
       const updated = await admin.entities.Citizen.update(citizen.id, {
-        bread: Math.round(citizen.bread ?? 0) + boss.reward.bread,
-        bread_earned: earnedTotal(citizen) + boss.reward.bread,
-        xp: xpOf(citizen) + boss.reward.xp,
+        bread: Math.round(citizen.bread ?? 0) + boss.reward.bread + spoils.bread,
+        bread_earned: earnedTotal(citizen) + boss.reward.bread + spoils.bread,
+        ore: Math.max(0, Math.floor(citizen.ore ?? 0)) + spoils.ore,
+        xp: xpOf(citizen) + boss.reward.xp + spoils.xp,
         bosses: [...beaten, boss.id],
+        boss_loot: [...cabinet, ...newLoot],
       });
 
       // The bout is written up on the slayers board, keeping the fewest turns it took.
@@ -879,6 +901,14 @@ export default async function (req) {
       return Response.json({
         citizen: publicCitizen(updated, holdings),
         reward: boss.reward,
+        spoils,
+        loot: dropped.map((item) => ({
+          id: item.id,
+          name: item.name,
+          emoji: item.emoji,
+          note: item.note,
+          bonus: item.bonus ?? null,
+        })),
         turns,
         boss_boards: await loadBossBoards(admin),
       });

@@ -27,6 +27,7 @@ export default function BossFight({ boss, pet, onClose }) {
   const [order, setOrder] = useState(0);
   const [turns, setTurns] = useState(0);
   const [reward, setReward] = useState(null);
+  const [spoils, setSpoils] = useState([]);
   const [slayers, setSlayers] = useState(null);
   const [note, setNote] = useState('');
 
@@ -117,6 +118,7 @@ export default function BossFight({ boss, pet, onClose }) {
       .then((data) => {
         if (!alive) return;
         setReward(data.reward || boss.reward);
+        setSpoils(data.loot || []);
         setSlayers(data.boss_boards?.[boss.id] || []);
       })
       .catch((error) => {
@@ -177,6 +179,7 @@ export default function BossFight({ boss, pet, onClose }) {
     setCool({});
     setBuried(false);
     setReward(null);
+    setSpoils([]);
     setSlayers(null);
     setNote('');
     setTurn('player');
@@ -280,6 +283,33 @@ export default function BossFight({ boss, pet, onClose }) {
                 ? `${reward.bread} bread and ${reward.xp} experience, paid into your passport.`
                 : note || 'The passport office is counting it up…'}
             </p>
+            {spoils.length > 0 && (
+              <div className="mt-2">
+                <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-primary/80">
+                  Spoils of the beast
+                </span>
+                <ul className="mt-1 space-y-1">
+                  {spoils.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-start gap-2 rounded-sm border border-primary/20 bg-black/30 px-2 py-1"
+                    >
+                      <span className="text-lg leading-none" aria-hidden="true">
+                        {item.emoji}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                          {item.name}
+                        </span>
+                        <span className="block text-[11px] leading-snug text-foreground/70">
+                          {item.note}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {slayers && slayers.length > 0 && (
               <div className="mt-2">
                 <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-primary/80">

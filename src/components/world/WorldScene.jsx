@@ -36,7 +36,6 @@ import { REALMS, realmFor } from '@/lib/realms';
 import useCommonsRoom from '@/hooks/useCommonsRoom';
 import usePong from '@/hooks/usePong';
 import HomeInterior from '@/components/world/interiors/HomeInterior';
-import GameStage from '@/components/world/GameStage';
 import CommonsChat from '@/components/world/CommonsChat';
 import { SPAWN, PORTAL_RING_RADIUS } from '@/lib/spawn';
 import { FINDS } from '@/lib/quests';
@@ -895,7 +894,7 @@ export default function WorldScene({
                   {spot.category === 'vehicle' ? (
                     <VehicleSprite
                       name={spot.name}
-                      className="block w-20 drop-shadow-[0_8px_8px_rgba(0,0,0,0.45)]"
+                      className="w-24 drop-shadow-[0_8px_8px_rgba(0,0,0,0.45)]"
                     />
                   ) : (
                     <span className={`block text-3xl ${isPet ? 'meadow-bob' : ''}`}>
@@ -972,7 +971,8 @@ export default function WorldScene({
         >
           <VehicleSprite
             name={myRide.name}
-            className="block w-28 drop-shadow-[0_9px_9px_rgba(0,0,0,0.55)]"
+            rolling
+            className="w-32 drop-shadow-[0_9px_9px_rgba(0,0,0,0.55)]"
           />
         </div>
       )}
@@ -1127,37 +1127,27 @@ export default function WorldScene({
       </button>
 
       {sport === 'choir' && (
-        <GameStage title="The Choir of Honkton" onClose={() => setSport('')}>
-          <ChoirGame onClose={() => setSport('')} onFinish={(score) => submitScore('choir', score)} />
-        </GameStage>
+        <ChoirGame onClose={() => setSport('')} onFinish={(score) => submitScore('choir', score)} />
       )}
       {sport === 'guard' && (
-        <GameStage title="Nest Guard" onClose={() => setSport('')}>
-          <NestGuard onClose={() => setSport('')} onFinish={(score) => submitScore('guard', score)} />
-        </GameStage>
+        <NestGuard onClose={() => setSport('')} onFinish={(score) => submitScore('guard', score)} />
       )}
       {sport === 'race' && (
-        <GameStage title="The Reed Race" onClose={() => setSport('')}>
-          <RaceGame
-            species={profile?.species}
-            onClose={() => setSport('')}
-            onFinish={(score) => submitScore('race', score)}
-          />
-        </GameStage>
+        <RaceGame
+          species={profile?.species}
+          onClose={() => setSport('')}
+          onFinish={(score) => submitScore('race', score)}
+        />
       )}
       {sport === 'sprint' && (
-        <GameStage title="The Heatsprint" onClose={() => setSport('')}>
-          <SprintGame
-            species={profile?.species}
-            onClose={() => setSport('')}
-            onFinish={(score) => submitScore('sprint', score)}
-          />
-        </GameStage>
+        <SprintGame
+          species={profile?.species}
+          onClose={() => setSport('')}
+          onFinish={(score) => submitScore('sprint', score)}
+        />
       )}
       {sport === 'toss' && (
-        <GameStage title="The Bread Toss" onClose={() => setSport('')}>
-          <BreadToss onClose={() => setSport('')} onFinish={(score) => submitScore('toss', score)} />
-        </GameStage>
+        <BreadToss onClose={() => setSport('')} onFinish={(score) => submitScore('toss', score)} />
       )}
 
       <GpsPanel

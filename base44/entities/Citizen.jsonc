@@ -205,6 +205,13 @@
         "type": "string"
       },
       "description": "The great beasts the citizen has beaten, paid out once each"
+    },
+    "boss_loot": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Trophies and spoils dropped by the great beasts, kept in the citizen's cabinet"
     }
   },
   "required": [

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import ArcadeShell from '@/components/world/arcade/ArcadeShell';
 
 const THROWS = 5;
 const SWEEP_SECONDS = 2.2;
@@ -95,96 +95,133 @@ export default function BreadToss({ onClose, onFinish }) {
   useEffect(() => stop, [stop]);
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-background/90 p-3 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-md border border-primary/40 bg-card p-4 shadow-2xl">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-primary">
-              Honk Champion Isle · Bread Toss
-            </p>
-            <p className="mt-1 font-display text-xl font-bold">Five loaves at the rings</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-2 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-3 w-3" /> Leave range
-          </button>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-          <span>Score {score} · target {TARGET}</span>
-          <span>{left} loaves left</span>
-        </div>
-
-        <div className="relative mt-1 h-16 overflow-hidden rounded-sm border border-border/70 bg-secondary/60">
-          <span className="absolute inset-y-0 left-[22.5%] w-[55%] bg-[#D4AF37]/10" />
-          <span className="absolute inset-y-0 left-[34%] w-[32%] bg-[#D4AF37]/15" />
-          <span className="absolute inset-y-0 left-[44%] w-[12%] bg-[#D4AF37]/30" />
-          <span
-            className="absolute inset-y-0 w-[2px] -translate-x-1/2 bg-primary shadow-[0_0_10px_rgba(190,255,140,0.8)]"
-            style={{ left: `${pos * 100}%` }}
-          />
-          <span className="pointer-events-none absolute bottom-1 left-[44%] w-[12%] text-center font-mono text-[8px] uppercase tracking-[0.12em] text-[#D4AF37]">
-            50
-          </span>
-        </div>
-
-        <p className="mt-2 h-4 font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
-          {last ? `${last.label} · +${last.points}` : ''}
-        </p>
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          {hits.map((points, index) => (
-            <span
-              key={`${points}-${index}`}
-              className="rounded-sm border border-primary/40 px-2 py-1 font-mono text-[9px] text-primary"
+    <ArcadeShell
+      event="Bread Toss"
+      title="Five loaves at the rings"
+      onExit={onClose}
+      exitLabel="Leave range"
+      hud={[
+        { label: 'Score', value: `${score}` },
+        { label: 'To beat', value: `${TARGET}` },
+        { label: 'Loaves', value: `${left}` },
+      ]}
+      footer={
+        <div>
+          {phase === 'running' ? (
+            <button
+              type="button"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                toss();
+              }}
+              className="w-full select-none rounded-sm bg-primary py-5 font-display text-3xl font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[0_8px_0_rgba(0,0,0,0.45)] active:translate-y-[3px] active:shadow-none"
             >
-              {points}
-            </span>
-          ))}
-        </div>
-
-        {phase === 'ready' && (
-          <button
-            type="button"
-            onClick={start}
-            className="mt-4 w-full rounded-sm bg-primary py-3 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground"
-          >
-            Take five loaves
-          </button>
-        )}
-
-        {phase === 'running' && (
-          <button
-            type="button"
-            onPointerDown={(event) => {
-              event.preventDefault();
-              toss();
-            }}
-            className="mt-4 w-full select-none rounded-sm bg-primary py-4 font-display text-2xl font-bold uppercase tracking-[0.14em] text-primary-foreground active:scale-[0.99]"
-          >
-            🍞 Toss
-          </button>
-        )}
-
-        {phase === 'done' && (
-          <div className="mt-4 rounded-sm border border-primary/40 bg-primary/5 p-3 text-center">
-            <p className="display-title text-xl">{result}</p>
-            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-              {score} of {THROWS * 50} bread points
-            </p>
+              🍞 Toss
+            </button>
+          ) : phase === 'ready' ? (
             <button
               type="button"
               onClick={start}
-              className="mt-3 rounded-sm bg-primary px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-primary-foreground"
+              className="w-full rounded-sm bg-primary py-4 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-primary-foreground"
             >
-              Throw again
+              Take five loaves
             </button>
+          ) : (
+            <div className="flex flex-col items-center gap-2 rounded-sm border border-primary/40 bg-primary/5 px-3 py-2 sm:flex-row sm:justify-between">
+              <p className="font-display text-lg leading-tight text-[#f6ecc9]">{result}</p>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                  {score} of {THROWS * 50} bread points
+                </span>
+                <button
+                  type="button"
+                  onClick={start}
+                  className="rounded-sm bg-primary px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-primary-foreground"
+                >
+                  Throw again
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="mt-1.5 flex min-h-4 items-center justify-center gap-1.5">
+            <span className="min-w-32 text-center font-mono text-[9px] uppercase tracking-[0.16em] text-primary">
+              {last ? `${last.label} · +${last.points}` : ''}
+            </span>
           </div>
-        )}
+        </div>
+      }
+    >
+      <div className="relative min-h-0 flex-1 overflow-hidden bg-gradient-to-b from-[#1b2a20] via-[#20301f] to-[#0e1610]">
+        {/* the flour barns behind the range */}
+        <div className="absolute inset-x-0 top-0 h-[26%] bg-[#16201a]">
+          <div
+            className="h-full w-full opacity-30"
+            style={{
+              backgroundImage:
+                'repeating-linear-gradient(90deg, #c2ff85 0 1px, transparent 1px 60px)',
+            }}
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* the target boards, drawn as a real rack of rings */}
+        <div className="absolute inset-x-0 top-[26%] bottom-[16%] flex items-center justify-center px-4">
+          <div className="relative h-full w-full max-w-4xl">
+            <div className="absolute inset-y-0 left-0 w-full origin-bottom rounded-sm border-4 border-[#5b422d] bg-[#6d5136] shadow-[inset_0_0_60px_rgba(0,0,0,0.6)]">
+              {/* painted rings */}
+              <span className="absolute inset-y-[10%] left-[22.5%] right-[22.5%] rounded-full border-4 border-[#e8d9a8]/50 bg-[#c2a56b]/25" />
+              <span className="absolute inset-y-[26%] left-[34%] right-[34%] rounded-full border-4 border-[#e8d9a8]/70 bg-[#d9a95f]/35" />
+              <span className="absolute inset-y-[42%] left-[44%] right-[44%] rounded-full border-4 border-[#f6ecc9] bg-[#e8c07a] shadow-[0_0_24px_rgba(246,236,201,0.5)]" />
+              <span className="absolute inset-y-[46%] left-1/2 w-px -translate-x-1/2 bg-[#f6ecc9]/40" />
+
+              {/* the sweeping arm */}
+              <span
+                className="absolute inset-y-0 w-[3px] -translate-x-1/2 bg-primary shadow-[0_0_18px_rgba(190,255,140,0.95)]"
+                style={{ left: `${pos * 100}%`, transition: 'left 40ms linear' }}
+              />
+              <span
+                className="absolute top-0 -translate-x-1/2 -translate-y-full text-2xl leading-none"
+                style={{ left: `${pos * 100}%`, transition: 'left 40ms linear' }}
+                aria-hidden="true"
+              >
+                🍞
+              </span>
+
+              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#3a2b16]">
+                50 · bullseye
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* the throwing line */}
+        <div className="absolute inset-x-0 bottom-0 h-[16%] bg-[#3c5334]">
+          <span className="absolute inset-x-0 top-0 h-[2px] bg-[#f6ecc9]/25" />
+          <div className="flex items-center justify-center gap-2 pt-3">
+            {Array.from({ length: THROWS }, (_, index) => (
+              <span
+                key={index}
+                className={`h-2.5 w-6 rounded-full border ${
+                  index < THROWS - left
+                    ? 'border-primary/20 bg-primary/10'
+                    : 'border-[#e8c07a]/70 bg-[#d9a95f]'
+                }`}
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+          <div className="mt-1.5 flex items-center justify-center gap-1.5">
+            {hits.map((points, index) => (
+              <span
+                key={`${points}-${index}`}
+                className="rounded-sm border border-primary/40 px-2 py-0.5 font-mono text-[9px] text-primary"
+              >
+                {points}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </ArcadeShell>
   );
 }

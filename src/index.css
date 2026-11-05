@@ -391,6 +391,31 @@
   animation: door-glow 4.2s ease-in-out infinite;
 }
 
+/* A vehicle under way: the wheels turn and the body works over the road. */
+@keyframes wheel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.wheel-spin {
+  animation: wheel-spin 900ms linear infinite;
+}
+
+@keyframes vehicle-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.4deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(0.4deg);
+  }
+}
+
+.vehicle-bob {
+  animation: vehicle-bob 1.5s ease-in-out infinite;
+}
+
 @keyframes river-flow {
   from {
     stroke-dashoffset: 0;
