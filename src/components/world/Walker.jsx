@@ -13,6 +13,7 @@ export default function Walker({
   bubble,
   speed = '2.4s',
   lift = 0,
+  ink = false,
   onPoke,
 }) {
   return (
@@ -60,7 +61,11 @@ export default function Walker({
       </span>
       <span
         className={`mt-0.5 max-w-[96px] truncate rounded-sm px-1 font-mono text-[8px] uppercase tracking-[0.12em] ${
-          isMe ? 'bg-primary/15 text-primary' : 'text-foreground/80'
+          ink
+            ? 'bg-white/75 text-[#241d12]'
+            : isMe
+              ? 'bg-primary/15 text-primary'
+              : 'text-foreground/80'
         }`}
       >
         {label}

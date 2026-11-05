@@ -104,7 +104,11 @@ function InteriorRoom({ place }) {
 
       <div
         className="absolute left-1/2 top-[6%] z-20 hidden -translate-x-1/2 whitespace-nowrap border px-3 py-1 font-mono text-[9px] uppercase tracking-[0.32em] md:block"
-        style={{ borderColor: `${accent}55`, color: accent, background: 'rgba(10,15,11,0.8)' }}
+        style={
+          place.wood
+            ? { borderColor: '#b9a880', color: '#241d12', background: 'rgba(255,252,244,0.86)' }
+            : { borderColor: `${accent}55`, color: accent, background: 'rgba(10,15,11,0.8)' }
+        }
       >
         {place.sign}
       </div>

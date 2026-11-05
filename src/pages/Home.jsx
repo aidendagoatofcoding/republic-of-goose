@@ -17,7 +17,7 @@ const STATS = [
 const COMMONS = [
   { icon: Compass, label: 'Nine realms on the ring', note: 'Capital, harbour, mines, deep forest' },
   { icon: ScrollText, label: 'Quests out in the field', note: 'Search the boulders and hollow trees' },
-  { icon: Sparkles, label: 'Sports on Champion Isle', note: 'Sprint, archery, tossing and the choir' },
+  { icon: Sparkles, label: 'Sports on Champion Isle', note: 'Sprint, tossing, racing and the choir' },
 ];
 
 export default function Home() {

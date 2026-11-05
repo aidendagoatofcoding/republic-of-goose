@@ -13,7 +13,6 @@ import ShopDoors from '@/components/shop/ShopDoors';
 import KitchenStation from '@/components/world/interiors/KitchenStation';
 import Citizenship from '@/pages/Citizenship';
 import Grammar from '@/pages/Grammar';
-import WarzoneArena from '@/components/world/interiors/WarzoneArena';
 import QuestPanel from '@/components/world/QuestPanel';
 import MineStation from '@/components/world/MineStation';
 import SiftGate from '@/components/world/SiftGate';
@@ -34,10 +33,9 @@ const CONTENT = {
   bakery: Games,
   registry: Citizenship,
   grammar: Grammar,
-  warzone: WarzoneArena,
 };
 
-export default function StationContent({ station, place, onEnterPlace, onExit, onPlay, arenaBus }) {
+export default function StationContent({ station, place, onEnterPlace, onExit, onPlay }) {
   if (station.content === 'capital') {
     return <CapitalDoors onEnter={onEnterPlace} onExit={onExit} />;
   }
@@ -69,5 +67,5 @@ export default function StationContent({ station, place, onEnterPlace, onExit, o
   if (!Piece) {
     return <p className="text-[15px] leading-relaxed text-foreground/75">{place.blurb}</p>;
   }
-  return <Piece arenaBus={arenaBus} />;
+  return <Piece />;
 }

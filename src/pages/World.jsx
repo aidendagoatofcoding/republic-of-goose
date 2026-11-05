@@ -6,7 +6,7 @@ import { useCitizen } from '@/hooks/useCitizen';
 import WorldScene from '@/components/world/WorldScene';
 import CommonsPalette from '@/components/world/CommonsPalette';
 import CommonsMenu from '@/components/world/CommonsMenu';
-import { levelFromXp } from '@/lib/swords';
+import { levelFromXp } from '@/lib/levels';
 
 export default function World() {
   const { citizen, signedIn, run } = useCitizen();

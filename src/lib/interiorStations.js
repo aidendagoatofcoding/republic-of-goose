@@ -129,13 +129,40 @@ export const STATIONS = {
   dealership: [
     { id: 'lot', name: 'The lot', x: 50, y: 80, content: 'shop-vehicle' },
   ],
-  warzone: [
-    { id: 'front', name: 'The front line', x: 50, y: 84, content: 'warzone' },
-  ],
   forest: [
     { id: 'glade', name: 'The quiet glade', x: 50, y: 84, content: 'forest' },
     { id: 'forester', name: 'The forester', x: 24, y: 88, content: 'quests:forest' },
   ],
+  charcoal: [
+    { id: 'burner', name: 'The charcoal burner', x: 62, y: 86, content: 'quests:charcoal' },
+  ],
+  moonwell: [
+    { id: 'keeper', name: 'The well keeper', x: 50, y: 82, content: 'quests:moonwell' },
+  ],
+  caravanserai: [
+    { id: 'master', name: 'The caravan master', x: 70, y: 84, content: 'quests:caravanserai' },
+  ],
+  bazaar: [
+    { id: 'keeper', name: 'The bazaar keeper', x: 34, y: 84, content: 'quests:bazaar' },
+    { id: 'stalls', name: 'The stalls', x: 72, y: 86, content: 'shop-decoration' },
+  ],
+  well: [{ id: 'drawer', name: 'The well drawer', x: 50, y: 80, content: 'quests:well' }],
+  tomb: [{ id: 'keeper', name: 'The tomb keeper', x: 62, y: 82, content: 'quests:tomb' }],
+  observatory: [
+    { id: 'stargazer', name: 'The stargazer', x: 72, y: 82, content: 'quests:observatory' },
+  ],
+  cactus: [
+    { id: 'postmaster', name: 'The postmaster', x: 62, y: 86, content: 'quests:cactus' },
+  ],
+  icehouse: [{ id: 'keeper', name: 'The ice keeper', x: 70, y: 82, content: 'quests:icehouse' }],
+  lodge: [{ id: 'trapper', name: 'The trapper', x: 74, y: 82, content: 'quests:lodge' }],
+  chapel: [{ id: 'chaplain', name: 'The chaplain', x: 50, y: 80, content: 'quests:chapel' }],
+  bothy: [{ id: 'observer', name: 'The observer', x: 70, y: 86, content: 'quests:bothy' }],
+  sled: [
+    { id: 'yard', name: 'The yard keeper', x: 50, y: 84, content: 'quests:sled' },
+    { id: 'sleds', name: 'Sleds for the snow', x: 76, y: 84, content: 'shop-vehicle' },
+  ],
+  hotspring: [{ id: 'keeper', name: 'The spring keeper', x: 50, y: 80, content: 'quests:hotspring' }],
 };
 
 export const stationsFor = (id) => STATIONS[id] || [];

@@ -17,13 +17,17 @@ export default function RealmScenery({ realm }) {
   const accent = realm.accent || '#f2c96b';
   const bright = Boolean(realm.bright);
 
-  const sky = bright
-    ? 'linear-gradient(180deg, #ff9ed2 0%, #ffb9d6 24%, #9fe0f2 58%, #4fb9a8 100%)'
-    : 'linear-gradient(180deg, #08151f 0%, #0d2634 32%, #163b44 62%, #1b4136 100%)';
+  const sky =
+    realm.sky ||
+    (bright
+      ? 'linear-gradient(180deg, #ff9ed2 0%, #ffb9d6 24%, #9fe0f2 58%, #4fb9a8 100%)'
+      : 'linear-gradient(180deg, #08151f 0%, #0d2634 32%, #163b44 62%, #1b4136 100%)');
 
-  const ground = bright
-    ? 'linear-gradient(180deg, #5fd0a8 0%, #2f9c86 42%, #146b60 100%)'
-    : 'linear-gradient(180deg, #3c5333 0%, #2c4028 42%, #171f14 100%)';
+  const ground =
+    realm.ground ||
+    (bright
+      ? 'linear-gradient(180deg, #5fd0a8 0%, #2f9c86 42%, #146b60 100%)'
+      : 'linear-gradient(180deg, #3c5333 0%, #2c4028 42%, #171f14 100%)');
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">

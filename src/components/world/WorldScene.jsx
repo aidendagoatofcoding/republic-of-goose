@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import HouseSprite from '@/components/world/HouseSprite';
 import CommonsScenery from '@/components/world/CommonsScenery';
 import Places from '@/components/world/Places';
@@ -11,7 +11,6 @@ import SprintGame from '@/components/world/SprintGame';
 import BreadToss from '@/components/world/BreadToss';
 import ChoirGame from '@/components/world/ChoirGame';
 import NestGuard from '@/components/world/NestGuard';
-import ArcheryGame from '@/components/world/ArcheryGame';
 import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
 import { spotOnRoadNear, routeAlongRoads } from '@/lib/roads';
@@ -25,7 +24,6 @@ import { sfx, isMuted, setMuted } from '@/lib/sfx';
 import SportVenue from '@/components/world/SportVenue';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
 import PetPanel from '@/components/world/PetPanel';
-import WarzoneBattle from '@/components/arena/WarzoneBattle';
 import WeatherLayer from '@/components/world/WeatherLayer';
 import useWeather from '@/hooks/useWeather';
 import { VENUES, VENUE_BY_ID } from '@/lib/isleVenues';
@@ -128,29 +126,12 @@ export default function WorldScene({
   );
 
   const pongHandler = useRef(null);
-  const arenaListeners = useRef(new Set());
-  const handleArena = useCallback((msg) => {
-    arenaListeners.current.forEach((listener) => listener(msg));
-  }, []);
   const { people, seat, connected, move, honk, send: sendRoom } = useCommonsRoom({
     profile,
     onHonk: handleHonk,
     onPong: (msg) => pongHandler.current?.(msg),
-    onArena: handleArena,
   });
 
-  const arenaBus = useMemo(
-    () => ({
-      seat,
-      people,
-      send: sendRoom,
-      subscribe: (listener) => {
-        arenaListeners.current.add(listener);
-        return () => arenaListeners.current.delete(listener);
-      },
-    }),
-    [seat, people, sendRoom]
-  );
   const pong = usePong({ seat, send: sendRoom });
   pongHandler.current = pong.handlePong;
   const [sport, setSport] = useState('');
@@ -1124,14 +1105,6 @@ export default function WorldScene({
           <NestGuard onClose={() => setSport('')} onFinish={(score) => submitScore('guard', score)} />
         </GameStage>
       )}
-      {sport === 'archery' && (
-        <GameStage title="The Reed Archery Range" onClose={() => setSport('')}>
-          <ArcheryGame
-            onClose={() => setSport('')}
-            onFinish={(score) => submitScore('archery', score)}
-          />
-        </GameStage>
-      )}
       {sport === 'race' && (
         <GameStage title="The Reed Race" onClose={() => setSport('')}>
           <RaceGame
@@ -1242,13 +1215,7 @@ export default function WorldScene({
       )}
 
       <SceneBoundary resetKey={`${realm}|${inside}`} onReset={() => setRealm('')}>
-        {realm === 'warzone' || realm === 'duelling' ? (
-          <WarzoneBattle
-            bus={arenaBus}
-            mode={realm === 'duelling' ? 'duel' : 'horde'}
-            onExit={() => setRealm('')}
-          />
-        ) : realmData ? (
+        {realmData ? (
           <RealmScene
             realm={realmData}
             onExit={() => setRealm('')}
@@ -1263,7 +1230,6 @@ export default function WorldScene({
             onEnterPlace={setInside}
             onExit={() => setInside('')}
             onPlay={setSport}
-            arenaBus={arenaBus}
           />
         )}
       </SceneBoundary>

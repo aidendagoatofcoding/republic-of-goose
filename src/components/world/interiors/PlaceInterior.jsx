@@ -1,6 +1,6 @@
 import InteriorScene from '@/components/world/interiors/InteriorScene';
 
-export default function PlaceInterior({ place, onEnterPlace, onExit, onPlay, arenaBus }) {
+export default function PlaceInterior({ place, onEnterPlace, onExit, onPlay }) {
   if (!place) return null;
 
   return (
@@ -10,7 +10,6 @@ export default function PlaceInterior({ place, onEnterPlace, onExit, onPlay, are
         onEnterPlace={onEnterPlace}
         onExit={onExit}
         onPlay={onPlay}
-        arenaBus={arenaBus}
       />
     </div>
   );
