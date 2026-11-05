@@ -1,0 +1,61 @@
+{
+  "name": "Friendship",
+  "type": "object",
+  "properties": {
+    "from_key": {
+      "type": "string",
+      "description": "Citizen record id of the goose who asked"
+    },
+    "to_key": {
+      "type": "string",
+      "description": "Citizen record id of the goose who was asked"
+    },
+    "from_name": {
+      "type": "string",
+      "description": "Name of the goose who asked, shown with the request"
+    },
+    "to_name": {
+      "type": "string",
+      "description": "Name of the goose who was asked"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted"
+      ],
+      "enumColors": [
+        "yellow",
+        "green"
+      ],
+      "default": "pending",
+      "description": "pending until answered, then accepted"
+    }
+  },
+  "required": [
+    "from_key",
+    "to_key"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

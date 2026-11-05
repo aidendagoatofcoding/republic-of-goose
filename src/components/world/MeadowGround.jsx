@@ -126,31 +126,11 @@ export default function MeadowGround() {
         <ellipse cx="30" cy="58" rx="5.4" ry="3.1" fill="none" stroke="#c9b98a" strokeOpacity="0.28" strokeWidth="0.4" />
       </svg>
 
-      <div className="absolute inset-x-0 top-[64%] h-7 -translate-y-1/2 bg-[#463f31]/75 ring-1 ring-inset ring-black/20" />
-      <div className="absolute inset-x-0 top-[64%] h-[2px] -translate-y-1/2" style={CENTRE_LINE} />
-      <div className="absolute inset-x-0 top-[21%] h-5 -translate-y-1/2 bg-[#463f31]/65 ring-1 ring-inset ring-black/15" />
-
-      {ROADS.map((x) => (
-        <div
-          key={`road-${x}`}
-          className="absolute inset-y-0 w-5 -translate-x-1/2 bg-[#463f31]/70 ring-1 ring-inset ring-black/15"
-          style={{ left: `${x}%` }}
-        />
-      ))}
-
       <div
         className="absolute -translate-x-1/2 ring-1 ring-inset ring-[#241d14] shadow-[0_4px_10px_rgba(0,0,0,0.45)]"
         style={{ left: '33.5%', top: '19.5%', width: '4%', height: '5.5%', backgroundColor: '#5a4a32', ...PLANKS }}
         aria-hidden="true"
       />
-
-      {ROADS.map((x) => (
-        <div
-          key={`bridge-${x}`}
-          className="absolute -translate-x-1/2 ring-1 ring-inset ring-[#241d14] shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
-          style={{ left: `${x}%`, top: '40%', width: '5.2%', height: '13%', backgroundColor: '#5a4a32', ...PLANKS }}
-        />
-      ))}
 
       {GRASS_TUFTS.map(([x, y]) => (
         <span

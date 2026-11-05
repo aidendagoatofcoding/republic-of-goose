@@ -1,0 +1,49 @@
+{
+  "name": "Whisper",
+  "type": "object",
+  "properties": {
+    "from_key": {
+      "type": "string",
+      "description": "Citizen record id of the goose who spoke"
+    },
+    "to_key": {
+      "type": "string",
+      "description": "Citizen record id of the goose being spoken to"
+    },
+    "from_name": {
+      "type": "string",
+      "description": "Name of the speaker, shown in the conversation"
+    },
+    "body": {
+      "type": "string",
+      "description": "What was said, in ordinary words"
+    }
+  },
+  "required": [
+    "from_key",
+    "to_key",
+    "body"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

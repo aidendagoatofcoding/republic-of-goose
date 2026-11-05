@@ -139,6 +139,14 @@
         }
       }
     },
+    "home_open": {
+      "type": "boolean",
+      "description": "Whether any goose may walk into the citizen's home, or only friends"
+    },
+    "bake_progress": {
+      "type": "number",
+      "description": "Loaves baked since the last piece of bread was paid out"
+    },
     "workers": {
       "type": "number",
       "description": "Bakery hands hired by the citizen, each baking bread automatically"

@@ -16,7 +16,8 @@ import {
 
 const CHAT_REWARD = 5;
 const CHAT_COOLDOWN_MS = 12000;
-const BAKE_RATE = 1;
+// The bakery pays by the batch: ten loaves out of the oven make one piece of bread.
+const LOAVES_PER_BREAD = 10;
 const MAX_BAKE_CLICKS = 40;
 const MAX_SHARES = 5000;
 const MAX_DECORATIONS = 40;
@@ -50,6 +51,53 @@ function workerCost(workers) {
 
 function earnedTotal(citizen) {
   return Math.max(0, Math.floor(citizen.bread_earned ?? 0));
+}
+
+function nameOf(citizen) {
+  return citizen.goose_name || citizen.full_name || citizen.username || 'A goose';
+}
+
+// Every friendship row that touches this citizen, in either direction.
+async function friendshipsFor(admin, id) {
+  const [sent, received] = await Promise.all([
+    admin.entities.Friendship.filter({ from_key: id }, { limit: 100 }),
+    admin.entities.Friendship.filter({ to_key: id }, { limit: 100 }),
+  ]);
+  return [...(sent?.items ?? []), ...(received?.items ?? [])];
+}
+
+function friendState(rows, id, otherId) {
+  const row = rows.find(
+    (entry) =>
+      (entry.from_key === id && entry.to_key === otherId) ||
+      (entry.from_key === otherId && entry.to_key === id)
+  );
+  if (!row) return { status: 'none', incoming: false, id: '' };
+  const accepted = row.status === 'accepted';
+  return {
+    status: accepted ? 'friend' : 'pending',
+    incoming: !accepted && row.to_key === id,
+    id: row.id,
+  };
+}
+
+async function friendBundle(admin, citizen) {
+  const rows = await friendshipsFor(admin, citizen.id);
+  const friends = [];
+  const incoming = [];
+  const outgoing = [];
+  rows.forEach((row) => {
+    const otherId = row.from_key === citizen.id ? row.to_key : row.from_key;
+    const otherName = row.from_key === citizen.id ? row.to_name : row.from_name;
+    if (row.status === 'accepted') {
+      friends.push({ key: otherId, name: otherName || 'A goose' });
+    } else if (row.to_key === citizen.id) {
+      incoming.push({ id: row.id, key: otherId, name: otherName || 'A goose' });
+    } else {
+      outgoing.push({ id: row.id, key: otherId, name: otherName || 'A goose' });
+    }
+  });
+  return { friends, incoming, outgoing };
 }
 
 function loanCeiling(earned) {
@@ -149,6 +197,8 @@ function publicCitizen(citizen, holdings = []) {
     username: citizen.username || '',
     workers,
     next_worker_cost: workerCost(workers),
+    home_open: citizen.home_open === true,
+    bake_progress: Math.max(0, Math.floor(citizen.bake_progress ?? 0)),
     job: citizen.job || '',
     finds: Array.isArray(citizen.finds) ? citizen.finds : [],
     fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)),
@@ -262,18 +312,37 @@ export default async function (req) {
           .filter(Boolean)
           .map((item) => item.emoji || '📦');
 
-      const residents = residentsRaw.map((entry) => ({
-        key: entry.id,
-        worn: wornOf(entry),
-        name: entry.goose_name || entry.full_name || entry.username || 'Anonymous honker',
-        username: entry.username || '',
-        species: entry.species || 'goose',
-        avatar_url: entry.avatar_url || '',
-        district: entry.district || '',
-        job: entry.job || '',
-        is_me: Boolean(rawCode) && entry.passport_code === rawCode,
-        spots: spotsOf(entry),
-      }));
+      const viewer = rawCode
+        ? residentsRaw.find((entry) => entry.passport_code === rawCode) ?? null
+        : null;
+      const myFriendships = viewer ? await friendshipsFor(admin, viewer.id) : [];
+
+      const residents = residentsRaw.map((entry) => {
+        const spots = spotsOf(entry);
+        const home = spots.find((spot) => spot.category === 'home');
+        const state = viewer
+          ? friendState(myFriendships, viewer.id, entry.id)
+          : { status: 'none', incoming: false, id: '' };
+        return {
+          key: entry.id,
+          worn: wornOf(entry),
+          name: entry.goose_name || entry.full_name || entry.username || 'Anonymous honker',
+          username: entry.username || '',
+          species: entry.species || 'goose',
+          avatar_url: entry.avatar_url || '',
+          district: entry.district || '',
+          job: entry.job || '',
+          is_me: Boolean(rawCode) && entry.passport_code === rawCode,
+          spots,
+          home_price: home?.price ?? 0,
+          home_open: entry.home_open === true,
+          friend: state.status === 'friend',
+          friend_pending: state.status === 'pending',
+          friend_incoming: state.incoming,
+          friend_request: state.id,
+          can_enter: entry.home_open === true || state.status === 'friend',
+        };
+      });
 
       const mineEntry = rawCode
         ? residentsRaw.find((entry) => entry.passport_code === rawCode) ?? null
@@ -296,7 +365,14 @@ export default async function (req) {
         };
       }
 
-      return Response.json({ residents, mine });
+      return Response.json({
+        residents,
+        mine,
+        me_key: viewer?.id || '',
+        friends: viewer
+          ? await friendBundle(admin, viewer)
+          : { friends: [], incoming: [], outgoing: [] },
+      });
     }
 
     if (action === 'googleLogin') {
@@ -482,12 +558,16 @@ export default async function (req) {
       if (!Number.isFinite(clicks) || clicks < 1 || clicks > MAX_BAKE_CLICKS) {
         return Response.json({ error: 'The oven rejected that batch.' }, { status: 400 });
       }
-      const earned = clicks * BAKE_RATE;
+      // Ten loaves make one bread; the rest wait in the oven for the next batch.
+      const carried = Math.max(0, Math.floor(citizen.bake_progress ?? 0));
+      const loaves = carried + clicks;
+      const earned = Math.floor(loaves / LOAVES_PER_BREAD);
       const updated = await admin.entities.Citizen.update(citizen.id, {
         bread: Math.round(citizen.bread ?? 0) + earned,
         bread_earned: earnedTotal(citizen) + earned,
+        bake_progress: loaves % LOAVES_PER_BREAD,
       });
-      return Response.json({ citizen: publicCitizen(updated, holdings), earned });
+      return Response.json({ citizen: publicCitizen(updated, holdings), earned, loaves: clicks });
     }
 
     if (action === 'collect') {
@@ -498,16 +578,20 @@ export default async function (req) {
       const now = Date.now();
       const last = citizen.last_baked ? new Date(citizen.last_baked).getTime() : now;
       const seconds = Math.min(Math.max(0, (now - last) / 1000), MAX_OFFLINE_SECONDS);
-      const earned = Math.min(Math.floor((seconds * workers) / WORKER_SECONDS_PER_LOAF), MAX_WORKER_EARN);
-      if (earned < 1) {
-        return Response.json({ citizen: publicCitizen(citizen, holdings), earned: 0 });
+      const loaves = Math.floor((seconds * workers) / WORKER_SECONDS_PER_LOAF);
+      if (loaves < 1) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings), earned: 0, loaves: 0 });
       }
+      const carried = Math.max(0, Math.floor(citizen.bake_progress ?? 0));
+      const batch = carried + loaves;
+      const earned = Math.min(Math.floor(batch / LOAVES_PER_BREAD), MAX_WORKER_EARN);
       const updated = await admin.entities.Citizen.update(citizen.id, {
         bread: Math.round(citizen.bread ?? 0) + earned,
         bread_earned: earnedTotal(citizen) + earned,
+        bake_progress: batch % LOAVES_PER_BREAD,
         last_baked: new Date(now).toISOString(),
       });
-      return Response.json({ citizen: publicCitizen(updated, holdings), earned });
+      return Response.json({ citizen: publicCitizen(updated, holdings), earned, loaves });
     }
 
     if (action === 'hireWorker') {
@@ -1006,6 +1090,136 @@ export default async function (req) {
         offers: await loadOffers(admin, citizen.id),
         sold: amount,
       });
+    }
+
+    if (action === 'friendRequest') {
+      const toKey = String(body.to_key ?? '');
+      if (!toKey || toKey === citizen.id) {
+        return Response.json({ error: 'That is not a neighbour.' }, { status: 400 });
+      }
+      const target = await admin.entities.Citizen
+        .get(toKey)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!target) {
+        return Response.json({ error: 'That citizen is not on the register.' }, { status: 404 });
+      }
+      const rows = await friendshipsFor(admin, citizen.id);
+      const existing = friendState(rows, citizen.id, toKey);
+      if (!existing.id) {
+        await admin.entities.Friendship.create({
+          from_key: citizen.id,
+          to_key: toKey,
+          from_name: nameOf(citizen),
+          to_name: nameOf(target),
+          status: 'pending',
+        });
+      }
+      return Response.json({ friends: await friendBundle(admin, citizen) });
+    }
+
+    if (action === 'friendReply') {
+      const requestId = String(body.request_id ?? '');
+      const accept = body.accept === true;
+      const row = await admin.entities.Friendship
+        .get(requestId)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!row || (row.to_key !== citizen.id && row.from_key !== citizen.id)) {
+        return Response.json({ error: 'That request is not yours.' }, { status: 404 });
+      }
+      if (accept) {
+        await admin.entities.Friendship.update(row.id, { status: 'accepted' });
+      } else {
+        await admin.entities.Friendship.delete(row.id);
+      }
+      return Response.json({ friends: await friendBundle(admin, citizen) });
+    }
+
+    if (action === 'friendRemove') {
+      const toKey = String(body.to_key ?? '');
+      const rows = await friendshipsFor(admin, citizen.id);
+      const row = rows.find(
+        (entry) =>
+          (entry.from_key === citizen.id && entry.to_key === toKey) ||
+          (entry.from_key === toKey && entry.to_key === citizen.id)
+      );
+      if (row) await admin.entities.Friendship.delete(row.id);
+      return Response.json({ friends: await friendBundle(admin, citizen) });
+    }
+
+    if (action === 'homeOpen') {
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        home_open: body.open === true,
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    if (action === 'guestHome') {
+      const ownerKey = String(body.key ?? '');
+      const owner = await admin.entities.Citizen
+        .get(ownerKey)
+        .catch((error) => (error.status === 404 ? null : Promise.reject(error)));
+      if (!owner) {
+        return Response.json({ error: 'That home has no keeper.' }, { status: 404 });
+      }
+      const rows = await friendshipsFor(admin, citizen.id);
+      const state = friendState(rows, citizen.id, owner.id);
+      const allowed = owner.home_open === true || state.status === 'friend';
+      if (!allowed) {
+        return Response.json({ locked: true, name: nameOf(owner) });
+      }
+      const shelf = await admin.entities.ShopItem.list({ limit: 300 });
+      const byId = new Map((shelf?.items ?? []).map((item) => [item.id, item]));
+      const home = (Array.isArray(owner.world_spots) ? owner.world_spots : [])
+        .map((spot) => byId.get(spot.item_id))
+        .find((item) => item && (item.category || '') === 'home');
+      const furniture = (Array.isArray(owner.home_items) ? owner.home_items : [])
+        .map((entry) => {
+          const item = byId.get(entry.item_id);
+          if (!item) return null;
+          return { item_id: item.id, emoji: item.emoji || '🪑', name: item.name, x: entry.x, y: entry.y };
+        })
+        .filter(Boolean);
+      return Response.json({
+        name: nameOf(owner),
+        species: owner.species || 'goose',
+        price: Math.round(home?.price ?? 0),
+        furniture,
+        is_friend: state.status === 'friend',
+        open: owner.home_open === true,
+      });
+    }
+
+    if (action === 'whisper') {
+      const toKey = String(body.to_key ?? '');
+      const [sent, received] = await Promise.all([
+        admin.entities.Whisper.filter({ from_key: citizen.id, to_key: toKey }, { limit: 60 }),
+        admin.entities.Whisper.filter({ from_key: toKey, to_key: citizen.id }, { limit: 60 }),
+      ]);
+      const messages = [...(sent?.items ?? []), ...(received?.items ?? [])]
+        .sort((a, b) => String(a.created_date || '').localeCompare(String(b.created_date || '')))
+        .slice(-40)
+        .map((row) => ({
+          id: row.id,
+          mine: row.from_key === citizen.id,
+          body: row.body,
+          at: row.created_date,
+        }));
+      return Response.json({ messages });
+    }
+
+    if (action === 'whisperSend') {
+      const toKey = String(body.to_key ?? '');
+      const text = String(body.body ?? '').trim().slice(0, 300);
+      if (!toKey || !text) {
+        return Response.json({ error: 'Say something first.' }, { status: 400 });
+      }
+      await admin.entities.Whisper.create({
+        from_key: citizen.id,
+        to_key: toKey,
+        from_name: nameOf(citizen),
+        body: text,
+      });
+      return Response.json({ sent: true });
     }
 
     if (action === 'loan') {
