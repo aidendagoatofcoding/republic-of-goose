@@ -19,15 +19,11 @@ export const STATIONS = {
     { id: 'floor', name: 'Trading floor', x: 28, y: 82, content: 'exchange' },
   ],
   guild: [
-    { id: 'goods', name: 'Goods counter', x: 50, y: 84, content: 'guild' },
+    { id: 'goods', name: 'Decorations counter', x: 50, y: 84, content: 'shop-decoration' },
   ],
   shop: [
-    { id: 'till', name: 'The till', x: 50, y: 80, content: 'shop-all' },
-    { id: 'decorations', name: 'Decorations', x: 12, y: 84, content: 'shop-decoration' },
-    { id: 'homes', name: 'Homes', x: 30, y: 86, content: 'shop-home' },
-    { id: 'furniture', name: 'Furniture', x: 50, y: 82, content: 'shop-furniture' },
-    { id: 'vehicles', name: 'Vehicles', x: 70, y: 86, content: 'shop-vehicle' },
-    { id: 'pets', name: 'Pets', x: 88, y: 84, content: 'shop-pet' },
+    { id: 'till', name: 'The till', x: 50, y: 80, content: 'shop-decoration' },
+    { id: 'decorations', name: 'Decorations', x: 22, y: 86, content: 'shop-decoration' },
   ],
   granary: [
     { id: 'office', name: 'Labour office', x: 62, y: 84, content: 'granary' },

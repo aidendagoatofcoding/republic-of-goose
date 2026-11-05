@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Coins, X } from 'lucide-react';
+import { Coins, MapPin, X } from 'lucide-react';
 import Slot from '@/components/world/inventory/Slot';
 
 const GRID = 27;
+// Homes, vehicles, pets and furniture can be set down out in the Commons.
+const PLACEABLE = ['home', 'vehicle', 'pet', 'furniture'];
 
 // The pack itself, laid out like a survival inventory: sockets, a quick bar and a
 // detail panel for whatever is selected.

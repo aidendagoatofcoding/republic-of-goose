@@ -9,6 +9,7 @@ import Laws from '@/pages/Laws';
 import Market from '@/pages/Market';
 import News from '@/pages/News';
 import ShopShelf from '@/components/shop/ShopShelf';
+import ShopDoors from '@/components/shop/ShopDoors';
 import KitchenStation from '@/components/world/interiors/KitchenStation';
 import Citizenship from '@/pages/Citizenship';
 import Grammar from '@/pages/Grammar';
@@ -44,7 +45,13 @@ export default function StationContent({ station, place, onEnterPlace, onExit, o
     return <KitchenStation station={station} onPlay={onPlay} />;
   }
   if (station.content.startsWith('shop-')) {
-    return <ShopShelf category={station.content.slice(5)} />;
+    const category = station.content.slice(5);
+    return (
+      <>
+        <ShopShelf category={category} />
+        <ShopDoors current={category} />
+      </>
+    );
   }
   if (station.content.startsWith('quests:')) {
     return <QuestPanel placeId={station.content.slice(7)} />;

@@ -119,7 +119,7 @@ const ROOMS = {
     actors: [
       { emoji: '🦉', x: 50, y: 64, size: 32, name: 'Shopkeeper', serves: 'till' },
       { emoji: '🦊', x: 24, y: 76, size: 28, delay: '0.8s', name: 'Clerk', serves: 'decorations' },
-      { emoji: '🐿️', x: 78, y: 74, size: 26, delay: '1.4s', name: 'Stockkeeper', serves: 'pets' },
+      { emoji: '🐿️', x: 78, y: 74, size: 26, delay: '1.4s', name: 'Stockkeeper', serves: 'till' },
     ],
   },
   granary: {
