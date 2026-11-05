@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import QuestPanel from '@/components/world/QuestPanel';
 import useConversation from '@/hooks/useConversation';
 import { QUESTS_FOR_PLACE } from '@/lib/quests';
@@ -16,6 +16,22 @@ export default function KeeperChat({ placeId }) {
   );
   const { beat, text, typed, typing, advance, choose, busy, atEnd } = useConversation(target);
   const [finished, setFinished] = useState(false);
+
+  // Enter carries the talk forward, exactly as clicking the box does.
+  useEffect(() => {
+    if (!target) return undefined;
+    const onKey = (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const tag = event.target?.tagName;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+      // A question is answered by picking one, so Enter only finishes the typing there.
+      if (beat?.options && !typing) return;
+      event.preventDefault();
+      if (advance() === 'end') setFinished(true);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   if (!target) return null;
 
