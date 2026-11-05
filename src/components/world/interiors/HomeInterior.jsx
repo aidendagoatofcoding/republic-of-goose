@@ -6,6 +6,7 @@ import Furnishing from '@/components/world/interiors/Furnishing';
 import Walker from '@/components/world/Walker';
 import useInteriorWalk from '@/hooks/useInteriorWalk';
 import { HOME_ROOMS, tierFor } from '@/lib/homeRooms';
+import { sfx } from '@/lib/sfx';
 import { DoorOpen, KeyRound, Lock } from 'lucide-react';
 
 const FURNITURE_SCALE = { cottage: 0.78, hall: 0.92, manor: 1.06 };
@@ -86,15 +87,15 @@ export default function HomeInterior({ price = 0, onExit }) {
     const x = ((event.clientX - rect.left) / rect.width) * 100;
     const y = ((event.clientY - rect.top) / rect.height) * 100;
     save({ action: 'homeItem', item_id: selected, x, y });
+    sfx.pickup();
     setSelected('');
   };
 
   const pickUp = (itemId) => {
     save({ action: 'homeItem', item_id: itemId });
+    sfx.pickup();
     setSelected('');
   };
-
-  const placedIds = new Set(placed.map((entry) => entry.item_id));
 
   return (
     <div className="fixed inset-0 z-[55] overflow-hidden bg-[#f7f2e6]">
@@ -244,12 +245,13 @@ export default function HomeInterior({ price = 0, onExit }) {
             </p>
           ) : owned.length === 0 ? (
             <p className="mt-1 text-[14px] text-[#4a3c26]">
-              No furniture yet. Buy some at the Cabinetmaker in Market Square.
+              {placed.length > 0
+                ? 'Nothing loose in the pack. Tap a piece in the room to put it away.'
+                : 'No furniture yet. Buy some at the Cabinetmaker in Market Square.'}
             </p>
           ) : (
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {owned.map((item) => {
-                const isPlaced = placedIds.has(item.id);
                 const active = selected === item.id;
                 return (
                   <button
@@ -260,9 +262,7 @@ export default function HomeInterior({ price = 0, onExit }) {
                     className={`inline-flex items-center gap-1.5 rounded-sm border px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] transition-colors ${
                       active
                         ? 'border-[#7d9a4e] bg-[#e6f0d2] text-[#3f5222]'
-                        : isPlaced
-                          ? 'border-[#c9b58c] text-[#8d7c5c]'
-                          : 'border-[#c9b58c] text-[#4a3c26] hover:bg-[#f0e6cc]'
+                        : 'border-[#c9b58c] text-[#4a3c26] hover:bg-[#f0e6cc]'
                     }`}
                   >
                     <span aria-hidden="true">{item.emoji || '🪑'}</span>

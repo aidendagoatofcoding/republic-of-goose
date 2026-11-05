@@ -3,8 +3,8 @@ import { Coins, MapPin, X } from 'lucide-react';
 import Slot from '@/components/world/inventory/Slot';
 
 const GRID = 27;
-// Homes, vehicles, pets and furniture can be set down out in the Commons.
-const PLACEABLE = ['home', 'vehicle', 'pet', 'furniture'];
+// Homes, vehicles and pets can be set down out in the Commons; furniture goes indoors.
+const PLACEABLE = ['home', 'vehicle', 'pet'];
 
 // The pack itself, laid out like a survival inventory: sockets, a quick bar and a
 // detail panel for whatever is selected.
@@ -26,7 +26,7 @@ export default function PackPanel({
 
   // Enter on a home in the pack sets it down on the land and takes it out of the pack.
   useEffect(() => {
-    if (!item || item.category !== 'home') return;
+    if (!item || !PLACEABLE.includes(item.category)) return;
     const onKey = (event) => {
       if (event.key !== 'Enter' || busy) return;
       const tag = event.target?.tagName;
@@ -107,9 +107,11 @@ export default function PackPanel({
                         ? 'worn'
                         : item.slot
                           ? `${item.slot} tackle`
-                          : item.category === 'home'
+                          : PLACEABLE.includes(item.category)
                             ? 'not yet set down'
-                            : 'in the meadow'}
+                            : item.category === 'furniture'
+                              ? 'for inside your home'
+                              : 'in your pack'}
                     </p>
                   </div>
                 </div>
@@ -128,12 +130,12 @@ export default function PackPanel({
                       {rigged ? 'Rigged' : 'Rig on the line'}
                     </button>
                   )}
-                  {item.category === 'home' && (
+                  {PLACEABLE.includes(item.category) && (
                     <button
                       type="button"
                       disabled={busy === item.id}
                       onClick={() => onPlace?.(item)}
-                      title="Set this home down on the land where you stand"
+                      title="Set this down on the land where you stand, out of your pack"
                       className="flex items-center gap-1 border-2 border-[#0b0e09] bg-[#4b5442] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#c2ff85] shadow-[inset_2px_2px_0_#5a6250] hover:bg-[#5a6350] disabled:opacity-50"
                     >
                       <MapPin className="h-3 w-3" /> ⏎ Place

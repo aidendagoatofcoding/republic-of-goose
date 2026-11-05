@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pickaxe } from 'lucide-react';
 import { useCitizen } from '@/hooks/useCitizen';
 import useShopItems from '@/hooks/useShopItems';
+import { sfx } from '@/lib/sfx';
 
 // The bread seam. Swing the pick, fill your pockets, let the ore grow back.
 export default function MineStation() {
@@ -29,6 +30,7 @@ export default function MineStation() {
     setNote('');
     try {
       const data = await run({ action: 'mine' });
+      sfx.pickup();
       setNote(`You break off a chunk worth 🍞 ${data.haul}. Ore in your pack: ⛏ ${data.citizen.ore}.`);
     } catch (error) {
       setNote(error.message);

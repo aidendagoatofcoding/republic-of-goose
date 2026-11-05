@@ -42,7 +42,7 @@ export default function ShopCard({
         {owned
           ? category === 'decoration'
             ? 'Worn with pride'
-            : 'In the Commons'
+            : 'In your pack'
           : locked
             ? 'Buy a home first'
             : busy

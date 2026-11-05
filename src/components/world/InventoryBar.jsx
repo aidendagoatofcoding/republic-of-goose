@@ -103,12 +103,12 @@ export default function InventoryBar({ position = null, onPlaced }) {
     setNote('');
     try {
       await run({
-        action: 'placeHome',
+        action: 'placeSpot',
         item_id: item.id,
         x: position?.x ?? 50,
         y: position?.y ?? 60,
       });
-      setNote(`${item.name} is standing out in the Commons now.`);
+      setNote(`${item.name} is standing out in the Commons now, out of your pack.`);
       onPlaced?.();
     } catch (error) {
       setNote(error.message);

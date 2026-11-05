@@ -33,6 +33,7 @@ export const isMuted = () => muted;
 
 export const setMuted = (value) => {
   muted = Boolean(value);
+  if (muted) stopRiver();
   try {
     localStorage.setItem(MUTE_KEY, muted ? '1' : '0');
   } catch (err) {
@@ -81,6 +82,63 @@ const noise = ({ length = 0.12, gain = 0.25, filter = 1200, delay = 0 }) => {
   band.connect(env);
   env.connect(master);
   source.start(now);
+};
+
+let river = null;
+
+// The Odder, heard from the bank: rounded brown noise under a slow swell.
+export const startRiver = () => {
+  if (muted || river) return;
+  const ctx = audio();
+  if (!ctx) return;
+  const frames = Math.floor(ctx.sampleRate * 3);
+  const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < frames; i += 1) {
+    last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
+    data[i] = last * 3.2;
+  }
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  const band = ctx.createBiquadFilter();
+  band.type = 'bandpass';
+  band.frequency.value = 760;
+  band.Q.value = 0.7;
+  const env = ctx.createGain();
+  env.gain.value = 0.0001;
+  const lfo = ctx.createOscillator();
+  const swell = ctx.createGain();
+  lfo.frequency.value = 0.13;
+  swell.gain.value = 0.014;
+  lfo.connect(swell);
+  swell.connect(env.gain);
+  source.connect(band);
+  band.connect(env);
+  env.connect(master);
+  env.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 1.8);
+  source.start();
+  lfo.start();
+  river = { source, env, lfo };
+};
+
+export const stopRiver = () => {
+  if (!river) return;
+  const { source, env, lfo } = river;
+  river = null;
+  const ctx = context;
+  if (!ctx) return;
+  env.gain.cancelScheduledValues(ctx.currentTime);
+  env.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.16);
+  setTimeout(() => {
+    try {
+      source.stop();
+      lfo.stop();
+    } catch (err) {
+      /* already stopped */
+    }
+  }, 700);
 };
 
 export const sfx = {

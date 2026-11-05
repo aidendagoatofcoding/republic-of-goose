@@ -20,7 +20,7 @@ import PlayerChat from '@/components/world/PlayerChat';
 import FriendsPanel from '@/components/world/FriendsPanel';
 import GuestHome from '@/components/world/GuestHome';
 import { destinationById } from '@/lib/destinations';
-import { sfx, isMuted, setMuted } from '@/lib/sfx';
+import { sfx, isMuted, setMuted, startRiver, stopRiver } from '@/lib/sfx';
 import SportVenue from '@/components/world/SportVenue';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
 import PetPanel from '@/components/world/PetPanel';
@@ -148,6 +148,16 @@ export default function WorldScene({
 
   // The sky turns over on its own while you wander.
   const weather = useWeather();
+
+  // The Odder runs past the meadow, so its water is heard the whole time you wander.
+  useEffect(() => {
+    if (quiet) {
+      stopRiver();
+      return undefined;
+    }
+    startRiver();
+    return () => stopRiver();
+  }, [quiet]);
 
   // Stamina: hold Shift to run, and it comes back when you walk or stand.
   const staminaRef = useRef(100);

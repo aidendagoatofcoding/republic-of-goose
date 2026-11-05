@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import ShopCard from '@/components/shop/ShopCard';
+import { sfx } from '@/lib/sfx';
 
 export const SECTIONS = [
   { key: 'decoration', title: 'Decorations', blurb: 'Worn on your animal in the Hall of Honks.' },
@@ -41,6 +42,7 @@ export default function ShopShelf({ category = 'all' }) {
     setError('');
     try {
       await run({ action: 'buyItem', item_id: item.id });
+      sfx.coin();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,9 +51,9 @@ export default function ShopShelf({ category = 'all' }) {
   };
 
   const ownedIds = new Set([...(citizen?.decorations ?? []), ...(citizen?.possessions ?? [])]);
-  const ownsHome = (items ?? []).some(
-    (item) => item.category === 'home' && ownedIds.has(item.id)
-  );
+  // A home that has already been set down in the Commons still counts as owning one.
+  const kept = new Set([...ownedIds, ...(citizen?.world_spots ?? []).map((spot) => spot.item_id)]);
+  const ownsHome = (items ?? []).some((item) => item.category === 'home' && kept.has(item.id));
 
   const groups = SECTIONS.filter(
     (section) => category === 'all' || section.key === category

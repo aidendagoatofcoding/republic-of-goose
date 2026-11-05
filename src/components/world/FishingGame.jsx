@@ -5,6 +5,7 @@ import useShopItems from '@/hooks/useShopItems';
 import { gearProfile, tackleSlot, depthFromCast, fishFor } from '@/lib/tackle';
 import ReelMeter from '@/components/world/fishing/ReelMeter';
 import TacklePanel from '@/components/world/fishing/TacklePanel';
+import { sfx } from '@/lib/sfx';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -87,6 +88,8 @@ export default function FishingGame({ onClose }) {
         return;
       }
       setPhase('landed');
+      sfx.splash();
+      sfx.pickup();
       run({ action: 'fishCatch', quality: line?.value ?? 1 })
         .then((data) => {
           setNote(
