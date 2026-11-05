@@ -567,6 +567,7 @@ export default function WorldScene({
 
   const collected = profile?.finds ?? [];
   const doneQuests = profile?.quests ?? [];
+  const takenQuests = profile?.taken_quests ?? [];
 
   const nearHidden = HIDDEN.filter(
     (spot) => !collected.includes(spot.id) && !(spot.empty && searched.includes(spot.id))
@@ -686,7 +687,9 @@ export default function WorldScene({
 
       <EdgeWarden
         near={wardenNear}
-        hasQuest={!doneQuests.includes('edge-lamp')}
+        hasQuest={
+          !doneQuests.includes('edge-lamp') && !takenQuests.includes('edge-lamp')
+        }
         onOpen={() =>
           setTalk({
             key: 'edge-warden',

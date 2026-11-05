@@ -169,6 +169,24 @@ const THANKS = [
   'Still in your debt, and glad of it.',
 ];
 
+const CHECKS = [
+  'How is that business of mine coming along?',
+  'Back again. Have you turned it up yet?',
+  'I have been thinking about the thing I asked you for.',
+];
+
+const AGREES = [
+  'Good bird. I will not forget it.',
+  'Kind of you. Come back when you have it and I will pay you properly.',
+  'That is a weight off my mind. No rush, but do not dawdle.',
+];
+
+const DECLINES = [
+  'Fair enough. Ask me again another day.',
+  'No harm done. I will keep it on the shelf for you.',
+  'As you like. The offer keeps.',
+];
+
 const OFFERABLE = QUESTS.filter((quest) => quest.id !== 'bank-heist');
 
 // The favour a goose wants is fixed, so the marker over their head never lies.
@@ -182,6 +200,7 @@ export function conversationFor({
   name = 'A goose',
   species = 'goose',
   questId = null,
+  questState = 'offer',
   questDone = false,
 } = {}) {
   // Chatter is rolled fresh each visit, so the same goose does not repeat itself word for word.
@@ -201,12 +220,29 @@ export function conversationFor({
 
   beats.push({ text: pick(SIGNOFFS, seed >> 7) });
 
+  // The favour comes out of the conversation, never off a noticeboard.
   const quest = questFor({ key, questId });
-  if (quest && questDone) {
+  if (quest && (questState === 'done' || questDone)) {
     beats.push({ text: pick(THANKS, seed >> 11) });
+  } else if (quest && questState === 'taken') {
+    beats.push({ text: pick(CHECKS, seed >> 10) });
+    beats.push({ quest: quest.id });
   } else if (quest) {
     beats.push({ text: pick(ASKS, seed >> 9) });
-    beats.push({ quest: quest.id });
+    beats.push({
+      prompt: `${quest.title}. ${quest.brief}`,
+      options: [
+        {
+          label: 'I will do it.',
+          accept: quest.id,
+          reply: [pick(AGREES, seed >> 12)],
+        },
+        {
+          label: 'Not today.',
+          reply: [pick(DECLINES, seed >> 13)],
+        },
+      ],
+    });
   }
 
   return { speaker: name, species, beats };

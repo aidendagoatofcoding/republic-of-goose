@@ -185,6 +185,13 @@
       "type": "number",
       "description": "How many fish the citizen has landed off the harbour dock"
     },
+    "taken_quests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favours a keeper has asked for and the citizen has agreed to do"
+    },
     "quests": {
       "type": "array",
       "items": {

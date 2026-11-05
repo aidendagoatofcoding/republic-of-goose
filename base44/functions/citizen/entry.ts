@@ -205,6 +205,7 @@ function publicCitizen(citizen, holdings = []) {
     fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)),
     gear: Array.isArray(citizen.gear) ? citizen.gear : [],
     ore: Math.max(0, Math.floor(citizen.ore ?? 0)),
+    taken_quests: Array.isArray(citizen.taken_quests) ? citizen.taken_quests : [],
     quests: Array.isArray(citizen.quests) ? citizen.quests : [],
     created_date: citizen.created_date,
     holdings,
@@ -785,6 +786,26 @@ export default async function (req) {
         earned,
         fish_caught: Math.max(0, Math.floor(citizen.fish_caught ?? 0)) + 1,
       });
+    }
+
+    // A favour is only taken on after the keeper has asked for it to your face.
+    if (action === 'takeQuest') {
+      const quest = questById(String(body.quest_id ?? ''));
+      if (!quest) {
+        return Response.json({ error: 'That is not a quest of the Republic.' }, { status: 400 });
+      }
+      const taken = Array.isArray(citizen.taken_quests) ? citizen.taken_quests : [];
+      const done = Array.isArray(citizen.quests) ? citizen.quests : [];
+      if (done.includes(quest.id)) {
+        return Response.json({ error: 'That business is already settled.' }, { status: 400 });
+      }
+      if (taken.includes(quest.id)) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings) });
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        taken_quests: [...taken, quest.id],
+      });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
     }
 
     if (action === 'claimQuest') {

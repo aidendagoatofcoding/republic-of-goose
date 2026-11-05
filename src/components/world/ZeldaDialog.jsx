@@ -1,61 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import QuestPanel from '@/components/world/QuestPanel';
-import { conversationFor } from '@/lib/dialogues';
-
-const TYPE_MS = 22;
+import useConversation from '@/hooks/useConversation';
 
 // A Zelda-style conversation: one sentence per box, typed out letter by letter,
 // Enter to move on, and a question you answer with a key press.
 export default function ZeldaDialog({ target, onClose }) {
-  const script = useMemo(() => (target ? conversationFor(target) : null), [target]);
-  const [beats, setBeats] = useState([]);
-  const [pos, setPos] = useState(0);
-  const [typed, setTyped] = useState(0);
+  const { beat, text, typed, typing, advance, choose, busy, atEnd } = useConversation(target);
 
-  useEffect(() => {
-    setBeats(script ? script.beats : []);
-    setPos(0);
-    setTyped(0);
-  }, [script]);
-
-  const beat = beats[pos] || null;
-  const text = beat?.prompt || beat?.text || '';
-  const typing = typed < text.length;
-
-  useEffect(() => {
-    if (!text) {
-      setTyped(0);
-      return;
-    }
-    setTyped(0);
-    let count = 0;
-    const timer = setInterval(() => {
-      count += 1;
-      setTyped(count);
-      if (count >= text.length) clearInterval(timer);
-    }, TYPE_MS);
-    return () => clearInterval(timer);
-  }, [text, pos]);
-
-  const advance = () => {
-    if (!beat) return;
-    if (typing) {
-      setTyped(text.length);
-      return;
-    }
-    if (beat.options) return;
-    if (pos >= beats.length - 1) {
-      onClose();
-      return;
-    }
-    setPos(pos + 1);
-  };
-
-  const choose = (option) => {
-    const replies = (option.reply || []).map((line) => ({ text: line }));
-    setBeats((current) => [...current.slice(0, pos + 1), ...replies, ...current.slice(pos + 1)]);
-    setPos(pos + 1);
+  const step = () => {
+    if (advance() === 'end') onClose();
   };
 
   useEffect(() => {
@@ -68,7 +22,8 @@ export default function ZeldaDialog({ target, onClose }) {
       }
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        advance();
+        if (beat?.options) return;
+        step();
         return;
       }
       if (beat?.options && !typing) {
@@ -84,8 +39,6 @@ export default function ZeldaDialog({ target, onClose }) {
   });
 
   if (!target || !beat) return null;
-
-  const atEnd = pos >= beats.length - 1;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[60] flex justify-center px-3 pb-3 sm:px-6 sm:pb-6">
@@ -109,7 +62,7 @@ export default function ZeldaDialog({ target, onClose }) {
             <QuestPanel questId={beat.quest} />
           </div>
         ) : (
-          <button type="button" onClick={advance} className="block w-full px-4 py-4 text-left">
+          <button type="button" onClick={step} className="block w-full px-4 py-4 text-left">
             <p className="min-h-[3.4em] text-[15px] leading-relaxed text-foreground">
               {text.slice(0, typed)}
               {typing && (
@@ -130,8 +83,9 @@ export default function ZeldaDialog({ target, onClose }) {
               <button
                 key={option.label}
                 type="button"
+                disabled={busy}
                 onClick={() => choose(option)}
-                className="rounded-sm border border-border bg-secondary/60 px-3 py-2 text-left text-[13px] leading-snug text-foreground transition-colors hover:border-primary/70 hover:text-primary"
+                className="rounded-sm border border-border bg-secondary/60 px-3 py-2 text-left text-[13px] leading-snug text-foreground transition-colors hover:border-primary/70 hover:text-primary disabled:opacity-50"
               >
                 <span className="mr-1.5 font-mono text-[10px] text-primary">{index + 1}</span>
                 {option.label}
@@ -144,7 +98,7 @@ export default function ZeldaDialog({ target, onClose }) {
           <div className="flex justify-end border-t border-primary/20 px-4 py-2">
             <button
               type="button"
-              onClick={advance}
+              onClick={step}
               className="rounded-sm border border-primary/50 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-primary hover:bg-primary/10"
             >
               {atEnd ? 'Close' : 'Very well'} ⏎

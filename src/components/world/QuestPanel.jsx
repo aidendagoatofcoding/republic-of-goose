@@ -38,7 +38,7 @@ export default function QuestPanel({ placeId, questId }) {
       <div className="flex items-center gap-2">
         <ScrollText className="h-4 w-4 text-[#D4AF37]" />
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Side quests
+          The favour
         </p>
       </div>
 

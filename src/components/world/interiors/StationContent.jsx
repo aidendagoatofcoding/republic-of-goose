@@ -13,7 +13,7 @@ import ShopDoors from '@/components/shop/ShopDoors';
 import KitchenStation from '@/components/world/interiors/KitchenStation';
 import Citizenship from '@/pages/Citizenship';
 import Grammar from '@/pages/Grammar';
-import QuestPanel from '@/components/world/QuestPanel';
+import KeeperChat from '@/components/world/interiors/KeeperChat';
 import MineStation from '@/components/world/MineStation';
 import SiftGate from '@/components/world/SiftGate';
 import BankHeist from '@/components/world/BankHeist';
@@ -52,7 +52,7 @@ export default function StationContent({ station, place, onEnterPlace, onExit, o
     );
   }
   if (station.content.startsWith('quests:')) {
-    return <QuestPanel placeId={station.content.slice(7)} />;
+    return <KeeperChat placeId={station.content.slice(7)} />;
   }
   if (station.content === 'mine') {
     return <MineStation />;

@@ -18,23 +18,30 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
   const stations = stationsFor(place.id);
   const [openId, setOpenId] = useState(startOpen && stations.some((s) => s.id === startOpen) ? startOpen : '');
 
-  // Every keeper in the building hands out the side quests of that building.
-  const quests = QUESTS_FOR_PLACE(place.id);
-  const allStations = useMemo(() => {
-    if (quests.length === 0) return stations;
+  // A favour is asked by a person in the room, never read off a board.
+  const questStation = useMemo(() => {
+    if (QUESTS_FOR_PLACE(place.id).length === 0) return null;
+    const named = stations.find((station) => station.content === `quests:${place.id}`);
+    if (named) return named;
     const cast = place.actors || [];
-    const host = cast.find((actor) => !actor.serves) || cast[0] || { x: 50, y: 74 };
-    return [
-      ...stations,
-      {
-        id: 'side-quests',
-        name: 'Side quests',
-        x: host.x,
-        y: Math.min(94, host.y + 10),
-        content: `quests:${place.id}`,
-      },
-    ];
-  }, [stations, quests, place.actors, place.id]);
+    const host = cast.find((actor) => !actor.serves) || cast[0];
+    if (!host) return null;
+    return {
+      id: 'keeper-talk',
+      name: host.name || 'The keeper',
+      x: host.x,
+      y: Math.min(92, host.y + 9),
+      content: `quests:${place.id}`,
+    };
+  }, [stations, place.id, place.actors]);
+
+  const allStations = useMemo(
+    () =>
+      questStation && !stations.some((station) => station.id === questStation.id)
+        ? [...stations, questStation]
+        : stations,
+    [stations, questStation]
+  );
   const { pos, nudge } = useInteriorWalk({
     roomRef,
     start: { x: 50, y: 90, face: 1 },
@@ -59,9 +66,8 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
       if (actor.serves) {
         const named = allStations.find((station) => station.id === actor.serves);
         if (named) return named;
-      } else {
-        const questStation = allStations.find((station) => station.id === 'side-quests');
-        if (questStation) return questStation;
+      } else if (questStation) {
+        return questStation;
       }
       return (
         [...allStations].sort(
@@ -70,7 +76,7 @@ export default function InteriorScene({ place, onEnterPlace, onExit, exitLink, s
         )[0] || null
       );
     },
-    [allStations]
+    [allStations, questStation]
   );
 
   // Counters a person is standing at are reached by talking to them, so their own chip is hidden.
