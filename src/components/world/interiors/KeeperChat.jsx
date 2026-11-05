@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import QuestPanel from '@/components/world/QuestPanel';
+import NpcAsk from '@/components/world/NpcAsk';
 import useConversation from '@/hooks/useConversation';
 import { QUESTS_FOR_PLACE } from '@/lib/quests';
+import { placeFor } from '@/lib/places';
 
 // The keeper behind the counter talks first. A favour only comes up a few lines in,
 // and only if you are still standing there to hear it.

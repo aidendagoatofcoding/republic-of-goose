@@ -143,6 +143,76 @@ export default async function (req) {
       return Response.json({ ok: true });
     }
 
+    // The newsroom desk: the Goose AI drafts the story, Master Goose reads it and files it.
+    if (action === 'draftNews') {
+      const topic = String(body.topic ?? '').trim().slice(0, 280);
+      const desk = String(body.desk ?? '').trim().slice(0, 40);
+
+      const recent = await admin.entities.NewsStory.list({ sort: '-created_date', limit: 6 });
+      const recentHeadlines = (recent?.items ?? [])
+        .map((row) => String(row.headline ?? '').trim())
+        .filter(Boolean)
+        .slice(0, 6);
+
+      const prompt = `You are the chief reporter on the Goose Gazette, the national newspaper of the Republic of Goose: a fictional northern nation of pine forests, frozen lakes and honking geese, with a bread-based economy, a National Bank, a Goose Parliament, Champion Isle sport and a busy Honk Commons.
+
+File ONE new story.
+
+${topic ? `THE ANGLE MASTER GOOSE WANTS: "${topic}"` : 'THE ANGLE: pick something newsworthy happening in the Republic this week.'}
+${desk ? `DESK: ${desk}` : 'DESK: choose between Front Page, Economy, Politics, Society, Sport and Weather.'}
+
+ALREADY IN THE PAPER, DO NOT REPEAT THESE
+${recentHeadlines.length ? recentHeadlines.map((line) => `- ${line}`).join('\n') : '- Nothing filed yet.'}
+
+RULES
+- Deadpan newspaper English, in-world. Treat the geese and their absurd politics completely seriously.
+- Never mention the real world, real countries, real companies or real people. Never say it is fiction.
+- The headline is short and concrete (under 90 characters), no pun-only headlines.
+- The standfirst is one sentence that expands the headline.
+- The body is 3 to 5 paragraphs, each 2 to 4 sentences, each a plain string with no markdown.
+- Use the Republic's own furniture: bread, the Bank, the Parliament, the Gazette, the harbour, the quarries, Champion Isle, the species of the Republic (goose, fox, squirrel, turtle, anteater, hummingbird, marlin).
+- Quote somebody in the trade, and give them a name and a job.
+- End on a dry, practical line.`;
+
+      const draft = await admin.integrations.Core.InvokeLLM({
+        prompt,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            headline: { type: 'string' },
+            standfirst: { type: 'string' },
+            category: { type: 'string', enum: ['Front Page', 'Economy', 'Politics', 'Society', 'Sport', 'Weather'] },
+            body: { type: 'array', items: { type: 'string' } },
+          },
+          required: ['headline', 'standfirst', 'category', 'body'],
+        },
+      });
+
+      const headline = String(draft?.headline ?? '').trim().slice(0, 200);
+      const standfirst = String(draft?.standfirst ?? '').trim().slice(0, 400);
+      const paragraphs = (Array.isArray(draft?.body) ? draft.body : [])
+        .map((line) => String(line).trim())
+        .filter(Boolean)
+        .slice(0, 6);
+
+      if (!headline || !standfirst || paragraphs.length === 0) {
+        return Response.json(
+          { error: 'The Goose AI did not manage a story. Try another angle.' },
+          { status: 502 }
+        );
+      }
+
+      return Response.json({
+        ok: true,
+        draft: {
+          headline,
+          standfirst,
+          category: String(draft?.category ?? '').trim() || 'Front Page',
+          body: paragraphs,
+        },
+      });
+    }
+
     if (action === 'saveNews') {
       const story = body.story || {};
       const headline = String(story.headline ?? '').trim().slice(0, 200);
