@@ -85,6 +85,12 @@ export const QUESTS = [
   { id: 'lighthouse-oil', finds: ['lamp-oil'], reward: { bread: 140, xp: 45 } },
   { id: 'registry-seal', finds: ['seal'], reward: { bread: 150, xp: 50 } },
   { id: 'lake-catch', fish: 3, reward: { bread: 160, xp: 50 } },
+  { id: 'menagerie-collar', finds: ['strongbox'], reward: { bread: 175, xp: 60 } },
+  { id: 'homes-deedbook', finds: ['ledger'], reward: { bread: 185, xp: 62 } },
+  { id: 'cabinet-toolchest', finds: ['strongbox'], reward: { bread: 165, xp: 55 } },
+  { id: 'bazaar-mirror', finds: ['artifact'], reward: { bread: 235, xp: 78 } },
+  { id: 'baths-towels', finds: ['lantern'], reward: { bread: 205, xp: 68 } },
+  { id: 'tower-tuning', finds: ['mothkey'], reward: { bread: 225, xp: 74 } },
 ];
 
 export const questById = (id) => QUESTS.find((quest) => quest.id === id) || null;

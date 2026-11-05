@@ -198,6 +198,13 @@
         "type": "string"
       },
       "description": "Side quests the citizen has finished and been paid for"
+    },
+    "bosses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The great beasts the citizen has beaten, paid out once each"
     }
   },
   "required": [

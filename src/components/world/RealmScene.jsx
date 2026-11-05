@@ -3,11 +3,15 @@ import { DoorOpen, Fish } from 'lucide-react';
 import CivicBuilding from '@/components/world/areas/CivicBuilding';
 import HarbourDock from '@/components/world/HarbourDock';
 import FishingGame from '@/components/world/FishingGame';
+import BossLair from '@/components/world/BossLair';
+import BossFight from '@/components/world/BossFight';
 import RealmScenery from '@/components/world/RealmScenery';
 import MineScenery from '@/components/world/MineScenery';
 import Walker from '@/components/world/Walker';
 import WeatherLayer from '@/components/world/WeatherLayer';
 import { useCitizen } from '@/hooks/useCitizen';
+import useBattlePet from '@/hooks/useBattlePet';
+import { bossFor } from '@/lib/bosses';
 import useInteriorWalk from '@/hooks/useInteriorWalk';
 import useWeather from '@/hooks/useWeather';
 
@@ -17,8 +21,12 @@ const EXIT = { x: 8, y: 88 };
 
 export default function RealmScene({ realm, onExit, onEnterPlace, blocked = false }) {
   const { citizen } = useCitizen();
+  const { pet } = useBattlePet();
   const weather = useWeather();
   const [fishing, setFishing] = useState(false);
+  const [bossOpen, setBossOpen] = useState(false);
+  const boss = bossFor(realm.boss);
+  const beaten = Boolean(boss) && (citizen?.bosses ?? []).includes(boss.id);
   const boxRef = useRef(null);
   const { pos, nudge } = useInteriorWalk({
     roomRef: boxRef,
@@ -58,6 +66,9 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
     return distance !== null && distance <= REACH + 30;
   })();
 
+  const bossGap = boss ? distanceTo(boss.at) : null;
+  const nearBoss = bossGap !== null && bossGap <= REACH + 20;
+
   useEffect(() => {
     const onKey = (event) => {
       if (blocked) return;
@@ -72,6 +83,9 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
       if (nearExit) {
         event.preventDefault();
         onExit();
+      } else if (nearBoss) {
+        event.preventDefault();
+        if (pet) setBossOpen(true);
       } else if (nearDock) {
         event.preventDefault();
         setFishing(true);
@@ -82,7 +96,7 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [blocked, nearBuilding, nearDock, nearExit, onEnterPlace, onExit]);
+  }, [blocked, nearBuilding, nearBoss, nearDock, nearExit, pet, onEnterPlace, onExit]);
 
   return (
     <div
@@ -103,6 +117,15 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
         {realm.mineface && <MineScenery />}
 
         {realm.water && <HarbourDock />}
+
+        <BossLair
+          boss={boss}
+          near={nearBoss}
+          beaten={beaten}
+          pet={pet}
+          onOpen={() => pet && setBossOpen(true)}
+        />
+
 
         {realm.dock && (
           <button
@@ -199,7 +222,11 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
         <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-sm border border-primary/50 bg-card/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-primary shadow-lg">
           {nearExit
             ? '⏎ Back to the Commons'
-            : nearDock
+            : nearBoss
+              ? pet
+                ? `⏎ Face ${boss.name}`
+                : 'A pet from the Menagerie is needed here'
+              : nearDock
               ? '⏎ Fish off the dock'
               : nearBuilding
                 ? `⏎ Enter · ${nearBuilding.name}`
@@ -208,6 +235,10 @@ export default function RealmScene({ realm, onExit, onEnterPlace, blocked = fals
       )}
 
       {fishing && <FishingGame onClose={() => setFishing(false)} />}
+
+      {bossOpen && boss && (
+        <BossFight boss={boss} pet={pet} onClose={() => setBossOpen(false)} />
+      )}
 
       {!blocked && (
         <div className="absolute bottom-3 left-3 z-30 grid grid-cols-3 gap-1 md:hidden">

@@ -190,6 +190,7 @@ const REALM_DATA = [
     honkish: 'HOOONKK HONK HOOONKK',
     blurb: 'Black pines shoulder to shoulder, lanterns hung along the path, and a well that keeps secrets.',
     accent: '#7fd6a0',
+    boss: 'moss-troll',
     portal: { x: 37, y: 38 },
     plaza: { x: 37, y: 38, rx: 6, ry: 3.5 },
     sky: 'linear-gradient(180deg, #040e0a 0%, #07211a 34%, #0c3126 66%, #16352a 100%)',
@@ -228,6 +229,7 @@ const REALM_DATA = [
     accent: '#e8b96b',
     sky: 'linear-gradient(180deg, #1b1208 0%, #4a2c14 30%, #9c6a2e 62%, #d9a75c 100%)',
     ground: 'linear-gradient(180deg, #e6c084 0%, #cf9f5f 46%, #9d7038 100%)',
+    boss: 'sand-wyrm',
     portal: { x: 42, y: 44 },
     plaza: { x: 42, y: 44, rx: 6, ry: 3.5 },
     scenery: [
@@ -259,6 +261,7 @@ const REALM_DATA = [
     accent: '#9fe0ff',
     sky: 'linear-gradient(180deg, #081722 0%, #123146 32%, #2f6076 64%, #8fb6c4 100%)',
     ground: 'linear-gradient(180deg, #f2f8fb 0%, #dbe9f0 44%, #a9c4d1 100%)',
+    boss: 'ice-duck',
     portal: { x: 58, y: 46 },
     plaza: { x: 58, y: 46, rx: 6, ry: 3.5 },
     scenery: [
@@ -302,6 +305,7 @@ export const SIFT = {
   blurb: 'Pink sky, turquoise water, and a skyline that hums when you stand still.',
   accent: '#ff9ad5',
   bright: true,
+  boss: 'dragon',
   centerReturn: { x: 50, y: 66 },
   scenery: [
     { emoji: '🌸', x: 10, y: 60, size: 28 },

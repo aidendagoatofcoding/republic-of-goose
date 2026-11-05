@@ -679,7 +679,7 @@ export default function WorldScene({
       style={{
         transform: `translate(${-camera}px, ${-camY}px)`,
       }}
-      className="absolute left-0 top-0 h-[180%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
+      className="absolute left-0 top-0 h-[240%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
     >
       <CommonsScenery />
 

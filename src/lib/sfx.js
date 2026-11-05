@@ -171,4 +171,32 @@ export const sfx = {
       tone({ freq, length: 0.16, type: 'triangle', gain: 0.2, delay: index * 0.09 })
     );
   },
+  // A beast waking up: low, wide and unpleasant.
+  roar: () => {
+    tone({ freq: 96, to: 58, type: 'sawtooth', length: 0.7, gain: 0.28 });
+    tone({ freq: 148, to: 92, type: 'square', length: 0.55, gain: 0.12, delay: 0.08 });
+    noise({ length: 0.5, gain: 0.16, filter: 420, delay: 0.05 });
+  },
+  // A blow landing on feathers.
+  hit: () => {
+    noise({ length: 0.14, gain: 0.26, filter: 1000 });
+    tone({ freq: 210, to: 120, type: 'triangle', length: 0.14, gain: 0.2 });
+  },
+  // A mend: soft, rising, slightly warm.
+  heal: () => {
+    tone({ freq: 420, to: 660, type: 'sine', length: 0.26, gain: 0.22 });
+    tone({ freq: 630, to: 840, type: 'sine', length: 0.2, gain: 0.12, delay: 0.1 });
+  },
+  // A guard going up: a short wooden knock.
+  guard: () => {
+    noise({ length: 0.1, gain: 0.2, filter: 620 });
+    tone({ freq: 300, length: 0.12, type: 'square', gain: 0.12 });
+  },
+  // A gull or a distant bird, for the harbour and the high places.
+  gull: () => {
+    tone({ freq: 1500, to: 900, type: 'sine', length: 0.2, gain: 0.12 });
+    tone({ freq: 1250, to: 780, type: 'sine', length: 0.16, gain: 0.09, delay: 0.14 });
+  },
+  // A page turning, a ledger closing.
+  paper: () => noise({ length: 0.16, gain: 0.14, filter: 2600 }),
 };

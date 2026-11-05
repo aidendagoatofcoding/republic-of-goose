@@ -3,7 +3,11 @@ import { DoorOpen, Sparkles } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import SiftScenery from '@/components/world/SiftScenery';
 import Walker from '@/components/world/Walker';
+import BossLair from '@/components/world/BossLair';
+import BossFight from '@/components/world/BossFight';
 import { useCitizen } from '@/hooks/useCitizen';
+import useBattlePet from '@/hooks/useBattlePet';
+import { bossFor } from '@/lib/bosses';
 import useInteriorWalk from '@/hooks/useInteriorWalk';
 import { SIFT_CENTER, SIFT_PORTALS, SIFT_RING_RADIUS, SIFT_WELCOME_IMAGE } from '@/lib/sift';
 import { sfx } from '@/lib/sfx';
@@ -15,6 +19,10 @@ const BOUNDS = { x: [8, 92], y: [46, 93] };
 // bright stone where the fountain would be, and the middle of the ring is the way back.
 export default function SiftWorld({ onExit, onEnterPlace, blocked = false }) {
   const { citizen } = useCitizen();
+  const { pet } = useBattlePet();
+  const boss = bossFor('dragon');
+  const beaten = (citizen?.bosses ?? []).includes('dragon');
+  const [bossOpen, setBossOpen] = useState(false);
   const boxRef = useRef(null);
   const [arrived, setArrived] = useState(false);
   const { pos, nudge } = useInteriorWalk({
@@ -76,6 +84,14 @@ export default function SiftWorld({ onExit, onEnterPlace, blocked = false }) {
   });
   const nearCentre = centreGap !== null && centreGap <= REACH;
 
+  const bossGap = boss
+    ? gapTo({
+        x: (boss.at.x / 100) * (boxRef.current?.offsetWidth ?? 0),
+        y: (boss.at.y / 100) * (boxRef.current?.offsetHeight ?? 0),
+      })
+    : null;
+  const nearBoss = bossGap !== null && bossGap <= REACH + 20;
+
   useEffect(() => {
     const onKey = (event) => {
       if (blocked) return;
@@ -87,7 +103,10 @@ export default function SiftWorld({ onExit, onEnterPlace, blocked = false }) {
       if (event.key !== 'Enter' || !arrived) return;
       const tag = event.target?.tagName;
       if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tag)) return;
-      if (nearPortal) {
+      if (nearBoss) {
+        event.preventDefault();
+        if (pet) setBossOpen(true);
+      } else if (nearPortal) {
         event.preventDefault();
         sfx.door();
         onEnterPlace?.(nearPortal.place);
@@ -98,7 +117,7 @@ export default function SiftWorld({ onExit, onEnterPlace, blocked = false }) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [blocked, arrived, nearPortal, nearCentre, onEnterPlace, onExit]);
+  }, [blocked, arrived, nearPortal, nearCentre, nearBoss, pet, onEnterPlace, onExit]);
 
   const ringSize = ringRadius * 2;
 
@@ -106,6 +125,14 @@ export default function SiftWorld({ onExit, onEnterPlace, blocked = false }) {
     <div className="fixed inset-0 z-[45] overflow-hidden bg-[#16040f]">
       <div ref={boxRef} className="absolute inset-0">
         <SiftScenery />
+
+        <BossLair
+          boss={boss}
+          near={nearBoss}
+          beaten={beaten}
+          pet={pet}
+          onOpen={() => pet && setBossOpen(true)}
+        />
 
         {/* the way back, standing exactly where the fountain stands in the Commons */}
         <button
@@ -242,7 +269,11 @@ export default function SiftWorld({ onExit, onEnterPlace, blocked = false }) {
 
       {arrived && !blocked && (
         <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-sm border border-[#ff9ad5]/60 bg-[#1b0518]/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[#8ff2e0] shadow-lg">
-          {nearPortal
+          {nearBoss
+            ? pet
+              ? `⏎ Face ${boss.name}`
+              : 'A pet from the Menagerie is needed here'
+            : nearPortal
             ? `⏎ Enter · ${nearPortal.name}`
             : nearCentre
               ? '⏎ Back to the Commons'
@@ -287,6 +318,10 @@ export default function SiftWorld({ onExit, onEnterPlace, blocked = false }) {
             →
           </button>
         </div>
+      )}
+
+      {bossOpen && boss && (
+        <BossFight boss={boss} pet={pet} onClose={() => setBossOpen(false)} />
       )}
 
       {/* arriving: the gate opens, the world catches you, then you find your feet */}

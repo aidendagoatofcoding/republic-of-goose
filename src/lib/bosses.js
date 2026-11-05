@@ -1,0 +1,78 @@
+// The great beasts of the Republic. Each keeps to one realm, and each wants a pet in front of it.
+
+export const BOSSES = [
+  {
+    id: 'ice-duck',
+    realm: 'tundra',
+    name: 'The Ice Duck',
+    title: 'The Frozen Menace',
+    glyph: '🦆',
+    accent: '#9fe0ff',
+    hp: 120,
+    at: { x: 12, y: 74 },
+    blurb: 'A duck the size of a barn. The lake froze the day it arrived and has not thawed since.',
+    intro: 'The Ice Duck banks out of the snowfall and settles in front of you, breathing frost.',
+    moves: [
+      { name: 'Frostbill', power: 11 },
+      { name: 'Ice Slide', power: 15 },
+      { name: 'Blizzard Honk', power: 20 },
+    ],
+    reward: { bread: 420, xp: 160 },
+  },
+  {
+    id: 'sand-wyrm',
+    realm: 'desert',
+    name: 'The Sand Wyrm',
+    title: 'The Dune That Moves',
+    glyph: '🪱',
+    accent: '#e8b96b',
+    hp: 150,
+    at: { x: 12, y: 74 },
+    blurb: 'The caravans go round the long way now. Something under the sand has been swallowing the short road.',
+    intro: 'The sand opens, and the Sand Wyrm comes up out of it in a cloud of grit.',
+    moves: [
+      { name: 'Sand Spit', power: 12 },
+      { name: 'Burrow Rush', power: 17 },
+      { name: 'Dust Storm', power: 21 },
+    ],
+    reward: { bread: 520, xp: 190 },
+  },
+  {
+    id: 'moss-troll',
+    realm: 'forest',
+    name: 'The Moss Troll',
+    title: 'The Old Thing of the Pines',
+    glyph: '🗿',
+    accent: '#7fd6a0',
+    hp: 110,
+    at: { x: 62, y: 92 },
+    blurb: 'It sits so still the forest grew over it. It has been sitting there since before the Republic.',
+    intro: 'The hill stands up. It is not a hill.',
+    moves: [
+      { name: 'Boulder Roll', power: 13 },
+      { name: 'Root Snatch', power: 16 },
+      { name: 'Old Weight', power: 19 },
+    ],
+    reward: { bread: 380, xp: 140 },
+  },
+  {
+    id: 'dragon',
+    realm: 'sift',
+    name: 'The Dragon of the Sift',
+    title: 'The Hum Made Solid',
+    glyph: '🐉',
+    accent: '#ff9ad5',
+    hp: 200,
+    at: { x: 16, y: 72 },
+    blurb: 'The Sift hums because it has to. This is what happens when the hum gets a temper.',
+    intro: 'The pink sky folds, and the Dragon of the Sift comes down through it.',
+    moves: [
+      { name: 'Bright Breath', power: 14 },
+      { name: 'Tail Sweep', power: 19 },
+      { name: 'Humming Roar', power: 24 },
+    ],
+    reward: { bread: 700, xp: 260 },
+  },
+];
+
+export const bossFor = (id) => BOSSES.find((boss) => boss.id === id) || null;

@@ -456,6 +456,67 @@ export const QUESTS = [
     fish: 3,
     reward: { bread: 160, xp: 50 },
   },
+  // The newer favours: the shops that had none, and the far side of the Sift.
+  {
+    id: 'menagerie-collar',
+    place: 'pets',
+    giver: 'The Keeper',
+    title: 'The Missing Collar',
+    brief:
+      'A brass collar has gone off with one of the pens. The Keeper is not naming names, but the tortoise is hiding something.',
+    finds: ['strongbox'],
+    reward: { bread: 175, xp: 60 },
+  },
+  {
+    id: 'homes-deedbook',
+    place: 'homes',
+    giver: 'The Deeds Clerk',
+    title: 'The Deed Book',
+    brief:
+      'Half the Republic can prove it owns its own roof. The book that proves it has been carried off to the meadow.',
+    finds: ['ledger'],
+    reward: { bread: 185, xp: 62 },
+  },
+  {
+    id: 'cabinet-toolchest',
+    place: 'furniture',
+    giver: 'The Cabinetmaker',
+    title: 'The Tool Chest',
+    brief:
+      'Every chisel in the shop, gone in one chest. Nothing in the Republic gets built until it comes back.',
+    finds: ['strongbox'],
+    reward: { bread: 165, xp: 55 },
+  },
+  {
+    id: 'bazaar-mirror',
+    place: 'sift-bazaar',
+    giver: 'The Stallkeeper',
+    title: 'The Cracked Mirror',
+    brief:
+      'A mirror from the bazaar was carried out into the bright meadow. It still shows whoever is holding it, which is the trouble.',
+    finds: ['artifact'],
+    reward: { bread: 235, xp: 78 },
+  },
+  {
+    id: 'baths-towels',
+    place: 'sift-baths',
+    giver: 'The Bath Keeper',
+    title: 'The Warm Towels',
+    brief:
+      'The towels have been taken out into the meadow, which is the one place they are no use at all. Bring them back.',
+    finds: ['lantern'],
+    reward: { bread: 205, xp: 68 },
+  },
+  {
+    id: 'tower-tuning',
+    place: 'sift-tower',
+    giver: 'The Tuner',
+    title: 'The Tuning Key',
+    brief:
+      'The tower keeps the Sift in tune with one small brass key. It has been left out in the wide world, and the hum is drifting.',
+    finds: ['mothkey'],
+    reward: { bread: 225, xp: 74 },
+  },
   {
     id: 'bank-heist',
     place: 'heist',

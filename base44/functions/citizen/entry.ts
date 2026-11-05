@@ -3,6 +3,7 @@ import { MARKET, marketSnapshot, priceAt, currentTick } from '../../shared/marke
 import { hashPassword, normaliseUsername } from '../../shared/passport.ts';
 import { JOBS, jobById } from '../../shared/jobs.ts';
 import { isFind, questById } from '../../shared/quests.ts';
+import { bossById } from '../../shared/bosses.ts';
 import {
   XP_PER_LEVEL,
   MAX_ARENA_DUELS,
@@ -207,6 +208,7 @@ function publicCitizen(citizen, holdings = []) {
     ore: Math.max(0, Math.floor(citizen.ore ?? 0)),
     taken_quests: Array.isArray(citizen.taken_quests) ? citizen.taken_quests : [],
     quests: Array.isArray(citizen.quests) ? citizen.quests : [],
+    bosses: Array.isArray(citizen.bosses) ? citizen.bosses : [],
     created_date: citizen.created_date,
     holdings,
   };
@@ -806,6 +808,28 @@ export default async function (req) {
         taken_quests: [...taken, quest.id],
       });
       return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    // A beast pays out once, and only one the Republic has heard of.
+    if (action === 'bossWin') {
+      const boss = bossById(String(body.boss_id ?? ''));
+      if (!boss) {
+        return Response.json({ error: 'That is not a beast of the Republic.' }, { status: 400 });
+      }
+      const beaten = Array.isArray(citizen.bosses) ? citizen.bosses : [];
+      if (beaten.includes(boss.id)) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings), already: true });
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, {
+        bread: Math.round(citizen.bread ?? 0) + boss.reward.bread,
+        bread_earned: earnedTotal(citizen) + boss.reward.bread,
+        xp: xpOf(citizen) + boss.reward.xp,
+        bosses: [...beaten, boss.id],
+      });
+      return Response.json({
+        citizen: publicCitizen(updated, holdings),
+        reward: boss.reward,
+      });
     }
 
     if (action === 'claimQuest') {
