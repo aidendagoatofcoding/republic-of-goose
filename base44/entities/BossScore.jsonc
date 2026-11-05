@@ -1,0 +1,49 @@
+{
+  "name": "BossScore",
+  "type": "object",
+  "properties": {
+    "boss_id": {
+      "type": "string",
+      "description": "Which beast of the Republic was beaten"
+    },
+    "citizen_key": {
+      "type": "string",
+      "description": "Citizen record id of the goose who beat it"
+    },
+    "name": {
+      "type": "string",
+      "description": "Goose name shown on the slayers board"
+    },
+    "species": {
+      "type": "string",
+      "description": "Species of the slayer, shown beside the name"
+    },
+    "turns": {
+      "type": "number",
+      "description": "How many turns the winning bout took: fewest turns leads the board"
+    }
+  },
+  "required": [
+    "boss_id",
+    "citizen_key",
+    "turns"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

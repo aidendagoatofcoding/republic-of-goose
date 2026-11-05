@@ -3,7 +3,7 @@ import { MARKET, marketSnapshot, priceAt, currentTick } from '../../shared/marke
 import { hashPassword, normaliseUsername } from '../../shared/passport.ts';
 import { JOBS, jobById } from '../../shared/jobs.ts';
 import { isFind, questById } from '../../shared/quests.ts';
-import { bossById } from '../../shared/bosses.ts';
+import { BOSSES, bossById } from '../../shared/bosses.ts';
 import {
   XP_PER_LEVEL,
   MAX_ARENA_DUELS,
@@ -264,6 +264,28 @@ async function loadBoards(admin) {
   return boards;
 }
 
+// The slayers board keeps the quickest bout per beast, so fewest turns leads.
+async function loadBossBoards(admin) {
+  const page = await admin.entities.BossScore.list({ limit: 400, sort: 'turns' });
+  const rows = page?.items ?? [];
+  const boards: Record<string, any[]> = {};
+  BOSSES.forEach((boss) => {
+    boards[boss.id] = [];
+  });
+  rows.forEach((row) => {
+    const list = boards[row.boss_id];
+    if (!list || list.length >= 5) return;
+    list.push({
+      id: row.id,
+      citizen_key: row.citizen_key || '',
+      name: row.name || 'A citizen',
+      species: row.species || 'goose',
+      turns: Math.round(row.turns ?? 0),
+    });
+  });
+  return boards;
+}
+
 async function findCitizen(admin, code) {
   if (!code) return null;
   const page = await admin.entities.Citizen.filter({ passport_code: code }, { limit: 1 });
@@ -300,7 +322,11 @@ export default async function (req) {
           }
         });
       }
-      return Response.json({ boards: await loadBoards(admin), personal });
+      return Response.json({
+        boards: await loadBoards(admin),
+        personal,
+        boss_boards: await loadBossBoards(admin),
+      });
     }
 
     if (action === 'world') {
@@ -826,9 +852,35 @@ export default async function (req) {
         xp: xpOf(citizen) + boss.reward.xp,
         bosses: [...beaten, boss.id],
       });
+
+      // The bout is written up on the slayers board, keeping the fewest turns it took.
+      const turns = Math.min(999, Math.floor(Number(body.turns) || 0));
+      if (turns > 0) {
+        const name = citizen.goose_name || citizen.full_name || 'A citizen';
+        const species = citizen.species || 'goose';
+        const scored = await admin.entities.BossScore.filter(
+          { citizen_key: citizen.id, boss_id: boss.id },
+          { limit: 1 }
+        );
+        const previous = scored?.items?.[0] ?? null;
+        if (!previous) {
+          await admin.entities.BossScore.create({
+            boss_id: boss.id,
+            citizen_key: citizen.id,
+            name,
+            species,
+            turns,
+          });
+        } else if (turns < Math.round(previous.turns ?? 999)) {
+          await admin.entities.BossScore.update(previous.id, { name, species, turns });
+        }
+      }
+
       return Response.json({
         citizen: publicCitizen(updated, holdings),
         reward: boss.reward,
+        turns,
+        boss_boards: await loadBossBoards(admin),
       });
     }
 

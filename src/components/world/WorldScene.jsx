@@ -18,6 +18,7 @@ import GpsPanel from '@/components/world/GpsPanel';
 import GpsRoute from '@/components/world/GpsRoute';
 import PlayerChat from '@/components/world/PlayerChat';
 import FriendsPanel from '@/components/world/FriendsPanel';
+import BossLeaderboard from '@/components/world/BossLeaderboard';
 import GuestHome from '@/components/world/GuestHome';
 import { destinationById } from '@/lib/destinations';
 import { sfx, isMuted, setMuted, startRiver, stopRiver } from '@/lib/sfx';
@@ -43,7 +44,6 @@ import { HIDDEN } from '@/lib/hidden';
 
 import HiddenSpot from '@/components/world/HiddenSpot';
 import ZeldaDialog from '@/components/world/ZeldaDialog';
-import { questFor } from '@/lib/dialogues';
 import InventoryBar from '@/components/world/InventoryBar';
 import SceneBoundary from '@/components/world/SceneBoundary';
 import EdgeWarden, { EDGE_WARDEN } from '@/components/world/EdgeWarden';
@@ -102,6 +102,7 @@ export default function WorldScene({
   const [playerTap, setPlayerTap] = useState(null);
   const [visitor, setVisitor] = useState(null);
   const [friendsOpen, setFriendsOpen] = useState(false);
+  const [beastsOpen, setBeastsOpen] = useState(false);
   const [friendsList, setFriendsList] = useState(null);
   const [gpsOpen, setGpsOpen] = useState(false);
   const [gpsTarget, setGpsTarget] = useState('');
@@ -1097,6 +1098,20 @@ export default function WorldScene({
           ? ` · ${(friendsList ?? friends).incoming.length}`
           : ''}
       </button>
+
+      <button
+        type="button"
+        onClick={() => setBeastsOpen((value) => !value)}
+        className="absolute bottom-3 left-[202px] z-40 rounded-sm border border-border bg-card/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary"
+      >
+        Beasts
+      </button>
+
+      {beastsOpen && (
+        <div className="absolute bottom-12 left-3 z-40 max-h-[62%] w-[258px] max-w-[calc(100%-1.5rem)] overflow-y-auto">
+          <BossLeaderboard onClose={() => setBeastsOpen(false)} />
+        </div>
+      )}
 
       <button
         type="button"
