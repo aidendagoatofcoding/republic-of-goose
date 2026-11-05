@@ -7,6 +7,10 @@ import useNation from '@/hooks/useNation';
 const HERO_IMAGE =
   'https://media.base44.com/images/public/6ae766fbcbe3be5aae821aa7/d76e1af98_generated_image.png';
 
+// The national reel: the capital, the lake and the pine road, filmed at dusk.
+const HERO_VIDEO =
+  'https://media.base44.com/videos/public/6ae766fbcbe3be5aae821aa7/439f3a899_Front_page_hero.mp4';
+
 const STATS = [
   { value: '🪿', label: 'Goose', note: 'National Animal' },
   { value: 'HONK', label: 'Honkish', note: 'Official Language' },
@@ -31,6 +35,7 @@ export default function Home() {
         description="A fictional sovereign nation in the far north — vast forests, frozen lakes, and the largest recorded bread reserves on earth. Entry is granted to all who honk."
         motto="One Nation · One Language · Infinite Honks"
         image={HERO_IMAGE}
+        video={HERO_VIDEO}
         imageAlt="Pine forests, mountains and the lamplit capital of the Republic of Goose at dusk"
         actions={[
           { to: '/world', label: 'Enter the Commons' },

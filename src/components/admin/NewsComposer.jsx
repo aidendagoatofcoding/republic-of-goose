@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Newspaper, Trash2 } from 'lucide-react';
+import { Newspaper, Sparkles, Trash2 } from 'lucide-react';
 import Panel from '@/components/Panel';
 import { base44 } from '@/api/base44Client';
 
@@ -20,6 +20,8 @@ export default function NewsComposer({ run }) {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+  const [topic, setTopic] = useState('');
+  const [drafting, setDrafting] = useState(false);
 
   const load = async () => {
     const page = await base44.entities.NewsStory.list({ sort: '-created_date', limit: 40 });
@@ -61,6 +63,29 @@ export default function NewsComposer({ run }) {
     }
   };
 
+  // The Goose AI drafts a story into the form; nothing is filed until Master Goose publishes.
+  const draftWithAi = async () => {
+    setDrafting(true);
+    setError('');
+    setNote('');
+    try {
+      const data = await run('draftNews', { topic: topic.trim(), desk: draft.category });
+      const story = data.draft || {};
+      setDraft((current) => ({
+        ...current,
+        headline: story.headline || current.headline,
+        standfirst: story.standfirst || current.standfirst,
+        category: DESKS.includes(story.category) ? story.category : current.category,
+        body: (story.body || []).join('\n\n'),
+      }));
+      setNote('Drafted. Read it over, change what you like, then publish.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDrafting(false);
+    }
+  };
+
   const remove = async (id) => {
     setError('');
     setNote('');
@@ -87,6 +112,32 @@ export default function NewsComposer({ run }) {
         Stories filed here appear in the Gazette the moment you publish them. Leave a blank line
         between paragraphs.
       </p>
+
+      <div className="mt-4 rounded-sm border border-[#D4AF37]/30 bg-[#D4AF37]/5 p-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" />
+          <span className="meta-label">The Goose AI newsroom desk</span>
+        </div>
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <input
+            value={topic}
+            onChange={(event) => setTopic(event.target.value)}
+            placeholder="What is the story about? Leave blank to be told what the news is."
+            className={`${field} flex-1`}
+          />
+          <button
+            type="button"
+            onClick={draftWithAi}
+            disabled={drafting}
+            className="shrink-0 rounded-sm border border-[#D4AF37]/60 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#D4AF37] hover:bg-[#D4AF37]/10 disabled:opacity-50"
+          >
+            {drafting ? 'Writing…' : 'Draft story'}
+          </button>
+        </div>
+        <p className="mt-1.5 font-mono text-[8.5px] uppercase tracking-[0.12em] text-muted-foreground">
+          It fills the form below. Nothing is filed until you publish it.
+        </p>
+      </div>
 
       <form onSubmit={publish} className="mt-5 space-y-3">
         <input

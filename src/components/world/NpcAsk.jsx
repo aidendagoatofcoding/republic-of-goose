@@ -49,9 +49,7 @@ export default function NpcAsk({ name, role = 'keeper', place = 'the Republic', 
             you asked · {last.ask}
           </p>
           <p className="mt-1 text-[14px] leading-relaxed text-foreground">{last.said}</p>
-          <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.1em] text-primary/75">
-            {name} {last.gesture}
-          </p>
+          <p className="mt-1 text-[11px] italic leading-snug text-primary/80">— {last.gesture}</p>
         </div>
       )}
 

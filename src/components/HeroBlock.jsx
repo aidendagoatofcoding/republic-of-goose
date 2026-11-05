@@ -2,10 +2,33 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 
-export default function HeroBlock({ eyebrow, title, description, motto, image, imageAlt, actions = [] }) {
+export default function HeroBlock({
+  eyebrow,
+  title,
+  description,
+  motto,
+  image,
+  imageAlt,
+  video,
+  actions = [],
+}) {
   return (
     <section className="relative overflow-hidden rounded-md border border-border/80 bg-secondary">
-      <Image src={image} alt={imageAlt} className="absolute inset-0 h-full w-full" />
+      {video ? (
+        <video
+          src={video}
+          poster={image}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-label={imageAlt}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <Image src={image} alt={imageAlt} className="absolute inset-0 h-full w-full" />
+      )}
       <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/40" />
       <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
 

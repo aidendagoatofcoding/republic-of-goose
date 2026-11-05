@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import QuestPanel from '@/components/world/QuestPanel';
+import NpcAsk from '@/components/world/NpcAsk';
 import useConversation from '@/hooks/useConversation';
 
 // A Zelda-style conversation: one sentence per box, typed out letter by letter,
@@ -15,6 +16,8 @@ export default function ZeldaDialog({ target, onClose }) {
   useEffect(() => {
     if (!target) return;
     const onKey = (event) => {
+      const tag = event.target?.tagName;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         onClose();
@@ -105,6 +108,15 @@ export default function ZeldaDialog({ target, onClose }) {
             </button>
           </div>
         )}
+
+        <div className="px-4 pb-3">
+          <NpcAsk
+            name={target.name}
+            role={target.role || 'keeper of this part of the Republic'}
+            place={target.place || 'the Honk Commons'}
+            species={target.species || 'goose'}
+          />
+        </div>
       </div>
     </div>
   );

@@ -97,6 +97,12 @@ export default function KeeperChat({ placeId }) {
           )}
         </>
       )}
+
+      <NpcAsk
+        name={target.name}
+        role="keeper behind the counter"
+        place={placeFor(placeId)?.name || 'the Republic'}
+      />
     </div>
   );
 }
