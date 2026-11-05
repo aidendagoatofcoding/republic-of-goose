@@ -219,6 +219,8 @@ export default function World() {
             onOffersChanged={setOffers}
             onBoards={setBoards}
             boards={boards}
+            friends={world.friends}
+            onRefreshWorld={load}
             profile={{
               name: citizen?.goose_name || citizen?.full_name || 'You',
               species: citizen?.species || 'goose',

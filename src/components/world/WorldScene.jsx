@@ -14,7 +14,14 @@ import NestGuard from '@/components/world/NestGuard';
 import ArcheryGame from '@/components/world/ArcheryGame';
 import RaceGame from '@/components/world/RaceGame';
 import Realms from '@/components/world/Realms';
-import { spotOnRoadNear } from '@/lib/roads';
+import { spotOnRoadNear, routeAlongRoads } from '@/lib/roads';
+import GpsPanel from '@/components/world/GpsPanel';
+import GpsRoute from '@/components/world/GpsRoute';
+import PlayerChat from '@/components/world/PlayerChat';
+import FriendsPanel from '@/components/world/FriendsPanel';
+import GuestHome from '@/components/world/GuestHome';
+import { destinationById } from '@/lib/destinations';
+import { sfx, isMuted, setMuted } from '@/lib/sfx';
 import SportVenue from '@/components/world/SportVenue';
 import PlaceInterior from '@/components/world/interiors/PlaceInterior';
 import PetPanel from '@/components/world/PetPanel';
@@ -76,6 +83,8 @@ export default function WorldScene({
   onOffersChanged,
   onBoards,
   boards = {},
+  friends = null,
+  onRefreshWorld,
 }) {
   const boxRef = useRef(null);
   const [camera, setCamera] = useState(0);
@@ -90,6 +99,13 @@ export default function WorldScene({
   const [riding, setRiding] = useState(false);
   const [homeOpen, setHomeOpen] = useState(false);
   const [pet, setPet] = useState(null);
+  const [playerTap, setPlayerTap] = useState(null);
+  const [visitor, setVisitor] = useState(null);
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const [friendsList, setFriendsList] = useState(null);
+  const [gpsOpen, setGpsOpen] = useState(false);
+  const [gpsTarget, setGpsTarget] = useState('');
+  const [quiet, setQuiet] = useState(() => isMuted());
   const [me, setMe] = useState({ x: SPAWN.x, y: SPAWN.y, face: 1 });
   const meRef = useRef(me);
   const keysRef = useRef(new Set());
@@ -97,6 +113,7 @@ export default function WorldScene({
   const lastPublishRef = useRef(0);
   const dirtyRef = useRef(false);
   const enterRef = useRef(null);
+  const lastStepRef = useRef(0);
 
   const say = useCallback((key, text) => {
     setBubbles((current) => ({ ...current, [key]: { text, at: Date.now() } }));
@@ -180,10 +197,12 @@ export default function WorldScene({
       }
       if (!revealed.includes(spot.id)) {
         setRevealed((current) => [...current, spot.id]);
+        sfx.blip();
         say(myKey, `Something glints under the ${spot.kind === 'rock' ? 'boulder' : 'roots'}.`);
         return;
       }
       run({ action: 'collectFind', find_id: spot.id }).catch(() => {});
+      sfx.pickup();
       say(myKey, `You take the ${spot.name.toLowerCase()}.`);
     },
     [run, say, myKey, revealed]
@@ -266,6 +285,10 @@ export default function WorldScene({
       const vy = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
       const moving = Boolean(vx || vy);
       const running = moving && sprintRef.current && staminaRef.current > 1;
+      if (moving && now - lastStepRef.current > (running ? 240 : 360)) {
+        lastStepRef.current = now;
+        sfx.step();
+      }
       staminaRef.current = Math.min(
         100,
         Math.max(0, staminaRef.current + (running ? -26 : 15) * dt)
@@ -365,17 +388,25 @@ export default function WorldScene({
       const target = enterRef.current;
       if (!target) return;
       event.preventDefault();
-      if (target.kind === 'sport') setSport(target.id);
-      else if (target.kind === 'realm') setRealm(target.id);
-      else if (target.kind === 'home') setHomeOpen(true);
-      else if (target.kind === 'find') {
+      if (target.kind === 'sport') {
+        sfx.door();
+        setSport(target.id);
+      } else if (target.kind === 'realm') {
+        sfx.door();
+        setRealm(target.id);
+      } else if (target.kind === 'home') {
+        sfx.door();
+        setHomeOpen(true);
+      } else if (target.kind === 'find') {
         run?.({ action: 'collectFind', find_id: target.id }).catch(() => {});
+        sfx.pickup();
         say(myKey, 'Picked that up.');
       } else if (target.kind === 'hidden') {
         searchSpot(target.spot);
       } else if (target.kind === 'npc') {
-        say(target.id, pick(NPC_LINES));
-        setTalk(target.talk);
+        if (target.resident && !target.resident.friend) say(target.id, pick(NPC_LINES));
+        sfx.choose();
+        setPlayerTap(target.resident);
       } else if (target.kind === 'giver') {
         setTalk(target.talk);
       }
@@ -503,6 +534,7 @@ export default function WorldScene({
   };
 
   const honkAt = (targetSeat) => {
+    sfx.honk();
     say(myKey, 'HONK!');
     if (targetSeat) say(`seat:${targetSeat}`, 'HONK!');
     honk(targetSeat || 0);
@@ -607,14 +639,8 @@ export default function WorldScene({
         ? {
           kind: 'npc',
           id: nearNeighbour.resident.key,
+          resident: nearNeighbour.resident,
           name: `Talk to ${String(nearNeighbour.resident.name).split(' ')[0]}`,
-          talk: {
-            key: nearNeighbour.resident.key,
-            name: nearNeighbour.resident.name,
-            species: nearNeighbour.resident.species,
-            questId: questFor({ key: nearNeighbour.resident.key })?.id || null,
-            questDone: doneQuests.includes(questFor({ key: nearNeighbour.resident.key })?.id),
-          },
         }
         : null;
 
@@ -633,6 +659,23 @@ export default function WorldScene({
   const live = people.filter((person) => person.seat !== seat);
   const realmData = realm ? realmFor(realm) : null;
 
+  // The navigator keeps a route along the streets to wherever it was pointed.
+  const destination = destinationById(gpsTarget);
+  const gpsRoute = destination ? routeAlongRoads({ x: me.x, y: me.y }, destination) : [];
+  const gpsBox = boxRef.current;
+  const gpsDistance =
+    destination && gpsBox
+      ? Math.max(
+          1,
+          Math.round(
+            Math.hypot(
+              ((destination.x - me.x) / 100) * gpsBox.offsetWidth,
+              ((destination.y - me.y) / 100) * gpsBox.offsetHeight
+            ) / 6
+          )
+        )
+      : 0;
+
   return (
     <div className="relative h-full w-full">
       <div
@@ -643,6 +686,8 @@ export default function WorldScene({
       className="absolute left-0 top-0 h-[180%] w-[560%] min-w-[4600px] overflow-hidden bg-secondary/40"
     >
       <CommonsScenery />
+
+      <GpsRoute route={gpsRoute} destination={destination} />
 
       <EdgeWarden
         near={wardenNear}
@@ -734,37 +779,61 @@ export default function WorldScene({
             const distance = resident.is_me ? null : distanceTo(spot, me);
             const reachable = distance !== null && distance <= REACH_PX;
             return (
-              <button
+              <div
                 key={spot.item_id}
-                type="button"
-                aria-label={`${spot.name}, ${resident.is_me ? 'your home' : `${resident.name}'s home`}`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  if (resident.is_me) {
-                    setHomeOpen(true);
-                    return;
-                  }
-                  openOffer(resident, spot);
-                }}
                 style={{ left: `${x}%`, top: `${y}%` }}
-                className={`absolute z-10 -translate-x-1/2 -translate-y-[88%] ${
-                  resident.is_me ? 'cursor-default' : 'cursor-pointer'
-                } ${reachable ? 'rounded-md bg-primary/10 ring-1 ring-primary/40' : ''}`}
+                className="absolute z-10 -translate-x-1/2 -translate-y-[88%]"
               >
                 {bubble && <WorldBubble text={bubble} />}
-                <span
-                  className="block"
-                  style={{ width: `${68 + Math.min(54, Math.round((spot.price ?? 0) / 9))}px` }}
-                >
-                  <HouseSprite
-                    name={spot.name}
-                    className="w-full drop-shadow-[0_10px_12px_rgba(0,0,0,0.5)]"
-                  />
+
+                {/* the name plate, hung above the door so the house is known from the road */}
+                <span className="mb-0.5 block max-w-[220px] truncate rounded-sm border border-[#f2c96b]/35 bg-[#0a1310]/88 px-1.5 py-0.5 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-[#f2c96b]">
+                  {resident.name}
                 </span>
-                <span className="mt-0.5 block max-w-[220px] truncate font-mono text-[10px] uppercase tracking-[0.1em] text-foreground/80">
+
+                <button
+                  type="button"
+                  aria-label={`${spot.name}, ${resident.is_me ? 'your home' : `${resident.name}'s home`}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (resident.is_me) {
+                      sfx.door();
+                      setHomeOpen(true);
+                      return;
+                    }
+                    setPlayerTap(resident);
+                  }}
+                  className={`block w-full ${resident.is_me ? 'cursor-pointer' : 'cursor-pointer'} ${
+                    reachable ? 'rounded-md bg-primary/10 ring-1 ring-primary/40' : ''
+                  }`}
+                >
+                  <span
+                    className="block"
+                    style={{ width: `${68 + Math.min(54, Math.round((spot.price ?? 0) / 9))}px` }}
+                  >
+                    <HouseSprite
+                      name={spot.name}
+                      className="w-full drop-shadow-[0_10px_12px_rgba(0,0,0,0.5)]"
+                    />
+                  </span>
+                </button>
+
+                {/* the driveway where the household's vehicle stands when nobody is riding it */}
+                <span
+                  className="mt-0.5 block h-[15px] w-[64px] rounded-[3px] border border-black/50"
+                  style={{
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    background:
+                      'repeating-linear-gradient(90deg, rgba(194,255,133,0.16) 0 2px, transparent 2px 10px), linear-gradient(180deg, #615c4e, #4d493e)',
+                  }}
+                  aria-hidden="true"
+                />
+
+                <span className="mt-0.5 block max-w-[220px] truncate text-center font-mono text-[9px] uppercase tracking-[0.1em] text-foreground/65">
                   {spot.name}
                 </span>
-              </button>
+              </div>
             );
           })
       )}
@@ -776,8 +845,17 @@ export default function WorldScene({
           .map((spot) => {
             const isPet = spot.category === 'pet';
             const drift = isPet ? wander[spot.item_id] : null;
-            const x = drift ? drift.x : spot.x;
-            const y = drift ? drift.y : spot.y;
+            // A vehicle waits on its owner's driveway; everything else sits where it was set.
+            const ownerHome = resident.spots.find((entry) => entry.category === 'home');
+            const parked =
+              spot.category === 'vehicle' && ownerHome
+                ? {
+                  x: ownerHome.x + (spot.x >= ownerHome.x ? 3.6 : -3.6),
+                  y: ownerHome.y + 2.4,
+                }
+                : null;
+            const x = parked ? parked.x : drift ? drift.x : spot.x;
+            const y = parked ? parked.y : drift ? drift.y : spot.y;
             return (
               <div
                 key={spot.item_id}
@@ -840,8 +918,7 @@ export default function WorldScene({
             y: streetStart.y,
             face: 1,
           };
-          // A goose with a favour still to grant wears a marker, so you can spot them across the meadow.
-          const offered = questFor({ key: resident.key });
+          // A real neighbour is answered in ordinary words — no riddles and no favours.
           return (
             <Walker
               key={resident.key}
@@ -852,19 +929,14 @@ export default function WorldScene({
               x={position.x}
               y={position.y}
               face={
-                talk?.key === resident.key ? (me.x < position.x ? -1 : 1) : position.face
+                playerTap?.key === resident.key ? (me.x < position.x ? -1 : 1) : position.face
               }
-              hasQuest={Boolean(offered) && !doneQuests.includes(offered.id)}
+              hasQuest={false}
               bubble={bubbles[resident.key]?.text}
               speed="2.6s"
               onPoke={() => {
-                setTalk({
-                  key: resident.key,
-                  name: resident.name,
-                  species: resident.species,
-                  questId: offered?.id || null,
-                  questDone: Boolean(offered) && doneQuests.includes(offered.id),
-                });
+                sfx.choose();
+                setPlayerTap(resident);
                 honkAt(0);
               }}
             />
@@ -1016,6 +1088,30 @@ export default function WorldScene({
         {isleOpen ? 'Hide Isle' : 'Isle & sports'}
       </button>
 
+      <button
+        type="button"
+        onClick={() => setFriendsOpen(true)}
+        className="absolute bottom-3 left-[122px] z-40 rounded-sm border border-border bg-card/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary"
+      >
+        Friends
+        {(friendsList ?? friends)?.incoming?.length > 0
+          ? ` · ${(friendsList ?? friends).incoming.length}`
+          : ''}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          const next = !quiet;
+          setMuted(next);
+          setQuiet(next);
+        }}
+        aria-label={quiet ? 'Turn the sound on' : 'Turn the sound off'}
+        className="absolute right-2 top-9 z-40 rounded-sm border border-border/70 bg-card/85 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground hover:text-primary"
+      >
+        {quiet ? '🔇' : '🔊'}
+      </button>
+
       {sport === 'choir' && (
         <GameStage title="The Choir of Honkton" onClose={() => setSport('')}>
           <ChoirGame onClose={() => setSport('')} onFinish={(score) => submitScore('choir', score)} />
@@ -1056,6 +1152,48 @@ export default function WorldScene({
         <GameStage title="The Bread Toss" onClose={() => setSport('')}>
           <BreadToss onClose={() => setSport('')} onFinish={(score) => submitScore('toss', score)} />
         </GameStage>
+      )}
+
+      <GpsPanel
+        open={gpsOpen}
+        onToggle={() => setGpsOpen((value) => !value)}
+        destination={destination}
+        distance={gpsDistance}
+        onPick={(id) => {
+          sfx.choose();
+          setGpsTarget(id);
+          setGpsOpen(false);
+        }}
+        onStop={() => setGpsTarget('')}
+      />
+
+      {playerTap && (
+        <PlayerChat
+          resident={playerTap}
+          onClose={() => setPlayerTap(null)}
+          onVisit={(resident) => {
+            setPlayerTap(null);
+            setVisitor(resident);
+          }}
+          onFriendsChanged={(bundle) => {
+            setFriendsList(bundle);
+            onRefreshWorld?.();
+          }}
+        />
+      )}
+
+      {visitor && <GuestHome resident={visitor} onExit={() => setVisitor(null)} />}
+
+      {friendsOpen && (
+        <FriendsPanel
+          friends={friendsList ?? friends ?? { friends: [], incoming: [], outgoing: [] }}
+          residents={residents}
+          onClose={() => setFriendsOpen(false)}
+          onVisit={(resident) => {
+            setFriendsOpen(false);
+            setVisitor(resident);
+          }}
+        />
       )}
 
       <ZeldaDialog target={talk} onClose={() => setTalk(null)} />

@@ -2,71 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useCitizen } from '@/hooks/useCitizen';
 import InteriorRoom from '@/components/world/interiors/InteriorRoom';
-import { DoorOpen } from 'lucide-react';
-
-// A home's size on the outside decides how much room there is on the inside.
-const HOME_ROOMS = {
-  cottage: {
-    id: 'home',
-    name: 'Your Home',
-    sign: 'YOUR HOME · COTTAGE',
-    honkish: 'HONK HONK',
-    accent: '#e0b98a',
-    props: [
-      { type: 'chandelier', x: 50, y: 14 },
-      { type: 'shelf', x: 14, y: 44 },
-      { type: 'shelf', x: 86, y: 44 },
-      { type: 'benches', x: 30, y: 60 },
-      { type: 'counter', x: 66, y: 56, label: 'YOUR HEARTH' },
-    ],
-    actors: [],
-  },
-  hall: {
-    id: 'home',
-    name: 'Your Home',
-    sign: 'YOUR HOME · HALL',
-    honkish: 'HONK HONK HONK',
-    accent: '#e0b98a',
-    props: [
-      { type: 'chandelier', x: 32, y: 13 },
-      { type: 'chandelier', x: 68, y: 13 },
-      { type: 'shelf', x: 10, y: 42 },
-      { type: 'shelf', x: 90, y: 42 },
-      { type: 'banner', x: 24, y: 26 },
-      { type: 'banner', x: 76, y: 26 },
-      { type: 'benches', x: 22, y: 62 },
-      { type: 'benches', x: 78, y: 62 },
-      { type: 'counter', x: 50, y: 54, label: 'YOUR HEARTH' },
-    ],
-    actors: [],
-  },
-  manor: {
-    id: 'home',
-    name: 'Your Home',
-    sign: 'YOUR HOME · MANOR',
-    honkish: 'HONK HOOONKK HONK',
-    accent: '#f2c96b',
-    props: [
-      { type: 'chandelier', x: 26, y: 12 },
-      { type: 'chandelier', x: 50, y: 10 },
-      { type: 'chandelier', x: 74, y: 12 },
-      { type: 'shelf', x: 8, y: 40 },
-      { type: 'shelf', x: 50, y: 36 },
-      { type: 'shelf', x: 92, y: 40 },
-      { type: 'banner', x: 18, y: 26 },
-      { type: 'banner', x: 82, y: 26 },
-      { type: 'map', x: 66, y: 30 },
-      { type: 'benches', x: 18, y: 64 },
-      { type: 'benches', x: 82, y: 64 },
-      { type: 'counter', x: 50, y: 58, label: 'YOUR GREAT HEARTH' },
-      { type: 'coins', x: 12, y: 86 },
-    ],
-    actors: [],
-  },
-};
-
-const tierFor = (price) => (price >= 900 ? 'manor' : price >= 400 ? 'hall' : 'cottage');
-const FURNITURE_SIZE = { cottage: 'text-3xl', hall: 'text-4xl', manor: 'text-5xl' };
+import { HOME_ROOMS, FURNITURE_SIZE, tierFor } from '@/lib/homeRooms';
+import { DoorOpen, KeyRound, Lock } from 'lucide-react';
 
 export default function HomeInterior({ price = 0, onExit }) {
   const tier = tierFor(price);
@@ -77,6 +14,8 @@ export default function HomeInterior({ price = 0, onExit }) {
   const [selected, setSelected] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [openBusy, setOpenBusy] = useState(false);
+  const homeOpen = citizen?.home_open === true;
 
   useEffect(() => {
     let active = true;
@@ -111,6 +50,18 @@ export default function HomeInterior({ price = 0, onExit }) {
       setError(err.message);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const toggleOpen = async () => {
+    setOpenBusy(true);
+    setError('');
+    try {
+      await run({ action: 'homeOpen', open: !homeOpen });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setOpenBusy(false);
     }
   };
 
@@ -191,11 +142,28 @@ export default function HomeInterior({ price = 0, onExit }) {
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
               Your furniture
             </span>
-            {placed.length > 0 && (
-              <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-                {placed.length} piece{placed.length === 1 ? '' : 's'} set out · tap one to put it away
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {placed.length > 0 && (
+                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                  {placed.length} piece{placed.length === 1 ? '' : 's'} set out · tap one to put it away
+                </span>
+              )}
+              {signedIn && (
+                <button
+                  type="button"
+                  onClick={toggleOpen}
+                  disabled={openBusy}
+                  className={`inline-flex items-center gap-1 rounded-sm border px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] disabled:opacity-50 ${
+                    homeOpen
+                      ? 'border-primary/60 bg-primary/15 text-primary'
+                      : 'border-border/70 text-muted-foreground hover:text-primary'
+                  }`}
+                >
+                  {homeOpen ? <KeyRound className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                  {homeOpen ? 'Open to visitors' : 'Friends only'}
+                </button>
+              )}
+            </div>
           </div>
 
           {error && (
