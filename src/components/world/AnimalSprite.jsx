@@ -79,6 +79,28 @@ const BODIES = {
       <circle cx="45" cy="20.5" r="1" fill={INK} />
     </>
   ),
+  redpanda: () => (
+    <>
+      {/* the ringed tail, carried behind */}
+      <path d="M21 33C8 34 1 26 5 15c4 6 8 9 14 10z" fill="#b4552b" stroke={INK} strokeWidth="1.1" />
+      <path d="M9 24c3 2 6 3 8 3M13 17c2 2 4 3 7 4" stroke="#f2dcbe" strokeWidth="1.7" strokeLinecap="round" />
+      {/* dark legs */}
+      <path d="M24 36v8M29 36v8M37 36v8M41 36v8" stroke="#3b2a20" strokeWidth="2.6" strokeLinecap="round" />
+      {/* body */}
+      <ellipse cx="30" cy="32" rx="13.5" ry="8" fill="#c9612e" stroke={INK} strokeWidth="1.2" />
+      <path d="M20 34c6 3 14 3 20 0-5 4-15 4-20 0z" fill="#3b2a20" opacity="0.55" />
+      {/* neck and head */}
+      <path d="M35 28c4-3 6-6 8-7" stroke="#c9612e" strokeWidth="9" strokeLinecap="round" />
+      <circle cx="45" cy="19" r="6.6" fill="#d06a33" stroke={INK} strokeWidth="1.2" />
+      <path d="M40 12.5 39 5.5l6 4zM50 12.5 53.5 5.5l-6 3.8z" fill="#b4552b" stroke={INK} strokeWidth="1" />
+      {/* pale face with the tear marks */}
+      <ellipse cx="45" cy="20.4" rx="4.8" ry="4" fill="#f7efe0" />
+      <path d="M41.4 19.4c-.8 2-1.8 3.2-2.8 3.8M48.6 19.4c.8 2 1.8 3.2 2.8 3.8" stroke="#8c3f1c" strokeWidth="1.3" strokeLinecap="round" />
+      <circle cx="43" cy="18.2" r="1.05" fill={INK} />
+      <circle cx="47.4" cy="18.2" r="1.05" fill={INK} />
+      <circle cx="45.2" cy="22" r="0.9" fill="#3b2a20" />
+    </>
+  ),
   marlin: () => (
     <>
       <path d="M12 27 3 19l3 8-3 8z" fill="#2f6b8a" stroke={INK} strokeWidth="1.1" />

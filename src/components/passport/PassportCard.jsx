@@ -7,6 +7,7 @@ import { speciesInfo } from '@/lib/species';
 import CitizenBadge from '@/components/CitizenBadge';
 import SpeciesAvatar from '@/components/SpeciesAvatar';
 import OwnedDecorations from '@/components/passport/OwnedDecorations';
+import SpeciesPicker from '@/components/passport/SpeciesPicker';
 import BossCabinet from '@/components/passport/BossCabinet';
 
 const formatDate = (value) =>
@@ -115,6 +116,10 @@ export default function PassportCard({ citizen }) {
           <span className="font-mono text-[10px] text-muted-foreground">
             {citizen.passport_code}
           </span>
+        </div>
+
+        <div className="mt-4">
+          <SpeciesPicker species={citizen.species} />
         </div>
         <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
           Sign in with your username and password · keep the passport code private · portrait stored

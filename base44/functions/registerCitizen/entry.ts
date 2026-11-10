@@ -12,7 +12,16 @@ const DISTRICTS = [
 
 const LEVELS = ['Not yet honking', 'Apprentice honker', 'Fluent honker', 'Native honker'];
 
-const SPECIES = ['goose', 'fox', 'squirrel', 'turtle', 'anteater', 'hummingbird', 'marlin'];
+const SPECIES = [
+  'goose',
+  'fox',
+  'squirrel',
+  'turtle',
+  'anteater',
+  'hummingbird',
+  'marlin',
+  'redpanda',
+];
 
 const WELCOME_BREAD = 50;
 

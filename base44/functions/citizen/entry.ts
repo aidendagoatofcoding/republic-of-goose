@@ -227,6 +227,18 @@ async function loadHoldings(admin, code) {
 
 const EVENT_IDS = ['sprint', 'toss', 'archery', 'race', 'choir', 'guard'];
 
+// Every animal a citizen may carry on their passport.
+const SPECIES_KEYS = [
+  'goose',
+  'fox',
+  'squirrel',
+  'turtle',
+  'anteater',
+  'hummingbird',
+  'marlin',
+  'redpanda',
+];
+
 // Only these are ever set down out in the Commons. Furniture belongs inside a home,
 // tools and decorations stay in the pack, so nothing gets scattered across the meadow.
 const WORLD_CATEGORIES = ['home', 'vehicle', 'pet'];
@@ -591,6 +603,22 @@ export default async function (req) {
         bread: bread - next.cost,
         sword_tier: tier + 1,
       });
+      return Response.json({ citizen: publicCitizen(updated, holdings) });
+    }
+
+    // A citizen may take up a different animal whenever they please.
+    if (action === 'changeSpecies') {
+      const species = String(body.species ?? '');
+      if (!SPECIES_KEYS.includes(species)) {
+        return Response.json(
+          { error: 'That animal is not recognised by the Republic.' },
+          { status: 400 }
+        );
+      }
+      if ((citizen.species || 'goose') === species) {
+        return Response.json({ citizen: publicCitizen(citizen, holdings) });
+      }
+      const updated = await admin.entities.Citizen.update(citizen.id, { species });
       return Response.json({ citizen: publicCitizen(updated, holdings) });
     }
 
